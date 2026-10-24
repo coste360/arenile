@@ -1,11 +1,18 @@
 ---
-subject: Remboursement de la réservation {{booking.code}} – {{establishment.name}}
+subject: Remboursement de la réservation {codice} – {stabilimento}
 preheader: Nous avons effectué un remboursement de {{refund.amount}}.
+opening: Bonjour {nome}, nous avons effectué un remboursement de {importo} pour la réservation {codice}.
+closing: 
+signature:
 ---
 # Remboursement effectué
 
-Bonjour {{customer.first_name}}, nous avons effectué un remboursement de **{{refund.amount}}** pour la réservation **{{booking.code}}**.
+{{> opening}}
 
 Le crédit sur le moyen de paiement d'origine peut prendre quelques jours ouvrés selon votre banque.
 
 {{> summary}}
+
+{{> closing}}
+
+{{> signature}}

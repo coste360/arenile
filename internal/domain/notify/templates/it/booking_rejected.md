@@ -1,9 +1,14 @@
 ---
-subject: Richiesta di prenotazione non accettata – {{establishment.name}}
+subject: Richiesta di prenotazione non accettata – {stabilimento}
 preheader: Non possiamo confermare la richiesta {{booking.code}}.
+opening: Ciao {nome}, purtroppo {stabilimento} non può confermare la richiesta {codice} ({data}).
+closing: Gli eventuali importi pagati ti saranno restituiti. Se vuoi, puoi scegliere altre date sulla pagina di prenotazione o contattare lo stabilimento.
+signature:
 ---
 # Richiesta non accettata
 
-Ciao {{customer.first_name}}, purtroppo **{{establishment.name}}** non può confermare la richiesta **{{booking.code}}** ({{booking.period}}).
+{{> opening}}
 
-Gli eventuali importi pagati ti saranno restituiti. Se vuoi, puoi scegliere altre date sulla pagina di prenotazione o contattare lo stabilimento.
+{{> closing}}
+
+{{> signature}}

@@ -680,22 +680,22 @@ func (e CustomerCreditCreateSource) Valid() bool {
 
 // Defines values for CustomerInputLocale.
 const (
-	De CustomerInputLocale = "de"
-	En CustomerInputLocale = "en"
-	Fr CustomerInputLocale = "fr"
-	It CustomerInputLocale = "it"
+	CustomerInputLocaleDe CustomerInputLocale = "de"
+	CustomerInputLocaleEn CustomerInputLocale = "en"
+	CustomerInputLocaleFr CustomerInputLocale = "fr"
+	CustomerInputLocaleIt CustomerInputLocale = "it"
 )
 
 // Valid indicates whether the value is a known member of the CustomerInputLocale enum.
 func (e CustomerInputLocale) Valid() bool {
 	switch e {
-	case De:
+	case CustomerInputLocaleDe:
 		return true
-	case En:
+	case CustomerInputLocaleEn:
 		return true
-	case Fr:
+	case CustomerInputLocaleFr:
 		return true
-	case It:
+	case CustomerInputLocaleIt:
 		return true
 	default:
 		return false
@@ -861,6 +861,30 @@ func (e Edition) Valid() bool {
 	}
 }
 
+// Defines values for EmailLocale.
+const (
+	EmailLocaleDe EmailLocale = "de"
+	EmailLocaleEn EmailLocale = "en"
+	EmailLocaleFr EmailLocale = "fr"
+	EmailLocaleIt EmailLocale = "it"
+)
+
+// Valid indicates whether the value is a known member of the EmailLocale enum.
+func (e EmailLocale) Valid() bool {
+	switch e {
+	case EmailLocaleDe:
+		return true
+	case EmailLocaleEn:
+		return true
+	case EmailLocaleFr:
+		return true
+	case EmailLocaleIt:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EmailSettingsTransport.
 const (
 	File EmailSettingsTransport = "file"
@@ -876,6 +900,75 @@ func (e EmailSettingsTransport) Valid() bool {
 	case Log:
 		return true
 	case Smtp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EmailTemplateFixedBlock.
+const (
+	EmailTemplateFixedBlockBalanceNotice EmailTemplateFixedBlock = "balance_notice"
+	EmailTemplateFixedBlockIcsNote       EmailTemplateFixedBlock = "ics_note"
+	EmailTemplateFixedBlockManageButton  EmailTemplateFixedBlock = "manage_button"
+	EmailTemplateFixedBlockPolicy        EmailTemplateFixedBlock = "policy"
+	EmailTemplateFixedBlockQr            EmailTemplateFixedBlock = "qr"
+	EmailTemplateFixedBlockSummary       EmailTemplateFixedBlock = "summary"
+)
+
+// Valid indicates whether the value is a known member of the EmailTemplateFixedBlock enum.
+func (e EmailTemplateFixedBlock) Valid() bool {
+	switch e {
+	case EmailTemplateFixedBlockBalanceNotice:
+		return true
+	case EmailTemplateFixedBlockIcsNote:
+		return true
+	case EmailTemplateFixedBlockManageButton:
+		return true
+	case EmailTemplateFixedBlockPolicy:
+		return true
+	case EmailTemplateFixedBlockQr:
+		return true
+	case EmailTemplateFixedBlockSummary:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EmailTemplateKind.
+const (
+	EmailTemplateKindBalanceReminder        EmailTemplateKind = "balance_reminder"
+	EmailTemplateKindBookingApprovalPending EmailTemplateKind = "booking_approval_pending"
+	EmailTemplateKindBookingCancelled       EmailTemplateKind = "booking_cancelled"
+	EmailTemplateKindBookingConfirmed       EmailTemplateKind = "booking_confirmed"
+	EmailTemplateKindBookingModified        EmailTemplateKind = "booking_modified"
+	EmailTemplateKindBookingRejected        EmailTemplateKind = "booking_rejected"
+	EmailTemplateKindDayBeforeReminder      EmailTemplateKind = "day_before_reminder"
+	EmailTemplateKindManageLink             EmailTemplateKind = "manage_link"
+	EmailTemplateKindRefundIssued           EmailTemplateKind = "refund_issued"
+)
+
+// Valid indicates whether the value is a known member of the EmailTemplateKind enum.
+func (e EmailTemplateKind) Valid() bool {
+	switch e {
+	case EmailTemplateKindBalanceReminder:
+		return true
+	case EmailTemplateKindBookingApprovalPending:
+		return true
+	case EmailTemplateKindBookingCancelled:
+		return true
+	case EmailTemplateKindBookingConfirmed:
+		return true
+	case EmailTemplateKindBookingModified:
+		return true
+	case EmailTemplateKindBookingRejected:
+		return true
+	case EmailTemplateKindDayBeforeReminder:
+		return true
+	case EmailTemplateKindManageLink:
+		return true
+	case EmailTemplateKindRefundIssued:
 		return true
 	default:
 		return false
@@ -2114,6 +2207,7 @@ const (
 	ProblemTypeConflict                   ProblemType = "conflict"
 	ProblemTypeCreditInsufficient         ProblemType = "credit_insufficient"
 	ProblemTypeCsrfFailed                 ProblemType = "csrf_failed"
+	ProblemTypeEmailTemplateInvalid       ProblemType = "email_template_invalid"
 	ProblemTypeForbidden                  ProblemType = "forbidden"
 	ProblemTypeHoldExpired                ProblemType = "hold_expired"
 	ProblemTypeIdempotencyInProgress      ProblemType = "idempotency_in_progress"
@@ -2187,6 +2281,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeCreditInsufficient:
 		return true
 	case ProblemTypeCsrfFailed:
+		return true
+	case ProblemTypeEmailTemplateInvalid:
 		return true
 	case ProblemTypeForbidden:
 		return true
@@ -5494,6 +5590,16 @@ type DiscountBreakdown struct {
 // Edition `server`: binario o immagine Docker (VPS, server in sede). `desktop`: server interno dell'app desktop sul PC della cassa (spec 29.1). La modalità remota dell'app desktop è un client: l'istanza a cui si collega riporta la propria edizione.
 type Edition string
 
+// EmailLocale defines model for EmailLocale.
+type EmailLocale string
+
+// EmailReminderSchedule Orari dei promemoria automatici nel fuso dello stabilimento (ADR 0022). Il promemoria del giorno prima parte il giorno precedente l'inizio alle `day_before_time`; quello del saldo alle `balance_time`, `balance_lead_days` giorni prima della scadenza del saldo indicata dalla policy (`balance_due`: `days_before:N` o, se all'arrivo, il giorno di inizio).
+type EmailReminderSchedule struct {
+	BalanceLeadDays int    `json:"balance_lead_days"`
+	BalanceTime     string `json:"balance_time"`
+	DayBeforeTime   string `json:"day_before_time"`
+}
+
 // EmailSettings defines model for EmailSettings.
 type EmailSettings struct {
 	CustomerNotifications CustomerNotifications `json:"customer_notifications"`
@@ -5502,9 +5608,12 @@ type EmailSettings struct {
 	MailFrom             *string              `json:"mail_from,omitempty"`
 	ManagerEmail         *string              `json:"manager_email,omitempty"`
 	ManagerNotifications ManagerNotifications `json:"manager_notifications"`
-	ReplyTo              *string              `json:"reply_to,omitempty"`
-	SenderName           string               `json:"sender_name"`
-	SmtpConfigured       *bool                `json:"smtp_configured,omitempty"`
+
+	// Reminders Orari dei promemoria automatici nel fuso dello stabilimento (ADR 0022). Il promemoria del giorno prima parte il giorno precedente l'inizio alle `day_before_time`; quello del saldo alle `balance_time`, `balance_lead_days` giorni prima della scadenza del saldo indicata dalla policy (`balance_due`: `days_before:N` o, se all'arrivo, il giorno di inizio).
+	Reminders      EmailReminderSchedule `json:"reminders"`
+	ReplyTo        *string               `json:"reply_to,omitempty"`
+	SenderName     string                `json:"sender_name"`
+	SmtpConfigured *bool                 `json:"smtp_configured,omitempty"`
 
 	// Transport Dalla configurazione del server (ARENILE_SMTP_URL, ARENILE_MAIL_DIR).
 	Transport *EmailSettingsTransport `json:"transport,omitempty"`
@@ -5521,8 +5630,66 @@ type EmailSettingsInput struct {
 	CustomerNotifications CustomerNotifications `json:"customer_notifications"`
 	ManagerEmail          *openapi_types.Email  `json:"manager_email,omitempty"`
 	ManagerNotifications  ManagerNotifications  `json:"manager_notifications"`
-	ReplyTo               *openapi_types.Email  `json:"reply_to,omitempty"`
-	SenderName            string                `json:"sender_name"`
+
+	// Reminders Orari dei promemoria automatici nel fuso dello stabilimento (ADR 0022). Il promemoria del giorno prima parte il giorno precedente l'inizio alle `day_before_time`; quello del saldo alle `balance_time`, `balance_lead_days` giorni prima della scadenza del saldo indicata dalla policy (`balance_due`: `days_before:N` o, se all'arrivo, il giorno di inizio).
+	Reminders  *EmailReminderSchedule `json:"reminders,omitempty"`
+	ReplyTo    *openapi_types.Email   `json:"reply_to,omitempty"`
+	SenderName string                 `json:"sender_name"`
+}
+
+// EmailTemplate defines model for EmailTemplate.
+type EmailTemplate struct {
+	Closing string `json:"closing"`
+
+	// Customized true se lo stabilimento ha salvato testi propri per questo tipo e lingua.
+	Customized bool `json:"customized"`
+
+	// Defaults Testi modificabili di un modello: testo semplice con segnaposto `{nome}` dall'elenco ammesso. L'oggetto è una riga sola.
+	Defaults EmailTemplateTexts `json:"defaults"`
+
+	// FixedBlocks Blocchi fissi inclusi tra testo iniziale e finale, nell'ordine.
+	FixedBlocks []EmailTemplateFixedBlock `json:"fixed_blocks"`
+
+	// Kind Tipo di email al cliente con testi modificabili.
+	Kind      EmailTemplateKind `json:"kind"`
+	Locale    EmailLocale       `json:"locale"`
+	Opening   string            `json:"opening"`
+	Signature string            `json:"signature"`
+	Subject   string            `json:"subject"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// EmailTemplateFixedBlock defines model for EmailTemplateFixedBlock.
+type EmailTemplateFixedBlock string
+
+// EmailTemplateKind Tipo di email al cliente con testi modificabili.
+type EmailTemplateKind string
+
+// EmailTemplateList defines model for EmailTemplateList.
+type EmailTemplateList struct {
+	Items []EmailTemplate `json:"items"`
+
+	// Placeholders Segnaposto ammessi, senza graffe (es. `nome` per `{nome}`).
+	Placeholders []string `json:"placeholders"`
+}
+
+// EmailTemplatePreview defines model for EmailTemplatePreview.
+type EmailTemplatePreview struct {
+	// Html Documento HTML completo, da mostrare in un iframe con sandbox.
+	Html    string `json:"html"`
+	Subject string `json:"subject"`
+	Text    string `json:"text"`
+}
+
+// EmailTemplateTexts Testi modificabili di un modello: testo semplice con segnaposto `{nome}` dall'elenco ammesso. L'oggetto è una riga sola.
+type EmailTemplateTexts struct {
+	Closing   string `json:"closing"`
+	Opening   string `json:"opening"`
+	Signature string `json:"signature"`
+	Subject   string `json:"subject"`
 }
 
 // EmailTestRequest defines model for EmailTestRequest.
@@ -10777,6 +10944,12 @@ type CustomerID = string
 // DeviceID defines model for DeviceID.
 type DeviceID = string
 
+// EmailLocaleParam defines model for EmailLocaleParam.
+type EmailLocaleParam = EmailLocale
+
+// EmailTemplateKindParam Tipo di email al cliente con testi modificabili.
+type EmailTemplateKindParam = EmailTemplateKind
+
 // EntryTicketTypeID defines model for EntryTicketTypeID.
 type EntryTicketTypeID = string
 
@@ -11633,6 +11806,40 @@ type UpdateEmailSettingsParams struct {
 
 // SendTestEmailParams defines parameters for SendTestEmail.
 type SendTestEmailParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ResetEmailTemplateParams defines parameters for ResetEmailTemplate.
+type ResetEmailTemplateParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateEmailTemplateParams defines parameters for UpdateEmailTemplate.
+type UpdateEmailTemplateParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// PreviewEmailTemplateParams defines parameters for PreviewEmailTemplate.
+type PreviewEmailTemplateParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// SendEmailTemplateTestParams defines parameters for SendEmailTemplateTest.
+type SendEmailTemplateTestParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -13698,6 +13905,15 @@ type UpdateEmailSettingsJSONRequestBody = EmailSettingsInput
 // SendTestEmailJSONRequestBody defines body for SendTestEmail for application/json ContentType.
 type SendTestEmailJSONRequestBody = EmailTestRequest
 
+// UpdateEmailTemplateJSONRequestBody defines body for UpdateEmailTemplate for application/json ContentType.
+type UpdateEmailTemplateJSONRequestBody = EmailTemplateTexts
+
+// PreviewEmailTemplateJSONRequestBody defines body for PreviewEmailTemplate for application/json ContentType.
+type PreviewEmailTemplateJSONRequestBody = EmailTemplateTexts
+
+// SendEmailTemplateTestJSONRequestBody defines body for SendEmailTemplateTest for application/json ContentType.
+type SendEmailTemplateTestJSONRequestBody = EmailTemplateTexts
+
 // CheckInEntryTicketJSONRequestBody defines body for CheckInEntryTicket for application/json ContentType.
 type CheckInEntryTicketJSONRequestBody = GateCheckInRequest
 
@@ -14207,6 +14423,24 @@ type ServerInterface interface {
 	// SendTestEmail Invia un'email di prova
 	// (POST /api/admin/v1/establishments/{establishmentId}/email-settings/test)
 	SendTestEmail(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SendTestEmailParams)
+	// ListEmailTemplates Modelli delle email ai clienti (testi modificabili)
+	// (GET /api/admin/v1/establishments/{establishmentId}/email-templates)
+	ListEmailTemplates(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// ResetEmailTemplate Ripristina i testi predefiniti di un modello
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale})
+	ResetEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params ResetEmailTemplateParams)
+	// GetEmailTemplate Un modello di email (tipo e lingua)
+	// (GET /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale})
+	GetEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam)
+	// UpdateEmailTemplate Personalizza i testi di un modello
+	// (PUT /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale})
+	UpdateEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params UpdateEmailTemplateParams)
+	// PreviewEmailTemplate Anteprima di un modello con dati di esempio
+	// (POST /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/preview)
+	PreviewEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params PreviewEmailTemplateParams)
+	// SendEmailTemplateTest Invia i testi in prova al proprio indirizzo
+	// (POST /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/test)
+	SendEmailTemplateTest(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params SendEmailTemplateTestParams)
 	// CheckInEntryTicket Ingresso al varco: scansione del QR del biglietto
 	// (POST /api/admin/v1/establishments/{establishmentId}/entry-gate/check-in)
 	CheckInEntryTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CheckInEntryTicketParams)
@@ -15410,6 +15644,42 @@ func (_ Unimplemented) UpdateEmailSettings(w http.ResponseWriter, r *http.Reques
 // SendTestEmail Invia un'email di prova
 // (POST /api/admin/v1/establishments/{establishmentId}/email-settings/test)
 func (_ Unimplemented) SendTestEmail(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SendTestEmailParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListEmailTemplates Modelli delle email ai clienti (testi modificabili)
+// (GET /api/admin/v1/establishments/{establishmentId}/email-templates)
+func (_ Unimplemented) ListEmailTemplates(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ResetEmailTemplate Ripristina i testi predefiniti di un modello
+// (DELETE /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale})
+func (_ Unimplemented) ResetEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params ResetEmailTemplateParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetEmailTemplate Un modello di email (tipo e lingua)
+// (GET /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale})
+func (_ Unimplemented) GetEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateEmailTemplate Personalizza i testi di un modello
+// (PUT /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale})
+func (_ Unimplemented) UpdateEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params UpdateEmailTemplateParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// PreviewEmailTemplate Anteprima di un modello con dati di esempio
+// (POST /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/preview)
+func (_ Unimplemented) PreviewEmailTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params PreviewEmailTemplateParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SendEmailTemplateTest Invia i testi in prova al proprio indirizzo
+// (POST /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/test)
+func (_ Unimplemented) SendEmailTemplateTest(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind EmailTemplateKindParam, locale EmailLocaleParam, params SendEmailTemplateTestParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -21870,6 +22140,386 @@ func (siw *ServerInterfaceWrapper) SendTestEmail(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.SendTestEmail(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListEmailTemplates operation middleware
+func (siw *ServerInterfaceWrapper) ListEmailTemplates(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListEmailTemplates(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ResetEmailTemplate operation middleware
+func (siw *ServerInterfaceWrapper) ResetEmailTemplate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "kind" -------------
+	var kind EmailTemplateKindParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "kind", chi.URLParam(r, "kind"), &kind, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "locale" -------------
+	var locale EmailLocaleParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "locale", chi.URLParam(r, "locale"), &locale, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "locale", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ResetEmailTemplateParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ResetEmailTemplate(w, r, establishmentId, kind, locale, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetEmailTemplate operation middleware
+func (siw *ServerInterfaceWrapper) GetEmailTemplate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "kind" -------------
+	var kind EmailTemplateKindParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "kind", chi.URLParam(r, "kind"), &kind, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "locale" -------------
+	var locale EmailLocaleParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "locale", chi.URLParam(r, "locale"), &locale, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "locale", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetEmailTemplate(w, r, establishmentId, kind, locale)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateEmailTemplate operation middleware
+func (siw *ServerInterfaceWrapper) UpdateEmailTemplate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "kind" -------------
+	var kind EmailTemplateKindParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "kind", chi.URLParam(r, "kind"), &kind, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "locale" -------------
+	var locale EmailLocaleParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "locale", chi.URLParam(r, "locale"), &locale, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "locale", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateEmailTemplateParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateEmailTemplate(w, r, establishmentId, kind, locale, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PreviewEmailTemplate operation middleware
+func (siw *ServerInterfaceWrapper) PreviewEmailTemplate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "kind" -------------
+	var kind EmailTemplateKindParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "kind", chi.URLParam(r, "kind"), &kind, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "locale" -------------
+	var locale EmailLocaleParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "locale", chi.URLParam(r, "locale"), &locale, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "locale", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PreviewEmailTemplateParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PreviewEmailTemplate(w, r, establishmentId, kind, locale, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SendEmailTemplateTest operation middleware
+func (siw *ServerInterfaceWrapper) SendEmailTemplateTest(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "kind" -------------
+	var kind EmailTemplateKindParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "kind", chi.URLParam(r, "kind"), &kind, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "locale" -------------
+	var locale EmailLocaleParam
+
+	err = runtime.BindStyledParameterWithOptions("simple", "locale", chi.URLParam(r, "locale"), &locale, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "locale", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SendEmailTemplateTestParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SendEmailTemplateTest(w, r, establishmentId, kind, locale, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -37228,6 +37878,24 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/messages", wrapper.ListMessages)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/email-templates", wrapper.ListEmailTemplates)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}", wrapper.ResetEmailTemplate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}", wrapper.GetEmailTemplate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}", wrapper.UpdateEmailTemplate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/preview", wrapper.PreviewEmailTemplate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/test", wrapper.SendEmailTemplateTest)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation", wrapper.ResendBookingConfirmation)

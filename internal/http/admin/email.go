@@ -57,6 +57,9 @@ func (h *Handlers) UpdateEmailSettings(w http.ResponseWriter, r *http.Request, e
 	if req.ReplyTo != nil {
 		in.ReplyTo = string(*req.ReplyTo)
 	}
+	if r := req.Reminders; r != nil {
+		in.Reminders = &online.ReminderSchedule{DayBeforeTime: r.DayBeforeTime, BalanceTime: r.BalanceTime, BalanceLeadDays: r.BalanceLeadDays}
+	}
 	if req.ManagerEmail != nil {
 		in.Manager = string(*req.ManagerEmail)
 	}
@@ -141,6 +144,8 @@ func emailSettingsToAPI(s *online.EmailSettings) api.EmailSettings {
 		},
 		Version: s.Version,
 	}
+	sched := c.Schedule()
+	out.Reminders = api.EmailReminderSchedule{DayBeforeTime: sched.DayBeforeTime, BalanceTime: sched.BalanceTime, BalanceLeadDays: sched.BalanceLeadDays}
 	if c.ReplyTo != "" {
 		v := c.ReplyTo
 		out.ReplyTo = &v

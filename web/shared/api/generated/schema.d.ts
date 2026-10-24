@@ -2581,6 +2581,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/email-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Modelli delle email ai clienti (testi modificabili)
+         * @description Per ogni tipo di email al cliente e per ogni lingua: oggetto, testo iniziale, testo finale e firma effettivi, i testi predefiniti e se lo stabilimento li ha personalizzati (ADR 0022). I blocchi fissi (QR, riepilogo, importi, link di gestione, piè di pagina) non sono modificabili. Permesso bookings.read.
+         */
+        get: operations["listEmailTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Un modello di email (tipo e lingua) */
+        get: operations["getEmailTemplate"];
+        /**
+         * Personalizza i testi di un modello
+         * @description Salva oggetto, testo iniziale, testo finale e firma. Testo semplice: righe vuote separano i paragrafi, gli a capo restano, nessun HTML né Markdown. Segnaposto ammessi solo dall'elenco `placeholders` (`{nome}`, `{codice}`, ...): un segnaposto sconosciuto o un testo troppo lungo rispondono 422 `email_template_invalid` con i campi in errore. Con If-Match "0" crea la personalizzazione. Permesso establishment.configure; scrive il registro di audit.
+         */
+        put: operations["updateEmailTemplate"];
+        post?: never;
+        /**
+         * Ripristina i testi predefiniti di un modello
+         * @description Elimina la personalizzazione (permesso establishment.configure, audit) e restituisce il modello predefinito.
+         */
+        delete: operations["resetEmailTemplate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Anteprima di un modello con dati di esempio
+         * @description Rende i testi inviati (non salvati) con una prenotazione di esempio, il tema dello stabilimento e i blocchi fissi; le immagini in linea sono incluse come data URI. Nessun dato reale dei clienti.
+         */
+        post: operations["previewEmailTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invia i testi in prova al proprio indirizzo
+         * @description Accoda un'email con i testi inviati e i dati di esempio all'indirizzo dell'utente collegato (oggetto con prefisso "[PROVA]"). Permesso establishment.configure; 409 se l'utente non ha un indirizzo email.
+         */
+        post: operations["sendEmailTemplateTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation": {
         parameters: {
             query?: never;
@@ -4413,7 +4498,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing" | "payment_provider_test_mode";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing" | "payment_provider_test_mode" | "email_template_invalid";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -7909,6 +7994,7 @@ export interface components {
             manager_email?: string;
             manager_notifications: components["schemas"]["ManagerNotifications"];
             customer_notifications: components["schemas"]["CustomerNotifications"];
+            reminders: components["schemas"]["EmailReminderSchedule"];
             version: components["schemas"]["Version"];
         };
         EmailSettingsInput: {
@@ -7919,6 +8005,7 @@ export interface components {
             manager_email?: string;
             manager_notifications: components["schemas"]["ManagerNotifications"];
             customer_notifications: components["schemas"]["CustomerNotifications"];
+            reminders?: components["schemas"]["EmailReminderSchedule"];
         };
         EmailTestRequest: {
             /** Format: email */
@@ -7951,6 +8038,57 @@ export interface components {
         MessageLogList: {
             items: components["schemas"]["MessageLogEntry"][];
             next_cursor?: string;
+        };
+        /** @description Orari dei promemoria automatici nel fuso dello stabilimento (ADR 0022). Il promemoria del giorno prima parte il giorno precedente l'inizio alle `day_before_time`; quello del saldo alle `balance_time`, `balance_lead_days` giorni prima della scadenza del saldo indicata dalla policy (`balance_due`: `days_before:N` o, se all'arrivo, il giorno di inizio). */
+        EmailReminderSchedule: {
+            /** @example 18:00 */
+            day_before_time: string;
+            /** @example 10:00 */
+            balance_time: string;
+            balance_lead_days: number;
+        };
+        /**
+         * @description Tipo di email al cliente con testi modificabili.
+         * @enum {string}
+         */
+        EmailTemplateKind: "booking_confirmed" | "booking_modified" | "booking_cancelled" | "booking_rejected" | "booking_approval_pending" | "refund_issued" | "manage_link" | "balance_reminder" | "day_before_reminder";
+        /** @enum {string} */
+        EmailLocale: "it" | "en" | "de" | "fr";
+        /** @description Testi modificabili di un modello: testo semplice con segnaposto `{nome}` dall'elenco ammesso. L'oggetto è una riga sola. */
+        EmailTemplateTexts: {
+            subject: string;
+            opening: string;
+            closing: string;
+            signature: string;
+        };
+        /** @enum {string} */
+        EmailTemplateFixedBlock: "summary" | "qr" | "manage_button" | "policy" | "ics_note" | "balance_notice";
+        EmailTemplate: {
+            kind: components["schemas"]["EmailTemplateKind"];
+            locale: components["schemas"]["EmailLocale"];
+            subject: string;
+            opening: string;
+            closing: string;
+            signature: string;
+            /** @description true se lo stabilimento ha salvato testi propri per questo tipo e lingua. */
+            customized: boolean;
+            defaults: components["schemas"]["EmailTemplateTexts"];
+            /** @description Blocchi fissi inclusi tra testo iniziale e finale, nell'ordine. */
+            fixed_blocks: components["schemas"]["EmailTemplateFixedBlock"][];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            updated_at?: string;
+        };
+        EmailTemplateList: {
+            /** @description Segnaposto ammessi, senza graffe (es. `nome` per `{nome}`). */
+            placeholders: string[];
+            items: components["schemas"]["EmailTemplate"][];
+        };
+        EmailTemplatePreview: {
+            subject: string;
+            /** @description Documento HTML completo, da mostrare in un iframe con sandbox. */
+            html: string;
+            text: string;
         };
         MagicLinkRequest: {
             /** @description Default true. */
@@ -9836,7 +9974,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description Richiesta valida ma non elaborabile (no_price, policy_violation) */
+        /** @description Richiesta valida ma non elaborabile (no_price, policy_violation, email_template_invalid) */
         UnprocessableEntity: {
             headers: {
                 [name: string]: unknown;
@@ -9914,6 +10052,8 @@ export interface components {
         Slug: string;
         /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
         IfMatch: string;
+        EmailTemplateKindParam: components["schemas"]["EmailTemplateKind"];
+        EmailLocaleParam: components["schemas"]["EmailLocale"];
         /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
         IfMatchRequired: string;
         MapID: string;
@@ -17154,6 +17294,218 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             501: components["responses"]["NotImplemented"];
+        };
+    };
+    listEmailTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Modelli e segnaposto disponibili */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplateList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getEmailTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                kind: components["parameters"]["EmailTemplateKindParam"];
+                locale: components["parameters"]["EmailLocaleParam"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Modello; ETag = versione (0 se mai personalizzato) */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplate"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateEmailTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                kind: components["parameters"]["EmailTemplateKindParam"];
+                locale: components["parameters"]["EmailLocaleParam"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailTemplateTexts"];
+            };
+        };
+        responses: {
+            /** @description Modello salvato */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplate"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    resetEmailTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                kind: components["parameters"]["EmailTemplateKindParam"];
+                locale: components["parameters"]["EmailLocaleParam"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Modello predefinito (versione 0) */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplate"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    previewEmailTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                kind: components["parameters"]["EmailTemplateKindParam"];
+                locale: components["parameters"]["EmailLocaleParam"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailTemplateTexts"];
+            };
+        };
+        responses: {
+            /** @description Email resa */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailTemplatePreview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    sendEmailTemplateTest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                kind: components["parameters"]["EmailTemplateKindParam"];
+                locale: components["parameters"]["EmailLocaleParam"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailTemplateTexts"];
+            };
+        };
+        responses: {
+            /** @description Email accodata */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageQueued"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
         };
     };
     resendBookingConfirmation: {

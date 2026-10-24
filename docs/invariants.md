@@ -881,3 +881,42 @@ Verificata da: `TestLivePaymentsBlocked_Scenarios` (`internal/domain/online`, un
 (`internal/domain/payment/gateway`), `TestCheckoutFlow_TestKeysBlockRealCustomers`,
 `TestManage_TestKeysFollowTheBooking` (`internal/domain/checkout`), `TestOnlinePayments_EncryptedCredentials`
 (`internal/domain/online`), tag `integration`, SQLite e PostgreSQL. Stato: implemented.
+
+## Email ai clienti e promemoria automatici (spec 19 — ADR 0022)
+
+**INV-95 — Un promemoria automatico parte al più una volta per prenotazione e tipo.**
+Il job `notify.reminders` accoda il promemoria del giorno prima e quello del saldo con la chiave
+`reminder:<tipo>:<id prenotazione>`, unica per stabilimento nell'indice `message_log (establishment_id,
+dedupe_key)` della migrazione 00005 (`INSERT ... ON CONFLICT DO NOTHING`): esecuzioni sovrapposte, più istanze ed
+esecuzioni successive dello stesso giorno non accodano un secondo messaggio, e il recapito reclama ogni messaggio
+con un aggiornamento condizionato (un solo invio per riga).
+Verificata da: `TestConcurrency_ReminderOnce` (100 tentativi in parallelo tra `QueueReminder` e `RunReminders`,
+SQLite e PostgreSQL), `TestReminders_SchedulingAndEligibility` (`internal/domain/notify`, tag `integration`).
+Stato: implemented.
+
+**INV-96 — I promemoria raggiungono solo prenotazioni idonee, all'ora giusta nel fuso dello stabilimento.**
+Un promemoria si accoda solo per prenotazioni `confirmed`, non di prova, create prima dell'istante di invio, con
+un cliente che può ricevere email (non anonimizzato, non il cliente provvisorio online, con indirizzo) e con
+l'interruttore del tipo attivo; il promemoria del saldo solo se resta un saldo positivo. Le stesse regole sono
+ricontrollate all'invio insieme alle date per cui il promemoria era stato accodato (inizio, scadenza del saldo):
+se sono cambiate o già passate il messaggio è annullato. L'istante di invio è l'orario configurato nel
+giorno locale dello stabilimento (ora legale compresa; un orario inesistente passa al primo istante valido) e vale
+fino alla fine di quel giorno locale: giorno prima dell'inizio per il promemoria del giorno prima, `balance_lead_days`
+giorni prima della scadenza del saldo della policy (`days_before:N` o giorno di inizio) per quello del saldo.
+Verificata da: `TestReminderWindow_TimezonesAndDST`, `TestReminderEligible_Scenarios`,
+`TestReminderStillDue_Scenarios`, `TestBalanceDueDate_Scenarios` (`internal/domain/notify`),
+`TestReminders_SchedulingAndEligibility`, `TestReminders_SkippedAtSendTime`, `TestReminders_DatesRecheckedAtSendTime`,
+`TestReminders_TogglesOff` (tag `integration`). Stato: implemented.
+
+**INV-97 — I testi modificati delle email non possono iniettare markup né usare segnaposto sconosciuti.**
+Oggetto, testo iniziale, testo finale e firma sono testo semplice: al salvataggio, in anteprima e nella prova un
+segnaposto fuori dall'insieme ammesso, un testo oltre i limiti, un oggetto su più righe o un carattere di
+controllo rispondono `422 email_template_invalid` con il campo. Alla composizione i segnaposto sono sostituiti una
+sola volta con valori in testo semplice e poi tutto è sottoposto a escape (paragrafi e `<br>` sono l'unico markup
+generato); l'oggetto è su una riga (niente iniezione di intestazioni). QR, riepilogo, importi, link di gestione e
+piè di pagina restano fissi. Le personalizzazioni sono per stabilimento (`email_template_overrides`, una riga per
+tipo e lingua, `version` con `If-Match` che cresce anche al ripristino del predefinito, così un ETag non si riusa).
+Verificata da: `TestValidateTexts_Scenarios`, `TestPlainTextHTML_EscapesAndParagraphs`,
+`TestRender_EditableTextsEscaped`, `TestDefaultTexts_ValidInEveryLocale` (`internal/domain/notify`),
+`TestEmailTemplates_EditorUseCases` (tag `integration`), `TestEmailTemplatesHTTP_ValidationAndETag`
+(`internal/http/admin`), `TestMigration00012_EmailTemplateOverrides` (`internal/store`). Stato: implemented.

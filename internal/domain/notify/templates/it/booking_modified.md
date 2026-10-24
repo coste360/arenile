@@ -1,10 +1,13 @@
 ---
-subject: Prenotazione {{booking.code}} modificata – {{establishment.name}}
+subject: Prenotazione {codice} modificata – {stabilimento}
 preheader: Ecco il riepilogo aggiornato.
+opening: Ciao {nome}, abbiamo aggiornato la prenotazione {codice}. Ecco il nuovo riepilogo.
+closing: 
+signature:
 ---
 # La tua prenotazione è stata modificata
 
-Ciao {{customer.first_name}}, abbiamo aggiornato la prenotazione **{{booking.code}}**. Ecco il nuovo riepilogo.
+{{> opening}}
 
 {{> summary}}
 
@@ -15,3 +18,7 @@ Ciao {{customer.first_name}}, abbiamo aggiornato la prenotazione **{{booking.cod
 {{link.expires}}
 
 {{> ics_note}}
+
+{{> closing}}
+
+{{> signature}}

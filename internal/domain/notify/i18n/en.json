@@ -52,5 +52,12 @@
   "ics_summary": "{name} – booking {code}",
   "ics_description": "Booking {code} at {name}.",
   "ics_filename": "booking-{code}.ics",
-  "ics_note": "The attached file adds the booking to your calendar."
+  "ics_note": "The attached file adds the booking to your calendar.",
+  "balance_notice": "Balance due: {amount}, by {date}.",
+  "balance_notice_on_arrival": "Balance due: {amount}, on arrival.",
+  "balance_due_on_arrival": "on arrival",
+  "preview_first_name": "Anna",
+  "preview_last_name": "Smith",
+  "preview_zone": "Front row",
+  "preview_pack": "Umbrella and 2 sunbeds"
 }

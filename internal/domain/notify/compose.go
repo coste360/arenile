@@ -11,6 +11,7 @@ import (
 
 	"github.com/uptrace/bun"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -57,8 +58,33 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		onFailure func(context.Context)
 		// test: booking created in test mode (spec 15.4), subject prefixed.
 		test bool
+		// kind is the template rendered (the edited kind for template_test).
+		kind = m.Template
+		// texts are the editable texts (ADR 0022); nil = read them for kind.
+		texts *Texts
 	)
 	switch {
+	case m.Template == TemplateTemplateTest:
+		// Unsaved edited texts sent to the manager with sample data.
+		k, _ := m.Payload["kind"].(string)
+		if checkKindLocale(k, cat.locale) != nil {
+			return Email{}, nil, fmt.Errorf("%w: template test of %q", errSkip, k)
+		}
+		str := func(key string) string { v, _ := m.Payload[key].(string); return v }
+		t := NormalizeTexts(Texts{Subject: str("subject"), Opening: str("opening"), Closing: str("closing"), Signature: str("signature")})
+		if err := ValidateTexts(t); err != nil {
+			return Email{}, nil, fmt.Errorf("%w: %w", ErrPermanent, err)
+		}
+		d := sampleBooking(est, cat, now)
+		kind, texts, test = k, &t, true
+		content = sampleContent(k, cat, d, s.d.BaseURL)
+		if content.QR {
+			png, _, err := RenderQR(QRPayload(d.Booking.Code), QRPNG)
+			if err != nil {
+				return Email{}, nil, err
+			}
+			email.Attach = append(email.Attach, Attachment{Filename: "qr-" + d.Booking.Code + ".png", ContentType: contentTypePNG, ContentID: QRContentID, Inline: true, Data: png})
+		}
 	case m.Template == TemplateTest:
 		content = Content{
 			Locale: cat.locale, Manager: true, Contacts: establishmentContacts(est),
@@ -120,6 +146,32 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 			for k, v := range renewalVars(m, est, cat) {
 				opts.Vars[k] = v
 			}
+		case TemplateBalanceReminder, TemplateDayBeforeReminder:
+			// Automatic reminders (reminders.go): re-checked at send time.
+			if d.Booking.Status != statusConfirmed || d.Booking.Test {
+				return Email{}, nil, fmt.Errorf("%w: booking is %s", errSkip, d.Booking.Status)
+			}
+			if m.Template == TemplateBalanceReminder && d.Booking.BalanceDue() <= 0 {
+				return Email{}, nil, fmt.Errorf("%w: nothing left to pay", errSkip)
+			}
+			if !ReminderStillDue(m.Template, d.Booking, m.Payload, calendar.In(now, estLocation(est))) {
+				return Email{}, nil, fmt.Errorf("%w: booking dates changed or passed", errSkip)
+			}
+			link, err := s.issueForEmail(ctx, es, d.Booking.ID, nil)
+			if err != nil {
+				return Email{}, nil, err
+			}
+			onFailure = s.revokeOnFailure(es, link.ID)
+			opts.ManageURL, opts.LinkExpires = link.URL, link.ExpiresAt
+			opts.BalanceNotice = m.Template == TemplateBalanceReminder
+			if m.Template == TemplateDayBeforeReminder {
+				opts.QR = true
+				png, _, err := RenderQR(QRPayload(d.Booking.Code), QRPNG)
+				if err != nil {
+					return Email{}, nil, err
+				}
+				email.Attach = append(email.Attach, Attachment{Filename: "qr-" + d.Booking.Code + ".png", ContentType: contentTypePNG, ContentID: QRContentID, Inline: true, Data: png})
+			}
 		case TemplateManageLink:
 			keep, _ := m.Payload["keep_link_id"].(string)
 			link, err := s.issueForEmail(ctx, es, d.Booking.ID, []string{keep})
@@ -132,9 +184,22 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		content = bookingContent(cat, d, opts)
 	}
 
-	src, err := s.templateSource(ctx, es, m.Template, cat.locale)
+	src, builtin, err := s.templateSource(ctx, es, kind, cat.locale)
 	if err != nil {
 		return Email{}, nil, fmt.Errorf("%w: %w", ErrPermanent, err)
+	}
+	// A legacy full override (notification_templates) wins as before: the
+	// editable texts apply to the built-in templates only.
+	if builtin && IsEditableKind(kind) {
+		if texts == nil {
+			t, err := s.textsFor(ctx, s.d.DB, es, kind, cat.locale)
+			if err != nil {
+				return Email{}, nil, err
+			}
+			texts = &t
+		}
+		resolved := ResolveTexts(*texts, placeholderValues(kind, content.Vars))
+		content.Texts = &resolved
 	}
 	r, err := Render(src, cat, br, content)
 	if err != nil {
@@ -181,16 +246,18 @@ func (s *Service) revokeOnFailure(es store.EstablishmentScope, linkID string) fu
 }
 
 // templateSource returns the establishment override of a template in
-// locale, else the built-in one.
-func (s *Service) templateSource(ctx context.Context, es store.EstablishmentScope, code, locale string) (templateSource, error) {
+// locale (legacy notification_templates), else the built-in one; builtin
+// reports the latter.
+func (s *Service) templateSource(ctx context.Context, es store.EstablishmentScope, code, locale string) (templateSource, bool, error) {
 	t, err := store.GetNotificationTemplate(ctx, s.d.DB, es, code, locale)
 	switch {
 	case err == nil:
-		return templateSource{Subject: t.Subject, Body: t.BodyMarkdown}, nil
+		return templateSource{Subject: t.Subject, Body: t.BodyMarkdown}, false, nil
 	case !errors.Is(err, store.ErrNotFound):
-		return templateSource{}, err
+		return templateSource{}, false, err
 	}
-	return builtinTemplate(code, locale)
+	src, err := builtinTemplate(code, locale)
+	return src, true, err
 }
 
 // payloadVars formats the non-personal payload of a message as variables.

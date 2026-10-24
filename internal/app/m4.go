@@ -86,6 +86,7 @@ func (a *App) onlineJobs() []jobs.Job {
 	var out []jobs.Job
 	out = append(out, a.Gateway.Jobs()...)
 	out = append(out, a.Notify.Jobs()...)
+	out = append(out, a.Notify.ReminderJobs()...)
 	return out
 }
 

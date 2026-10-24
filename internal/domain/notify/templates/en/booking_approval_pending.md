@@ -1,9 +1,16 @@
 ---
-subject: We received your request {{booking.code}} – {{establishment.name}}
+subject: We received your request {codice} – {stabilimento}
 preheader: The beach club will confirm your request shortly.
+opening: Hi {nome}, your request {codice} is awaiting approval by {stabilimento}. You will receive an email as soon as it is confirmed.
+closing: 
+signature:
 ---
 # Request received
 
-Hi {{customer.first_name}}, your request **{{booking.code}}** is awaiting approval by **{{establishment.name}}**. You will receive an email as soon as it is confirmed.
+{{> opening}}
 
 {{> summary}}
+
+{{> closing}}
+
+{{> signature}}

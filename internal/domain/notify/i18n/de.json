@@ -52,5 +52,12 @@
   "ics_summary": "{name} – Buchung {code}",
   "ics_description": "Buchung {code} bei {name}.",
   "ics_filename": "buchung-{code}.ics",
-  "ics_note": "Mit der angehängten Datei können Sie die Buchung Ihrem Kalender hinzufügen."
+  "ics_note": "Mit der angehängten Datei können Sie die Buchung Ihrem Kalender hinzufügen.",
+  "balance_notice": "Offener Restbetrag: {amount}, fällig bis {date}.",
+  "balance_notice_on_arrival": "Offener Restbetrag: {amount}, fällig bei Ankunft.",
+  "balance_due_on_arrival": "bei Ankunft",
+  "preview_first_name": "Anna",
+  "preview_last_name": "Müller",
+  "preview_zone": "Erste Reihe",
+  "preview_pack": "Sonnenschirm und 2 Liegen"
 }

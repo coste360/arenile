@@ -141,7 +141,12 @@
       "events": "Événements à envoyer",
       "step1": "Dans Stripe, ouvrez Développeurs → Webhooks et ajoutez un point de terminaison avec cette URL.",
       "step2": "Sélectionnez les événements listés ci-dessus et enregistrez.",
-      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur « Vérifier les identifiants »."
+      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur « Vérifier les identifiants ».",
+      "local": {
+        "title": "Stripe ne peut pas joindre cette adresse",
+        "description": "L'adresse est locale (cet ordinateur ou le réseau de l'établissement) : Stripe n'envoie les webhooks qu'à des adresses HTTPS publiques. Pour tester les paiements d'ici, transférez les événements avec la CLI Stripe et utilisez le secret de webhook qu'elle affiche (whsec_…). En production, publiez Arenile sur un domaine accessible depuis Internet.",
+        "command": "Commande à exécuter sur cet ordinateur"
+      }
     },
     "validation": {
       "publishable": "La clé publiable commence par pk_test_ ou pk_live_",
@@ -187,7 +192,7 @@
       "day_before_reminder": "Rappel la veille",
       "cancellation": "Annulation",
       "refund": "Remboursement ou avoir",
-      "upcoming": "Prévu dans une prochaine version : pas encore envoyé."
+      "remindersMoved": "Les rappels du solde et de la veille se règlent dans « E-mails aux clients »."
     },
     "manager": {
       "new_online_booking": "Nouvelle réservation en ligne",
@@ -240,6 +245,84 @@
       "manager_approval_requested": "Demande à approuver",
       "manager_payment_failed": "Échec du paiement",
       "manager_delivery_failed": "E-mail non distribué"
+    }
+  },
+  "customerEmails": {
+    "title": "E-mails aux clients",
+    "description": "Rappels automatiques et textes des e-mails que reçoivent vos clients, dans chaque langue.",
+    "reminders": {
+      "title": "Rappels automatiques",
+      "description": "Arenile les envoie tout seul, une fois par réservation, dans le fuseau horaire de l'établissement.",
+      "dayBefore": "Rappel la veille",
+      "dayBeforeHint": "La veille de l'arrivée à {{time}}, avec QR et récapitulatif.",
+      "dayBeforeTime": "Heure d'envoi du rappel de la veille",
+      "balance": "Rappel du solde",
+      "balanceHint": "À {{time}}, avant l'échéance du solde fixée par la politique.",
+      "balanceTime": "Heure d'envoi du rappel du solde",
+      "leadDays": "Quand, par rapport à l'échéance du solde",
+      "leadOption_one": "{{count}} jour avant",
+      "leadOption_other": "{{count}} jours avant",
+      "leadOption_zero": "Le jour de l'échéance",
+      "rules": "Pas d'envoi pour les réservations de test, annulées ou expirées, les clients sans e-mail et, pour le solde, quand il ne reste rien à payer. L'échéance du solde vient de la politique de la réservation (« N jours avant » ou à l'arrivée)."
+    },
+    "editor": {
+      "title": "Textes des e-mails",
+      "description": "Objet, texte d'introduction, texte de fin et signature de chaque e-mail. QR, récapitulatif, montants, lien de gestion et pied de page restent fixes ; logo et couleurs viennent du thème.",
+      "kind": "E-mail",
+      "locale": "Langue",
+      "customized": "Personnalisé",
+      "default": "Texte par défaut",
+      "subject": "Objet",
+      "opening": "Texte d'introduction",
+      "closing": "Texte de fin",
+      "signature": "Signature",
+      "counter": "{{count}} sur {{max}} caractères. Texte simple : une ligne vide sépare les paragraphes.",
+      "insert": "Insérer une variable",
+      "insertHint": "Dans le champ sélectionné",
+      "fixed": "Blocs fixes entre l'introduction et la fin : {{blocks}}.",
+      "sendTest": "M'envoyer un test",
+      "testQueued": "E-mail de test mis en file pour {{to}}.",
+      "restore": "Rétablir par défaut",
+      "restoreTitle": "Rétablir le texte par défaut ?",
+      "restoreDescription": "Les textes personnalisés de cet e-mail et de cette langue seront supprimés.",
+      "restored": "Texte par défaut rétabli."
+    },
+    "preview": {
+      "title": "Aperçu",
+      "subject": "Objet",
+      "frame": "Aperçu de l'e-mail",
+      "sample": "Avec une réservation d'exemple : aucune donnée réelle de clients.",
+      "invalid": "Corrigez les textes pour mettre à jour l'aperçu."
+    },
+    "placeholders": {
+      "nome": "Prénom du client",
+      "cognome": "Nom du client",
+      "codice": "Code de réservation",
+      "data": "Dates du séjour",
+      "postazione": "Emplacements",
+      "stabilimento": "Nom de l'établissement",
+      "importo": "Montant (total ou remboursement)",
+      "saldo": "Solde à payer",
+      "scadenza": "Échéance du solde"
+    },
+    "blocks": {
+      "summary": "récapitulatif et montants",
+      "qr": "code QR",
+      "manage_button": "lien de gestion",
+      "policy": "conditions d'annulation",
+      "ics_note": "note sur le calendrier",
+      "balance_notice": "solde et échéance"
+    },
+    "locales": {
+      "it": "Italien",
+      "en": "Anglais",
+      "de": "Allemand",
+      "fr": "Français"
+    },
+    "validation": {
+      "tooLong": "Texte trop long.",
+      "placeholder": "Variable inconnue : utilisez seulement celles de la liste.",
+      "oneLine": "L'objet doit tenir sur une ligne."
     }
   }
 }

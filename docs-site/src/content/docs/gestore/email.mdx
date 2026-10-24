@@ -1,6 +1,6 @@
 ---
 title: Email e notifiche
-description: Mittente, notifiche ai clienti e al gestore, email di conferma con QR e calendario, link di gestione, email di prova e registro degli invii.
+description: Mittente, notifiche ai clienti e al gestore, testi delle email modificabili, promemoria automatici, email di conferma con QR e calendario, link di gestione, email di prova e registro degli invii.
 sidebar:
   order: 13
 ---
@@ -44,8 +44,8 @@ consegna configura **SPF, DKIM e DMARC** sul dominio del mittente.
     | Notifica | Quando |
     |---|---|
     | **Conferma** | Prenotazione confermata (dopo il pagamento, l'approvazione o la conferma in cassa). Contiene codice, riepilogo, **QR** in linea, file **`.ics`** per il calendario e il **link di gestione** |
-    | **Promemoria del saldo** | *In arrivo*: l'interruttore è visibile ma disattivato, l'email non viene ancora inviata |
-    | **Promemoria del giorno prima** | *In arrivo*: l'interruttore è visibile ma disattivato |
+    | **Promemoria del saldo** | Automatico, prima della scadenza del saldo: si configura in **Email ai clienti** (vedi sotto) |
+    | **Promemoria del giorno prima** | Automatico, il giorno prima dell'arrivo: si configura in **Email ai clienti** |
     | **Cancellazione** | Prenotazione cancellata o rifiutata |
     | **Rimborso** | Rimborso eseguito |
   </TabItem>
@@ -94,17 +94,66 @@ Dal [dettaglio della prenotazione](/gestore/prenotazioni/) il personale può:
 - **rigenerare il link** (revoca i precedenti); il nuovo link viene mostrato **una sola volta** per poterlo
   condividere dal banco, e può essere inviato al cliente via email.
 
-## Modelli
+## Email ai clienti: testi e promemoria
 
-I testi delle email sono modelli in Markdown, già pronti in italiano, inglese, tedesco e francese, con variabili
-come `{{booking.code}}`, `{{customer.first_name}}` e `{{manage_url}}`. L'email viene composta al momento
-dell'invio con i dati aggiornati della prenotazione, in versione HTML e solo testo, con i colori e il logo della
-pagina pubblica.
+**Dove:** Configurazione → **Email ai clienti**. **Chi:** proprietari e gestori (gli altri ruoli vedono la pagina
+in sola lettura).
 
-<Aside type="note">
-  La modifica dei modelli dal pannello, per stabilimento, è prevista ma non ancora disponibile: per ora si usano
-  i modelli predefiniti.
+### Promemoria automatici
+
+| Promemoria | Quando parte | Predefinito |
+|---|---|---|
+| **Giorno prima** | Il giorno prima dell'inizio della prenotazione, all'ora scelta | alle 18:00 |
+| **Saldo** | Prima della scadenza del saldo indicata dalla [policy](/gestore/policy/) ("N giorni prima" oppure all'arrivo), con l'anticipo scelto (da 0 a 30 giorni) | 2 giorni prima, alle 10:00 |
+
+Gli orari sono quelli del fuso dello stabilimento, ora legale compresa. Ogni promemoria parte **una sola volta**
+per prenotazione, anche se il server viene riavviato o gira su più istanze. Non parte per prenotazioni di prova,
+cancellate o scadute, per clienti senza email e, per il saldo, quando non resta nulla da pagare (se il cliente
+paga dopo che il promemoria è stato messo in coda, l'invio viene annullato). Una prenotazione fatta dopo l'ora di
+invio non riceve il promemoria di quel giorno: ha appena ricevuto la conferma.
+
+<Aside type="caution">
+  Se il server resta spento per tutto il giorno del promemoria, quel promemoria non viene recuperato il giorno
+  dopo: meglio nessun promemoria che uno arrivato a prenotazione iniziata.
 </Aside>
+
+### Testi delle email
+
+Per ogni email al cliente (conferma, modifica, cancellazione, richiesta non accettata, richiesta ricevuta,
+rimborso, link di gestione, promemoria del saldo e del giorno prima) e per ogni lingua puoi cambiare
+**oggetto**, **testo iniziale**, **testo finale** e **firma**.
+
+<Steps>
+
+1. Scegli l'**email** e la **lingua**.
+2. Modifica i testi. Con **Inserisci segnaposto** aggiungi nel campo selezionato i dati della prenotazione.
+3. Controlla l'**anteprima**, che si aggiorna mentre scrivi con una prenotazione di esempio.
+4. **Invia una prova a me** per vederla nella tua casella, poi **Salva**.
+
+</Steps>
+
+| Segnaposto | Diventa |
+|---|---|
+| `{nome}`, `{cognome}` | Nome e cognome del cliente |
+| `{codice}` | Codice della prenotazione |
+| `{data}` | Date del soggiorno |
+| `{postazione}` | Postazioni assegnate |
+| `{stabilimento}` | Nome dello stabilimento |
+| `{importo}` | Totale della prenotazione (nell'email di rimborso: l'importo rimborsato) |
+| `{saldo}` | Saldo da pagare |
+| `{scadenza}` | Scadenza del saldo (una data, oppure "all'arrivo") |
+
+I testi sono **testo semplice**: una riga vuota separa i paragrafi, nessun grassetto, link o HTML. Un segnaposto
+che non è nell'elenco viene segnalato e non si può salvare. Limiti: oggetto 200 caratteri su una riga, testi
+iniziale e finale 2000, firma 500.
+
+Restano **fissi** e non si possono togliere: codice QR, riepilogo con gli importi, avviso del saldo, pulsante e
+link di gestione, condizioni di cancellazione, nota sul calendario e piè di pagina. Logo e colori vengono dal
+tema della [pagina pubblica](/gestore/pagina-pubblica/).
+
+**Ripristina predefinito** torna al testo di Arenile per quell'email e lingua. Finché non personalizzi un testo,
+ricevi automaticamente i miglioramenti dei testi predefiniti con gli aggiornamenti. Ogni salvataggio e ripristino
+viene registrato nel registro di audit.
 
 ## Domande frequenti
 

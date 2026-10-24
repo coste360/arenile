@@ -63,12 +63,20 @@ Stripe's fees.
    | Event | Purpose |
    |---|---|
    | `checkout.session.completed` | Payment completed with Checkout: confirms the booking |
-   | `payment_intent.succeeded` | Payment succeeded (also with the embedded form) |
-   | `payment_intent.payment_failed` | Payment failed: the customer can retry while the hold is valid |
+   | `checkout.session.async_payment_succeeded` | A delayed payment method (for example SEPA debit) succeeded: confirms |
+   | `checkout.session.async_payment_failed` | A delayed payment failed: the customer can retry while the hold is valid |
+   | `checkout.session.expired` | The payment session expired without a payment |
    | `charge.refunded` | Refund made on Stripe: recorded in Arenile |
+   | `refund.failed` | Refund failed: Arenile flags it and it can be retried |
+
+   The panel shows the same list next to the URL.
 
 6. **Copy the webhook signing secret** (`whsec_…`, "Signing secret") and paste it into Arenile as the webhook
    secret. Save.
+
+   If Arenile runs on a local address (this computer, `localhost` or the establishment's network), Stripe cannot
+   reach it and the panel says so: to try payments, use the Stripe CLI,
+   `stripe listen --events <events of the list> --forward-to <webhook URL>`, and paste the secret it prints (`whsec_…`).
 
 7. **Verify.** Press **Check credentials**: Arenile asks Stripe for the account details and shows the
    business name if the keys are right.
