@@ -32,10 +32,9 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 
 <br>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs-site/src/assets/screenshots/dark/admin-map-selection.webp">
-  <img src="docs-site/src/assets/screenshots/light/admin-map-selection.webp" alt="Mappa del giorno nel pannello di Arenile: ombrelloni colorati per stato con il cognome dell'occupante" width="900">
-</picture>
+<a href="https://assets.coste360.it/assets/arenile-presentazione-v2.mp4" title="Guarda il video di presentazione di Arenile (72 secondi)">
+  <img src="assets/readme/video-poster.jpg" alt="Video di presentazione di Arenile: la mappa del giorno con gli ombrelloni colorati per stato. Clicca per guardarlo (72 secondi)." width="900">
+</a>
 
 
 </div>
