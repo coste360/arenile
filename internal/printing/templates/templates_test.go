@@ -87,6 +87,14 @@ func TestTemplates_Golden(t *testing.T) {
 				l.Logo, l.KickDrawerPin, l.Lang, l.Cut = &logo, 2, "en", escpos.CutFull
 				return Ticket(d, l)
 			}},
+			{"ticket_entry_reprint", func() ([]byte, error) {
+				d := ticketDoc()
+				d.Number, d.Entry, d.Reprint, d.Voided = "#037", true, true, true
+				d.Zone, d.Spot, d.Formula, d.Pack, d.PackAmount = "Spiaggia libera", "", "Giornata intera", "", 0
+				d.Extras = []Line{{Label: "Adulto", Quantity: 2, Amount: 2000}, {Label: "Bambino", Quantity: 1, Amount: 500}}
+				d.Total, d.VAT, d.QRPayload = 2500, []VATLine{{RateBP: 1000, Taxable: 2273, Tax: 227}}, "gt_4XQ9ZK2M7P"
+				return Ticket(d, layout(w))
+			}},
 			{"receipt", func() ([]byte, error) {
 				return Receipt(ReceiptDoc{
 					Header: hdr, Number: "7F3K0042", IssuedAt: issued, Location: rome, BookingCode: "ARN-7F3K",

@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Imprimantes",
-    "description": "Imprimantes thermiques ESC/POS réseau (Wi-Fi ou Ethernet) pour reçus non fiscaux et clôtures de caisse, et pour les billets journaliers dès que la vente journalière sera active : adresse, largeur du papier, coupe, tiroir-caisse, routage par caisse et impression de test. Disponible avec l'application de bureau."
+    "description": "Imprimantes thermiques ESC/POS réseau (Wi-Fi ou Ethernet) pour reçus non fiscaux, clôtures de caisse et billets de la vente journalière : adresse, largeur du papier, coupe, tiroir-caisse, routage par caisse et impression de test. Disponible avec l'application de bureau."
   },
   "add": "Ajouter une imprimante",
   "actions": "Actions",
@@ -186,7 +186,7 @@
   },
   "hint": {
     "title": "Imprimantes thermiques",
-    "description": "Avec l'application de bureau, Arenile imprime reçus non fiscaux et clôtures de caisse (et les billets journaliers dès que la vente journalière sera active) sur les imprimantes ESC/POS Wi-Fi ou Ethernet de la plage.",
+    "description": "Avec l'application de bureau, Arenile imprime reçus non fiscaux, clôtures de caisse et billets de la vente journalière sur les imprimantes ESC/POS Wi-Fi ou Ethernet de la plage.",
     "action": "Configurer les imprimantes"
   }
 }

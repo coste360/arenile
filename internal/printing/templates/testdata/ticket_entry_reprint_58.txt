@@ -1,0 +1,25 @@
+<1b>@<1b>t<13><1b>a<01><1b>E<01><1d>!<11>Lido Azzurro<0a>
+<1d>!<00><1b>E<00>Lungomare Caio Duilio 12, Gaeta<0a>
+(LT)<0a>
+P.IVA 01234567890<0a>
+Tel. 0771 123456<0a>
+<1b>a<00>================================<0a>
+<1b>a<01><1b>E<01><1d>!<10>INGRESSO #037<0a>
+<1d>!<00><1b>E<00><1b>E<01>RISTAMPA<0a>
+<1b>E<00><1b>E<01><1d>!<10>ANNULLATO<0a>
+<1d>!<00><1b>E<00><1b>a<00>Giorno                14/08/2026<0a>
+Emesso          14/08/2026 09:35<0a>
+--------------------------------<0a>
+Zona             Spiaggia libera<0a>
+Formula          Giornata intera<0a>
+--------------------------------<0a>
+2 x Adulto               <d5> 20,00<0a>
+Bambino                   <d5> 5,00<0a>
+--------------------------------<0a>
+<1b>E<01><1d>!<01>TOTALE                   <d5> 25,00<0a>
+<1d>!<00><1b>E<00>IVA 10% su <d5> 22,73        <d5> 2,27<0a>
+Pagamento               Contanti<0a>
+<1b>d<01><1b>a<01><1d>(k<04><00>1A2<00><1d>(k<03><00>1C<05><1d>(k<03><00>1E1<1d>(k<10><00>1P0gt_4XQ9ZK2M7P<1d>(k<03><00>1Q0<1b>d<01><1b>a<01><1b>E<01>ARN-7F3K<0a>
+<1b>E<00><1b>a<00><1b>a<01><1b>E<01>Non valido ai fini fiscali<0a>
+<1b>E<00><1b>a<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
+<1b>M<00><1b>a<00><1b>d<03><1d>V<01>

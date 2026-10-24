@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Printers",
-    "description": "Network ESC/POS thermal printers (Wi-Fi or Ethernet) for non-fiscal receipts and cash closings, and for daily tickets once the daily sale is live: address, paper width, cut, cash drawer, routing per cash register and test print. Available with the desktop app."
+    "description": "Network ESC/POS thermal printers (Wi-Fi or Ethernet) for non-fiscal receipts, cash closings and daily sale tickets: address, paper width, cut, cash drawer, routing per cash register and test print. Available with the desktop app."
   },
   "add": "Add printer",
   "actions": "Actions",
@@ -186,7 +186,7 @@
   },
   "hint": {
     "title": "Thermal printers",
-    "description": "With the desktop app Arenile prints non-fiscal receipts and cash closings (and daily tickets once the daily sale is live) on the beach's Wi-Fi or Ethernet ESC/POS printers.",
+    "description": "With the desktop app Arenile prints non-fiscal receipts, cash closings and daily sale tickets on the beach's Wi-Fi or Ethernet ESC/POS printers.",
     "action": "Configure printers"
   }
 }

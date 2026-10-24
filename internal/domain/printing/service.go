@@ -38,8 +38,8 @@ type Deps struct {
 	Resolver Resolver
 	// Logos fetches the establishment logo (nil = no logo printed).
 	Logos LogoLoader
-	// Tickets renders daily-sale tickets (wired by the daily sale; nil =
-	// daily_ticket jobs are refused).
+	// Tickets renders daily-sale tickets (internal/app wires the ticketing
+	// service; nil = daily_ticket jobs are refused).
 	Tickets TicketSource
 	// Lease bounds one delivery attempt (default 1 minute).
 	Lease time.Duration
@@ -81,9 +81,9 @@ func NewService(d Deps) *Service {
 // Available reports whether ESC/POS printing works on this edition.
 func (s *Service) Available() bool { return s.d.Available }
 
-// TicketsAvailable reports whether daily-sale tickets can be printed (a
-// TicketSource is wired).
-func (s *Service) TicketsAvailable() bool { return s.d.Tickets != nil }
+// TicketsAvailable reports whether daily-sale tickets can be printed:
+// printing is available (desktop edition) and a TicketSource is wired.
+func (s *Service) TicketsAvailable() bool { return s.d.Available && s.d.Tickets != nil }
 
 // policy is the address policy of this instance.
 func (s *Service) policy() AddressPolicy { return AddressPolicy{AllowLoopback: s.d.AllowLoopback} }

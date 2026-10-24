@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/printing"
+	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/jobs"
 )
 
@@ -13,6 +14,9 @@ import (
 // printers cannot be added and nothing is sent (409 printing_unavailable)
 // and the delivery and retention jobs are not registered.
 //
+// Daily-sale tickets (ADR 0020) print through Tickets: a read-only
+// ticketing service (PrintableTicket only reads the ticket and its view).
+//
 // Extension point: a future bridge driver (desktop client for a VPS,
 // mobile Bluetooth) is added to Drivers here; see the printing package doc.
 func (a *App) wirePrinting(aw *audit.Writer) {
@@ -21,6 +25,7 @@ func (a *App) wirePrinting(aw *audit.Writer) {
 		Available:     a.cfg.Desktop() || a.opts.desktop != nil,
 		AllowLoopback: a.cfg.PrintersAllowLoopback,
 		Logos:         printing.HTTPLogoLoader{BaseURL: a.cfg.EffectiveBaseURL()},
+		Tickets:       ticketing.NewService(ticketing.Deps{DB: a.db, Clock: a.opts.clock, Log: a.log}),
 	})
 }
 

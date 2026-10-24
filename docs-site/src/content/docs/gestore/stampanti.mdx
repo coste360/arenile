@@ -1,6 +1,6 @@
 ---
 title: Stampanti e ESC/POS
-description: Stampanti termiche di rete (Wi-Fi o Ethernet) con l'app desktop - configurazione, stampa di prova, instradamento per cassa, cassetto portadenaro, ricevute e chiusure Z, ripiego sulla stampa dal browser.
+description: Stampanti termiche di rete (Wi-Fi o Ethernet) con l'app desktop - configurazione, stampa di prova, instradamento per cassa, cassetto portadenaro, ricevute, chiusure Z e biglietti della vendita giornaliera, ripiego sulla stampa dal browser.
 sidebar:
   order: 27.5
 ---
@@ -11,10 +11,9 @@ import { Screenshot } from '~/components';
 **Dove:** Configurazione → **Stampanti**. **Chi:** gestori e proprietari configurano stampanti e
 instradamento; i cassieri vedono lo stato, verificano la connessione e lanciano la stampa di prova.
 
-Arenile stampa **ricevute di pagamento non fiscali** e **chiusure di cassa (Z)** direttamente sulle stampanti
-termiche ESC/POS collegate alla rete del lido, senza finestre di stampa e con taglio della carta e apertura del
-cassetto. I **biglietti giornalieri** useranno le stesse stampanti quando arriverà la vendita giornaliera: fino ad
-allora il documento *Biglietto giornaliero* non compare tra quelli instradabili.
+Arenile stampa **ricevute di pagamento non fiscali**, **chiusure di cassa (Z)** e **biglietti della [vendita
+giornaliera](/gestore/vendita-giornaliera/)** direttamente sulle stampanti termiche ESC/POS collegate alla rete
+del lido, senza finestre di stampa e con taglio della carta e apertura del cassetto.
 
 <Aside type="caution" title="Disponibile con l'app desktop">
 La stampa ESC/POS funziona quando Arenile gira sul computer dello stabilimento: con l'[app
@@ -41,8 +40,7 @@ dirette sulla porta TCP **9100** (RAW, chiamata anche JetDirect o AppSocket). Le
 
 <Aside type="note" title="Non in questa versione">
 Stampanti **USB** o **Bluetooth** e la stampa da un'installazione online tramite un ponte sul computer della
-cassa non sono ancora supportate: in quei casi si stampa dal browser. La stampa dei **biglietti giornalieri**
-arriva con la vendita giornaliera.
+cassa non sono ancora supportate: in quei casi si stampa dal browser.
 </Aside>
 
 ## Collegare la stampante
@@ -88,7 +86,8 @@ Nella sezione **Instradamento** scegli, per ogni documento, la stampante e il nu
   la stampa viene rispedita);
 - con **Copie** 2 o 3, dalla seconda in poi la stampa porta in testa la dicitura **COPIA**.
 
-Senza una regola la chiusura si stampa dal browser e la ricevuta non viene proposta. Premi **Salva
+Senza una regola la chiusura e il biglietto giornaliero si stampano dal browser e la ricevuta non viene
+proposta. Premi **Salva
 instradamento** per applicare le modifiche.
 
 ## Stampare dalla cassa
@@ -98,6 +97,17 @@ termica quando c'è una regola e la stampante è attiva e raggiungibile: compare
 Altrimenti si apre la stampa del browser con un avviso che spiega il motivo (nessuna stampante configurata,
 stampante disattivata o non raggiungibile). Dopo un **Incassa**, se è pronta una stampante per le ricevute,
 il messaggio di conferma offre **Stampa ricevuta** (ricevuta **non fiscale**).
+
+## Stampare i biglietti della vendita giornaliera
+
+Con una regola per **Biglietto giornaliero** e la stampante pronta, il biglietto della **Vendita rapida** (stampa
+automatica dopo la vendita, schede Ombrelloni e Ingressi) e la **Ristampa** dal **Ticket del giorno** vanno alla
+stampante termica: compare *Inviato a Banco bar*. Il biglietto riporta numero (**#037**), giorno, zona e postazione
+o *da assegnare* (gli ingressi elencano i tipi di biglietto), formula, pack ed extra, totale con il dettaglio IVA,
+metodo di pagamento, il QR (lo stesso del biglietto stampato dal browser, che il varco legge), la dicitura **Non
+valido ai fini fiscali** e, per le ristampe, **RISTAMPA**; il nome del cliente non viene stampato. Con **Apri
+cassetto** il cassetto si apre solo per i biglietti pagati in contanti. Senza una stampante pronta il biglietto si
+stampa dal browser, come prima, nel formato scelto.
 
 ## Ultime stampe e nuovi tentativi
 

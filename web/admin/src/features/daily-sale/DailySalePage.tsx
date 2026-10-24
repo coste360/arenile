@@ -11,7 +11,7 @@ import { EntrySalePanel } from '../entry-tickets';
 import { isIsoDate, todayIn } from '../operations/lib/dates';
 import { useDailySaleSettings, useFetchTicketPrint, type DailySaleResult } from './api';
 import { DailySaleForm } from './DailySaleForm';
-import { useTicketPrinter } from './printing';
+import { useTicketOutput } from './printing';
 
 type SaleTab = 'spots' | 'entries';
 
@@ -33,14 +33,17 @@ export function DailySalePage() {
   const [tab, setTab] = useState<SaleTab>(search.tab === 'entries' ? 'entries' : 'spots');
   const settings = useDailySaleSettings(establishmentId);
   const fetchPrint = useFetchTicketPrint(establishmentId);
-  const printer = useTicketPrinter();
+  // Entry tickets print without a register: the establishment-wide route.
+  const printer = useTicketOutput();
 
   const onEntrySold = async (result: DailySaleResult) => {
     if (!(settings.data?.auto_print ?? true)) return;
-    try {
-      printer.print(await fetchPrint(result.ticket.id));
-    } catch {
+    const printFailed = () =>
       toast.warning(t('sale.printFailed', { number: result.ticket.number_label }));
+    try {
+      await printer.print(result.ticket.id, () => fetchPrint(result.ticket.id), printFailed);
+    } catch {
+      printFailed();
     }
   };
 

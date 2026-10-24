@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useCurrentEstablishment } from '../../establishment';
 import { useReprintTicket, useTicketPrint, type TicketPrintFormat } from './api';
 import { PRINT_FORMATS } from './lib';
-import { useTicketPrinter } from './printing';
+import { useTicketOutput } from './printing';
 import { TicketPrint } from './TicketPrint';
 
 export interface TicketPrintDialogProps {
@@ -36,7 +36,8 @@ export interface TicketPrintDialogProps {
 
 /**
  * Print preview of a ticket: pick thermal 80/58 mm, A5 or A4, see the paper
- * as it will come out, then print (or reprint) through the browser.
+ * as it will come out, then print (or reprint) on the thermal printer when
+ * the daily_ticket route is ready (ADR 0021), through the browser otherwise.
  */
 export function TicketPrintDialog({
   establishmentId,
@@ -52,17 +53,20 @@ export function TicketPrintDialog({
   const [format, setFormat] = useState<TicketPrintFormat | undefined>(defaultFormat);
   const preview = useTicketPrint(establishmentId, open ? ticketId : undefined, format);
   const reprint = useReprintTicket(establishmentId);
-  const printer = useTicketPrinter();
+  const printer = useTicketOutput();
   const shown = format ?? preview.data?.format ?? 'thermal_80';
 
   const doPrint = async () => {
     if (!ticketId || !preview.data) return;
+    const shownData = { ...preview.data, format: shown };
     if (mode === 'first') {
-      printer.print(preview.data);
+      await printer.print(ticketId, () => shownData);
       return;
     }
+    // Counted reprint first (audit, "Ristampa"), then the thermal printer
+    // when routed or the browser in the chosen format.
     const data = await reprint.mutateAsync({ ticketId, format: shown });
-    printer.print(data);
+    await printer.print(ticketId, () => data);
   };
 
   return (

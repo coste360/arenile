@@ -17,15 +17,16 @@ import (
 	"github.com/coste360/arenile/internal/store"
 )
 
-// TicketSource loads the printable data of a daily-sale ticket. The daily
-// sale implements it at merge time (Deps.Tickets); Cash reports whether the
-// ticket was paid in cash (drawer kick). ErrNotFound for unknown tickets.
+// TicketSource loads the printable data of a daily-sale ticket. The
+// ticketing service implements it (ticketing.Service.PrintableTicket, wired
+// as Deps.Tickets by internal/app); cash reports whether the ticket was
+// paid in cash (drawer kick). store.ErrNotFound for unknown tickets.
 type TicketSource interface {
 	PrintableTicket(ctx context.Context, es store.EstablishmentScope, ticketID string) (doc templates.TicketDoc, cash bool, err error)
 }
 
-// errTicketsUnavailable: no TicketSource wired yet.
-var errTicketsUnavailable = configerr.Invalid("document_kind", "La stampa dei biglietti non è ancora disponibile.")
+// errTicketsUnavailable: no TicketSource wired (tests, extensions).
+var errTicketsUnavailable = configerr.Invalid("document_kind", "La stampa dei biglietti non è disponibile.")
 
 // docContext is what every document needs from the establishment.
 type docContext struct {

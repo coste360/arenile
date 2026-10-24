@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Stampanti",
-    "description": "Stampanti termiche ESC/POS di rete (Wi-Fi o Ethernet) per ricevute non fiscali e chiusure di cassa, e per i biglietti giornalieri quando la vendita giornaliera sarà attiva: indirizzo, larghezza carta, taglio, cassetto, instradamento per cassa e stampa di prova. Disponibile con l'app desktop."
+    "description": "Stampanti termiche ESC/POS di rete (Wi-Fi o Ethernet) per ricevute non fiscali, chiusure di cassa e biglietti della vendita giornaliera: indirizzo, larghezza carta, taglio, cassetto, instradamento per cassa e stampa di prova. Disponibile con l'app desktop."
   },
   "add": "Aggiungi stampante",
   "actions": "Azioni",
@@ -186,7 +186,7 @@
   },
   "hint": {
     "title": "Stampanti termiche",
-    "description": "Con l'app desktop Arenile stampa ricevute non fiscali e chiusure di cassa (e, quando sarà attiva la vendita giornaliera, i biglietti) sulle stampanti ESC/POS Wi-Fi o Ethernet del lido.",
+    "description": "Con l'app desktop Arenile stampa ricevute non fiscali, chiusure di cassa e biglietti della vendita giornaliera sulle stampanti ESC/POS Wi-Fi o Ethernet del lido.",
     "action": "Configura le stampanti"
   }
 }

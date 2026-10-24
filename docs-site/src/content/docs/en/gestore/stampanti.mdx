@@ -11,10 +11,9 @@ import { Screenshot } from '~/components';
 **Where:** Configuration → **Printers**. **Who:** managers and owners configure printers and routing;
 cashiers see the status, check the connection and send the test print.
 
-Arenile prints **non-fiscal payment receipts** and **cash closings (Z)** straight to the ESC/POS thermal
-printers on the beach network, with no print dialog, with paper cut and cash drawer opening. **Daily tickets**
-will use the same printers once the daily sale arrives: until then the *Daily ticket* document is not offered
-for routing.
+Arenile prints **non-fiscal payment receipts**, **cash closings (Z)** and **[daily sale](/en/gestore/vendita-giornaliera/)
+tickets** straight to the ESC/POS thermal printers on the beach network, with no print dialog, with paper cut and
+cash drawer opening.
 
 <Aside type="caution" title="Available with the desktop app">
 ESC/POS printing works when Arenile runs on the establishment's computer: with the [desktop
@@ -41,8 +40,7 @@ on TCP port **9100** (RAW, also called JetDirect or AppSocket). We designed it f
 
 <Aside type="note" title="Not in this version">
 **USB** or **Bluetooth** printers and printing from an online installation through a bridge on the cash desk
-computer are not supported yet: in those cases you print from the browser. **Daily ticket** printing comes with
-the daily sale.
+computer are not supported yet: in those cases you print from the browser.
 </Aside>
 
 ## Connecting the printer
@@ -87,7 +85,7 @@ In **Routing** choose, for each document, the printer and the number of **Copies
   print is resent);
 - with **Copies** 2 or 3, the second copy onwards carries a **COPY** mark at the top.
 
-Without a rule the closing prints from the browser and the receipt is not offered. Press **Save routing** to
+Without a rule the closing and the daily ticket print from the browser and the receipt is not offered. Press **Save routing** to
 apply the changes.
 
 ## Printing from the cash desk
@@ -97,6 +95,16 @@ printer when there is a rule and the printer is active and reachable: *Sent to B
 browser print opens with a notice explaining why (no printer configured, printer inactive or unreachable). After
 a **Take payment**, if a receipt printer is ready, the confirmation offers **Print receipt** (a **non-fiscal**
 receipt).
+
+## Printing daily sale tickets
+
+With a **Daily ticket** rule and the printer ready, the ticket of the **Quick sale** (automatic print after the
+sale, Umbrellas and Entries tabs) and the **Reprint** from **Today's tickets** go to the thermal printer: *Sent to
+Bar till* appears. The ticket shows the number (**#037**), the day, the zone and the spot or *to be assigned* (entry
+tickets list their ticket types), formula, pack and extras, total with the VAT breakdown, payment method, the QR
+code (the same as on the browser ticket, read at the gate), the line **Not valid for tax purposes** and, on
+reprints, **REPRINT**; the customer name is not printed. With **Open drawer** the drawer opens only for tickets paid
+in cash. Without a ready printer the ticket prints from the browser as before, in the chosen format.
 
 ## Latest prints and retries
 

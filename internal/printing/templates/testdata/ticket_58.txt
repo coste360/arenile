@@ -20,6 +20,6 @@ Cassaforte                <d5> 3,00<0a>
 <1d>!<00><1b>E<00>IVA 22% su <d5> 31,15        <d5> 6,85<0a>
 Pagamento               Contanti<0a>
 <1b>d<01><1b>a<01><1d>(k<04><00>1A2<00><1d>(k<03><00>1C<05><1d>(k<03><00>1E1<1d>(k<0b><00>1P0ARN-7F3K<1d>(k<03><00>1Q0<1b>d<01><1b>a<01><1b>E<01>ARN-7F3K<0a>
-<1b>E<00><1b>a<00><1b>a<01>Documento non fiscale<0a>
-<1b>a<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
+<1b>E<00><1b>a<00><1b>a<01><1b>E<01>Non valido ai fini fiscali<0a>
+<1b>E<00><1b>a<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
 <1b>M<00><1b>a<00><1b>d<03><1d>V<01>

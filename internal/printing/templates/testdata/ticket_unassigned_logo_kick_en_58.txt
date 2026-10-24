@@ -22,6 +22,6 @@ Payment                 Contanti<0a>
 <1b>d<01><1b>a<01><1d>(k<04><00>1A2<00><1d>(k<03><00>1C<05><1d>(k<03><00>1E1<1d>(k"<00>1P0https://lido.example/b/ARN-7F3K<1d>(k<03><00>1Q0<1b>d<01><1b>a<01><1b>E<01>ARN-7F3K<0a>
 <1b>E<00><1b>a<00>--------------------------------<0a>
 Grazie e buona giornata!<0a>
-<1b>a<01>Not a fiscal document<0a>
-<1b>a<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
+<1b>a<01><1b>E<01>Not valid for tax purposes<0a>
+<1b>E<00><1b>a<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
 <1b>M<00><1b>a<00><1b>d<03><1d>V<00><1b>p<00><19><fa>

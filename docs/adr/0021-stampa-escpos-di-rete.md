@@ -24,8 +24,14 @@ USB, ponte dall'app desktop per il VPS e Bluetooth dall'app mobile sono stati ri
   e test, predefinito con `ARENILE_DEV`); gli indirizzi dei metadati cloud (169.254.169.254, fd00:ec2::254) mai.
   Il server non diventa un proxy TCP verso Internet né verso i servizi locali.
 - Il documento si compone **sul server**: `internal/escpos` (codificatore puro, fixture di byte), `internal/printing/templates`
-  (ricevuta, riepilogo Z, pagina di prova, biglietto generico `TicketDoc`), testo UTF-8 traslitterato nella codepage
+  (ricevuta, riepilogo Z, pagina di prova, biglietto `TicketDoc`), testo UTF-8 traslitterato nella codepage
   (CP858 predefinita per € e accenti). Il logo dello stabilimento diventa un raster con dithering in cache per stampante.
+- Il biglietto della vendita giornaliera (ADR 0020) arriva da `printing.TicketSource`, implementata dal servizio
+  `ticketing` (`PrintableTicket`): stessi dati della stampa dal browser (numero #NNN, giorno, zona e postazione o "da
+  assegnare", formula, pack ed extra o tipi d'ingresso, totale con IVA, metodo, QR del codice del varco, "Non valido
+  ai fini fiscali", "RISTAMPA" dopo la prima stampa), senza il nome del cliente; cassetto solo per i contanti. Il
+  pannello manda il biglietto alla stampante termica quando l'instradamento di `daily_ticket` è pronto (vendita
+  rapida e ristampa dal Ticket del giorno), altrimenti usa la stampa del browser come prima.
 - Instradamento in `printer_routes`: regola della cassa, altrimenti regola predefinita del documento; `printer_id`
   esplicito vince. Un lavoro (`print_jobs`) si accoda già composto. La chiave di idempotenza è l'header
   `Idempotency-Key`, legata alla richiesta (tipo, documento, stampante): stessa chiave → stesso lavoro, stessa
@@ -49,4 +55,5 @@ USB, ponte dall'app desktop per il VPS e Bluetooth dall'app mobile sono stati ri
 - Negative: chi usa il VPS continua con la stampa del browser fino al ponte; le tabelle codepage dei cloni variano
   (campo `codepage_table` per forzarle).
 - Verifiche: test golden del codificatore e dei modelli (58/80 mm), test con una stampante TCP finta in-process,
-  `TestConcurrency_PrintJobOnce`, test di integrazione della migrazione 00011, Playwright con stampante di rete finta.
+  `TestConcurrency_PrintJobOnce`, test di integrazione della migrazione 00011, `TestTicketing_PrintsOnThermalPrinter`
+  (biglietti reali della vendita giornaliera fino alla stampante finta), Playwright con stampante di rete finta.

@@ -4213,7 +4213,7 @@ export interface paths {
         };
         /**
          * Stampanti ESC/POS di rete dello stabilimento
-         * @description Permesso cash.operate. `escpos_available` è true solo nell'edizione desktop (locale o rete locale: il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con `unavailable_reason` server_edition, non si aggiungono stampanti e la stampa ripiega su quella del browser. `tickets_available` dice se i biglietti della vendita giornaliera si possono stampare (sorgente dei biglietti collegata): finché è false l'instradamento di daily_ticket non è offerto.
+         * @description Permesso cash.operate. `escpos_available` è true solo nell'edizione desktop (locale o rete locale: il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con `unavailable_reason` server_edition, non si aggiungono stampanti e la stampa ripiega su quella del browser. `tickets_available` dice se i biglietti della vendita giornaliera si possono stampare in ESC/POS (edizione desktop): quando è false l'instradamento di daily_ticket non è offerto.
          */
         get: operations["listPrinters"];
         put?: never;
@@ -9643,7 +9643,7 @@ export interface components {
             /** @description true solo nell'edizione desktop. */
             escpos_available: boolean;
             unavailable_reason?: components["schemas"]["PrinterUnavailableReason"];
-            /** @description true quando i biglietti della vendita giornaliera si possono stampare (sorgente collegata). */
+            /** @description true quando i biglietti della vendita giornaliera si possono stampare in ESC/POS (edizione desktop). */
             tickets_available?: boolean;
         };
         PrinterCheckResult: {

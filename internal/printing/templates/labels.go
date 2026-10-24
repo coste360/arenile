@@ -2,54 +2,58 @@ package templates
 
 // Label keys of the printed documents.
 const (
-	lblTicket        = "ticket"
-	lblServiceDay    = "service_day"
-	lblIssued        = "issued"
-	lblZone          = "zone"
-	lblSpot          = "spot"
-	lblToAssign      = "to_assign"
-	lblFormula       = "formula"
-	lblTotal         = "total"
-	lblVAT           = "vat"
-	lblVATOn         = "vat_on"
-	lblPayment       = "payment"
-	lblBookingCode   = "booking_code"
-	lblNonFiscal     = "non_fiscal"
-	lblReceipt       = "receipt"
-	lblNumber        = "number"
-	lblDate          = "date"
-	lblOperator      = "operator"
-	lblZTitle        = "z_title"
-	lblZDraft        = "z_draft"
-	lblRegister      = "register"
-	lblSession       = "session"
-	lblOpened        = "opened"
-	lblClosed        = "closed"
-	lblOperators     = "operators"
-	lblOpeningFloat  = "opening_float"
-	lblByMethod      = "by_method"
-	lblMovements     = "movements"
-	lblCounted       = "counted"
-	lblDifference    = "difference"
-	lblExpectedTotal = "expected_total"
-	lblCountedTotal  = "counted_total"
-	lblTestTitle     = "test_title"
-	lblPrinter       = "printer"
-	lblAddress       = "address"
-	lblPaper         = "paper"
-	lblChars         = "chars"
-	lblCodepage      = "codepage"
-	lblCharset       = "charset"
-	lblStyles        = "styles"
-	lblBold          = "bold"
-	lblDouble        = "double"
-	lblColumns       = "columns"
-	lblSample        = "sample"
-	lblTestOK        = "test_ok"
-	lblPhone         = "phone"
-	lblVATNumber     = "vat_number"
-	lblNone          = "none"
-	lblCopy          = "copy"
+	lblTicket          = "ticket"
+	lblServiceDay      = "service_day"
+	lblIssued          = "issued"
+	lblZone            = "zone"
+	lblSpot            = "spot"
+	lblToAssign        = "to_assign"
+	lblFormula         = "formula"
+	lblTotal           = "total"
+	lblVAT             = "vat"
+	lblVATOn           = "vat_on"
+	lblPayment         = "payment"
+	lblBookingCode     = "booking_code"
+	lblNonFiscal       = "non_fiscal"
+	lblReceipt         = "receipt"
+	lblNumber          = "number"
+	lblDate            = "date"
+	lblOperator        = "operator"
+	lblZTitle          = "z_title"
+	lblZDraft          = "z_draft"
+	lblRegister        = "register"
+	lblSession         = "session"
+	lblOpened          = "opened"
+	lblClosed          = "closed"
+	lblOperators       = "operators"
+	lblOpeningFloat    = "opening_float"
+	lblByMethod        = "by_method"
+	lblMovements       = "movements"
+	lblCounted         = "counted"
+	lblDifference      = "difference"
+	lblExpectedTotal   = "expected_total"
+	lblCountedTotal    = "counted_total"
+	lblTestTitle       = "test_title"
+	lblPrinter         = "printer"
+	lblAddress         = "address"
+	lblPaper           = "paper"
+	lblChars           = "chars"
+	lblCodepage        = "codepage"
+	lblCharset         = "charset"
+	lblStyles          = "styles"
+	lblBold            = "bold"
+	lblDouble          = "double"
+	lblColumns         = "columns"
+	lblSample          = "sample"
+	lblTestOK          = "test_ok"
+	lblPhone           = "phone"
+	lblVATNumber       = "vat_number"
+	lblNone            = "none"
+	lblCopy            = "copy"
+	lblEntryTicket     = "entry_ticket"
+	lblReprint         = "reprint"
+	lblVoided          = "voided"
+	lblTicketNonFiscal = "ticket_non_fiscal"
 )
 
 // labels are the printed strings per language (it is the source language).
@@ -69,6 +73,8 @@ var labels = map[string]map[string]string{
 		lblBold: "Grassetto", lblDouble: "Doppia", lblColumns: "Colonne", lblSample: "Ombrellone A12",
 		lblTestOK: "Se leggi questa pagina la stampante funziona.", lblPhone: "Tel.", lblVATNumber: "P.IVA",
 		lblNone: "nessuno", lblCopy: "COPIA",
+		lblEntryTicket: "INGRESSO", lblReprint: "RISTAMPA", lblVoided: "ANNULLATO",
+		lblTicketNonFiscal: "Non valido ai fini fiscali",
 	},
 	"en": {
 		lblTicket: "TICKET", lblServiceDay: "Day", lblIssued: "Issued", lblZone: "Zone",
@@ -85,6 +91,8 @@ var labels = map[string]map[string]string{
 		lblBold: "Bold", lblDouble: "Double", lblColumns: "Columns", lblSample: "Umbrella A12",
 		lblTestOK: "If you can read this page the printer works.", lblPhone: "Tel.", lblVATNumber: "VAT no.",
 		lblNone: "none", lblCopy: "COPY",
+		lblEntryTicket: "ENTRY", lblReprint: "REPRINT", lblVoided: "VOIDED",
+		lblTicketNonFiscal: "Not valid for tax purposes",
 	},
 	"de": {
 		lblTicket: "TICKET", lblServiceDay: "Tag", lblIssued: "Ausgestellt", lblZone: "Zone",
@@ -101,6 +109,8 @@ var labels = map[string]map[string]string{
 		lblBold: "Fett", lblDouble: "Doppelt", lblColumns: "Spalten", lblSample: "Schirm A12",
 		lblTestOK: "Wenn Sie diese Seite lesen, funktioniert der Drucker.", lblPhone: "Tel.", lblVATNumber: "USt-IdNr.",
 		lblNone: "keine", lblCopy: "KOPIE",
+		lblEntryTicket: "EINTRITT", lblReprint: "NACHDRUCK", lblVoided: "STORNIERT",
+		lblTicketNonFiscal: "Kein steuerlicher Beleg",
 	},
 	"fr": {
 		lblTicket: "BILLET", lblServiceDay: "Jour", lblIssued: "Émis", lblZone: "Zone",
@@ -117,6 +127,8 @@ var labels = map[string]map[string]string{
 		lblBold: "Gras", lblDouble: "Double", lblColumns: "Colonnes", lblSample: "Parasol A12",
 		lblTestOK: "Si vous lisez cette page, l'imprimante fonctionne.", lblPhone: "Tél.", lblVATNumber: "N° TVA",
 		lblNone: "aucun", lblCopy: "COPIE",
+		lblEntryTicket: "ENTRÉE", lblReprint: "RÉIMPRESSION", lblVoided: "ANNULÉ",
+		lblTicketNonFiscal: "Sans valeur fiscale",
 	},
 }
 
@@ -135,6 +147,23 @@ var methodLabels = map[string]map[string]string{
 	"en": {"cash": "Cash", "card": "Card", "bank_transfer": "Bank transfer", "wallet": "Wallet", "credit": "Credit", "other": "Other"},
 	"de": {"cash": "Bar", "card": "Karte", "bank_transfer": "Überweisung", "wallet": "Wallet", "credit": "Guthaben", "other": "Sonstiges"},
 	"fr": {"cash": "Espèces", "card": "Carte", "bank_transfer": "Virement", "wallet": "Wallet", "credit": "Avoir", "other": "Autre"},
+}
+
+// SlotsLabel is the printed name of a slot code (FULL, AM, PM) in lang
+// (unknown codes are printed as they are).
+func SlotsLabel(lang, slots string) string {
+	m, ok := slotLabels[normLang(lang)][slots]
+	if !ok {
+		return slots
+	}
+	return m
+}
+
+var slotLabels = map[string]map[string]string{
+	"it": {"FULL": "Giornata intera", "AM": "Mattina", "PM": "Pomeriggio"},
+	"en": {"FULL": "Full day", "AM": "Morning", "PM": "Afternoon"},
+	"de": {"FULL": "Ganzer Tag", "AM": "Vormittag", "PM": "Nachmittag"},
+	"fr": {"FULL": "Journée entière", "AM": "Matin", "PM": "Après-midi"},
 }
 
 func normLang(lang string) string {

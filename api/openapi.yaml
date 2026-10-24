@@ -11434,7 +11434,7 @@ paths:
         il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con
         `unavailable_reason` server_edition, non si aggiungono stampanti e la stampa ripiega su quella del
         browser. `tickets_available` dice se i biglietti della vendita giornaliera si possono stampare
-        (sorgente dei biglietti collegata): finché è false l'instradamento di daily_ticket non è offerto.
+        in ESC/POS (edizione desktop): quando è false l'instradamento di daily_ticket non è offerto.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -23303,7 +23303,7 @@ components:
           $ref: "#/components/schemas/PrinterUnavailableReason"
         tickets_available:
           type: boolean
-          description: "true quando i biglietti della vendita giornaliera si possono stampare (sorgente collegata)."
+          description: "true quando i biglietti della vendita giornaliera si possono stampare in ESC/POS (edizione desktop)."
     PrinterCheckResult:
       type: object
       required: [status, checked_at]

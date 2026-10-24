@@ -123,6 +123,83 @@ async function establishmentId(page: Page): Promise<string> {
   return id as string;
 }
 
+/** JSON POST with the CSRF token of the cookie session. */
+async function apiPost(
+  page: Page,
+  url: string,
+  data: unknown,
+  headers: Record<string, string> = {},
+) {
+  const csrf = (await page.context().cookies()).find(
+    (c) => c.name === "arenile_csrf",
+  )?.value;
+  const res = await page.request.post(url, {
+    data,
+    headers: { "X-CSRF-Token": csrf ?? "", ...headers },
+  });
+  expect(res.ok(), `POST ${url} -> ${res.status()} ${await res.text()}`).toBe(
+    true,
+  );
+  return res.json();
+}
+
+async function printerIdByName(
+  page: Page,
+  est: string,
+  name: string,
+): Promise<string> {
+  const res = await page.request.get(
+    `/api/admin/v1/establishments/${est}/printers`,
+  );
+  const items = ((await res.json()) as { items: { id: string; name: string }[] })
+    .items;
+  const id = items.find((p) => p.name === name)?.id;
+  expect(id).toBeTruthy();
+  return id as string;
+}
+
+/** Sells a card ticket on a free spot of the demo season (10th day). */
+async function demoTicket(
+  page: Page,
+  est: string,
+): Promise<{ id: string; label: string }> {
+  const api = `/api/admin/v1/establishments/${est}`;
+  const seasons = (
+    (await (await page.request.get(`${api}/seasons`)).json()) as {
+      items: { opens_on: string; status: string }[];
+    }
+  ).items;
+  const season = seasons.find((x) => x.status === "active") ?? seasons[0]!;
+  const d = new Date(`${season.opens_on}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 9);
+  const date = d.toISOString().slice(0, 10);
+  const day = (await (
+    await page.request.get(`${api}/operations/day?date=${date}&slot=FULL`)
+  ).json()) as {
+    spots: { spot_id: string; status: string; booking?: unknown }[];
+  };
+  const free = day.spots.filter((x) => x.status === "free" && !x.booking);
+  const packs = (
+    (await (await page.request.get(`${api}/packs`)).json()) as {
+      items: { id: string; code: string }[];
+    }
+  ).items;
+  const pack = packs.find((p) => p.code === "base") ?? packs[0]!;
+  const sold = (await apiPost(
+    page,
+    `${api}/daily-sales`,
+    {
+      date,
+      slots: "FULL",
+      pack_id: pack.id,
+      spot_id: free[free.length - 1]!.spot_id,
+      payment: { method: "card" },
+    },
+    { "Idempotency-Key": crypto.randomUUID() },
+  )) as { ticket: { id: string; number_label: string } };
+  return { id: sold.ticket.id, label: sold.ticket.number_label };
+}
+
 async function shoot(page: Page, name: string) {
   if (!shotsDir) return;
   for (const scheme of ["light", "dark"] as const) {
@@ -211,11 +288,33 @@ test("desktop edition: add a network printer and the test print reaches it", asy
     timeout: 15_000,
   });
 
-  // Routing: a default rule for the first document (daily ticket) on this printer.
+  // Routing: a default rule for the first document (cash closing) on this printer.
   await page.getByRole("button", { name: "Aggiungi regola" }).click();
   await page.getByRole("button", { name: "Salva instradamento" }).click();
   await expect(page.getByText("Instradamento salvato")).toBeVisible();
   await shoot(page, "printers-1440");
+
+  // A daily-sale ticket (ADR 0020) printed on this printer: a card sale on a
+  // free spot of the demo season, then a daily_ticket job.
+  const printerId = await printerIdByName(page, id, "Banco bar");
+  const ticket = await demoTicket(page, id);
+  received = [];
+  await apiPost(
+    page,
+    `/api/admin/v1/establishments/${id}/print-jobs`,
+    { document_kind: "daily_ticket", document_id: ticket.id, printer_id: printerId },
+    { "Idempotency-Key": crypto.randomUUID() },
+  );
+  await expect
+    .poll(
+      () => Buffer.concat(received).includes(Buffer.from(`BIGLIETTO ${ticket.label}`)),
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  const slip = received.find((c) => c.includes(Buffer.from("BIGLIETTO")))!;
+  expect(slip.includes(Buffer.from("Non valido ai fini fiscali"))).toBe(true);
+  expect(slip.includes(GS_K)).toBe(true);
+  expect(slip.includes(GS_V)).toBe(true);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();

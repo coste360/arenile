@@ -13,6 +13,6 @@
 // type, ADR 0018), then Layout.FeedLines, the cut and, if requested, the
 // drawer kick.
 //
-// Ownership: ESC/POS builders (templates). The daily sale branch calls
-// Ticket at merge time.
+// Ownership: ESC/POS builders (templates). Ticket is fed by the ticketing
+// service (ticketing.Service.PrintableTicket) through printing.TicketSource.
 package templates

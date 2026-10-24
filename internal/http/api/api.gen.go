@@ -7782,7 +7782,7 @@ type PrinterList struct {
 	EscposAvailable bool      `json:"escpos_available"`
 	Items           []Printer `json:"items"`
 
-	// TicketsAvailable true quando i biglietti della vendita giornaliera si possono stampare (sorgente collegata).
+	// TicketsAvailable true quando i biglietti della vendita giornaliera si possono stampare in ESC/POS (edizione desktop).
 	TicketsAvailable  *bool                     `json:"tickets_available,omitempty"`
 	UnavailableReason *PrinterUnavailableReason `json:"unavailable_reason,omitempty"`
 }

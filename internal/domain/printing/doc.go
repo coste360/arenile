@@ -61,7 +61,7 @@
 //
 // Documents: payment receipts and cash Z summaries are built here from the
 // store; daily-sale tickets come from a TicketSource (Deps.Tickets) that
-// the daily-sale feature implements with templates.TicketDoc. The
+// the ticketing service implements with templates.TicketDoc. The
 // establishment logo is fetched through a LogoLoader (HTTPLogoLoader:
 // https URLs or instance paths), dithered once per printer and paper width
 // and cached in printers.logo_raster.

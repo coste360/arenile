@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Drucker",
-    "description": "ESC/POS-Thermodrucker im Netzwerk (WLAN oder Ethernet) für nicht-fiskalische Belege und Kassenabschlüsse sowie für Tagestickets, sobald der Tagesverkauf aktiv ist: Adresse, Papierbreite, Schnitt, Kassenlade, Zuordnung pro Kasse und Testdruck. Verfügbar mit der Desktop-App."
+    "description": "ESC/POS-Thermodrucker im Netzwerk (WLAN oder Ethernet) für nicht-fiskalische Belege, Kassenabschlüsse und Tagestickets: Adresse, Papierbreite, Schnitt, Kassenlade, Zuordnung pro Kasse und Testdruck. Verfügbar mit der Desktop-App."
   },
   "add": "Drucker hinzufügen",
   "actions": "Aktionen",
@@ -186,7 +186,7 @@
   },
   "hint": {
     "title": "Thermodrucker",
-    "description": "Mit der Desktop-App druckt Arenile nicht-fiskalische Belege und Kassenabschlüsse (und Tagestickets, sobald der Tagesverkauf aktiv ist) auf den WLAN- oder Ethernet-ESC/POS-Druckern des Strandbads.",
+    "description": "Mit der Desktop-App druckt Arenile nicht-fiskalische Belege, Kassenabschlüsse und Tagestickets auf den WLAN- oder Ethernet-ESC/POS-Druckern des Strandbads.",
     "action": "Drucker einrichten"
   }
 }

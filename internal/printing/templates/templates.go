@@ -63,10 +63,14 @@ type VATLine struct {
 // TicketDoc is the daily-sale ticket: establishment, ticket number and
 // date, spot or zone ("da assegnare" when Spot is empty), formula, pack,
 // extras, total with VAT breakdown, payment method, QR with the booking
-// code. It contains no customer personal data.
+// code. It contains no customer personal data. Entry tickets (Entry) have
+// no spot line and list their ticket types in Extras.
 type TicketDoc struct {
 	Header        Header
-	Number        string        // ticket number as shown to the customer
+	Number        string        // ticket number as shown to the customer ("#037")
+	Entry         bool          // entry-only ticket (no spot)
+	Reprint       bool          // printed "RISTAMPA" under the number
+	Voided        bool          // printed "ANNULLATO" under the number
 	Date          calendar.Date // service day
 	IssuedAt      time.Time     // instant, printed in the establishment timezone
 	Location      *time.Location
@@ -128,7 +132,18 @@ type TestPageDoc struct {
 func Ticket(d TicketDoc, l Layout) ([]byte, error) {
 	return render(l, d.Header, func(e *escpos.Encoder) {
 		lang := l.Lang
-		e.Align(escpos.Center).Bold(true).Size(2, 1).Text(label(lang, lblTicket)+" "+d.Number).Size(1, 1).Bold(false).Align(escpos.Left)
+		title := lblTicket
+		if d.Entry {
+			title = lblEntryTicket
+		}
+		e.Align(escpos.Center).Bold(true).Size(2, 1).Text(label(lang, title)+" "+d.Number).Size(1, 1).Bold(false)
+		if d.Reprint {
+			e.Bold(true).Text(label(lang, lblReprint)).Bold(false)
+		}
+		if d.Voided {
+			e.Bold(true).Size(2, 1).Text(label(lang, lblVoided)).Size(1, 1).Bold(false)
+		}
+		e.Align(escpos.Left)
 		e.Columns(label(lang, lblServiceDay), FormatDate(d.Date))
 		if !d.IssuedAt.IsZero() {
 			e.Columns(label(lang, lblIssued), FormatDateTime(d.IssuedAt, d.Location))
@@ -137,11 +152,13 @@ func Ticket(d TicketDoc, l Layout) ([]byte, error) {
 		if d.Zone != "" {
 			e.Columns(label(lang, lblZone), d.Zone)
 		}
-		spot := d.Spot
-		if spot == "" {
-			spot = label(lang, lblToAssign)
+		if !d.Entry {
+			spot := d.Spot
+			if spot == "" {
+				spot = label(lang, lblToAssign)
+			}
+			e.Bold(true).Columns(label(lang, lblSpot), spot).Bold(false)
 		}
-		e.Bold(true).Columns(label(lang, lblSpot), spot).Bold(false)
 		if d.Formula != "" {
 			e.Columns(label(lang, lblFormula), d.Formula)
 		}
@@ -169,7 +186,8 @@ func Ticket(d TicketDoc, l Layout) ([]byte, error) {
 		if d.Notes != "" {
 			e.Rule('-').Text(d.Notes)
 		}
-		e.Align(escpos.Center).Text(label(lang, lblNonFiscal)).Align(escpos.Left)
+		// The receipt of the sale is the fiscal document: the ticket is not one.
+		e.Align(escpos.Center).Bold(true).Text(label(lang, lblTicketNonFiscal)).Bold(false).Align(escpos.Left)
 	})
 }
 

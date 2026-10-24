@@ -79,7 +79,7 @@ import {
   type SaleValues,
   type SaleWhere,
 } from './lib';
-import { useTicketPrinter } from './printing';
+import { useTicketOutput } from './printing';
 import { TicketPrintDialog } from './TicketPrintDialog';
 import { useSaleProblemText } from './useSaleProblemText';
 
@@ -134,7 +134,6 @@ export function DailySaleForm({
   const session = useCurrentSession(establishmentId, undefined, canCash);
   const create = useCreateDailySale(establishmentId);
   const fetchPrint = useFetchTicketPrint(establishmentId);
-  const printer = useTicketPrinter();
   const problemText = useSaleProblemText();
   // Tailwind `lg`: the summary column sits next to the form.
   const wide = useMediaQuery('(min-width: 1024px)');
@@ -217,6 +216,8 @@ export function DailySaleForm({
   const available = quote.data?.available ?? false;
   const change = total !== undefined ? changeDue(total, values.tendered) : undefined;
   const openSession = session.data ?? null;
+  // Thermal printer of the register (ADR 0021) when routed, browser otherwise.
+  const printer = useTicketOutput(openSession?.session.register_id ?? undefined);
   const cashBlocked = !canCash || (session.isSuccess && !openSession);
   const ready = !!quoteReq && !!quote.data && available && !stale && !quote.error;
 
@@ -245,10 +246,12 @@ export function DailySaleForm({
     onSold?.(result);
     toast.success(t('sale.done', { number: result.ticket.number_label }));
     if (settings.data?.auto_print ?? true) {
-      try {
-        printer.print(await fetchPrint(result.ticket.id));
-      } catch {
+      const printFailed = () =>
         toast.warning(t('sale.printFailed', { number: result.ticket.number_label }));
+      try {
+        await printer.print(result.ticket.id, () => fetchPrint(result.ticket.id), printFailed);
+      } catch {
+        printFailed();
       }
     }
   };

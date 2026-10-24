@@ -1,6 +1,7 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { useCurrentEstablishment } from '../../establishment';
+import { usePrintDocument, usePrintReady } from '../printers';
 import type { TicketPrintData } from './api';
 import { TicketPrint } from './TicketPrint';
 
@@ -53,4 +54,48 @@ export function useTicketPrinter(): { print: (data: TicketPrintData) => void; ar
       document.body,
     );
   return { print, area };
+}
+
+/** Loads the browser print data of a ticket (only when the browser prints it). */
+export type TicketPrintLoader = () => TicketPrintData | Promise<TicketPrintData>;
+
+/**
+ * Ticket output of a page (ADR 0021): when the daily_ticket route resolves
+ * to a ready ESC/POS printer (desktop edition, printer active and reachable)
+ * `print(ticketId, load)` queues a thermal job, with the browser print as
+ * the fallback if the job cannot be queued; otherwise it prints through the
+ * browser exactly as before (`useTicketPrinter`). `load` is called only for
+ * the browser print. `area` must be rendered once by the caller. The
+ * returned promise rejects when the browser print data cannot be loaded;
+ * inside the thermal fallback the same failure goes to `onError`.
+ */
+export function useTicketOutput(registerId?: string): {
+  print: (
+    ticketId: string,
+    load: TicketPrintLoader,
+    onError?: (error: unknown) => void,
+  ) => Promise<void>;
+  area: ReactNode;
+  thermal: boolean;
+} {
+  const browser = useTicketPrinter();
+  const thermal = usePrintReady('daily_ticket', registerId);
+  const printDocument = usePrintDocument();
+  const browserPrint = browser.print;
+  const print = useCallback(
+    async (ticketId: string, load: TicketPrintLoader, onError?: (error: unknown) => void) => {
+      if (!thermal) {
+        browserPrint(await load());
+        return;
+      }
+      await printDocument({ kind: 'daily_ticket', documentId: ticketId, registerId }, () => {
+        void Promise.resolve()
+          .then(load)
+          .then(browserPrint)
+          .catch((err: unknown) => onError?.(err));
+      });
+    },
+    [thermal, printDocument, registerId, browserPrint],
+  );
+  return { print, area: browser.area, thermal };
 }
