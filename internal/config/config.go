@@ -244,6 +244,10 @@ func Parse(lookup Lookup) (Config, error) {
 	cfg.PushRelayURL = get(EnvPushRelayURL, pushrelay.DefaultURL)
 	if u, uerr := url.Parse(cfg.PushRelayURL); uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
 		errs = append(errs, fmt.Errorf("%s: must be an absolute http(s) URL", EnvPushRelayURL))
+	} else if u.User != nil {
+		// The URL is logged at startup and credentials in it would travel as
+		// Basic auth: the relay authenticates with the signed key only.
+		errs = append(errs, fmt.Errorf("%s: must not contain credentials", EnvPushRelayURL))
 	} else if u.Scheme != "https" && !isLoopbackHost(u.Hostname()) && !cfg.Dev {
 		errs = append(errs, fmt.Errorf("%s: must use https unless the host is loopback", EnvPushRelayURL))
 	}

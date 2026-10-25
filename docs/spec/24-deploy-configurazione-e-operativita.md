@@ -90,7 +90,7 @@ Variante `docker-compose.postgres.yml` con servizio PostgreSQL e `DATABASE_URL`.
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
 | `ARENILE_UPDATE_CHECK` | `true` | Avviso di nuova versione nel pannello (ADR 0025): un GET al giorno del file pubblico dell'ultima versione, con solo versione, edizione e sistema nell'User-Agent. Non è telemetria. `false` = nessuna chiamata di rete |
 | `ARENILE_UPDATE_URL` | `https://updates.coste360.it/arenile/latest.json` | File letto dal controllo della nuova versione (server e app desktop), per esempio un mirror interno |
-| `ARENILE_PUSH_RELAY_URL` | `https://push.coste360.it/v1/notifications` | Relay delle notifiche push dell'app mobile (ADR 0027); https, salvo host di loopback o `ARENILE_DEV` |
+| `ARENILE_PUSH_RELAY_URL` | `https://push.coste360.it/v1/notifications` | Relay delle notifiche push dell'app mobile (ADR 0027); https, salvo host di loopback o `ARENILE_DEV`; senza credenziali nell'URL |
 | `ARENILE_PUSH_RELAY_KEY` | vuota | Chiave `<id>.<segreto>` rilasciata da Coste360. Vuota: notifiche push non disponibili (`/meta` `push_notifications` falso) e nessuna chiamata al relay. Il segreto firma le richieste e non viene mai registrato nei log |
 | `ARENILE_INSTALL` | `binary` | `docker` nell'immagine ufficiale (impostato dall'immagine, non dall'operatore): l'avviso propone `docker compose pull` invece del download |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (ADR 0006): `ARENILE_BASE_URL` facoltativo, chiave generata in `dev-secret.key`. Mai in produzione |
