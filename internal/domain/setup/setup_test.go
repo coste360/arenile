@@ -333,3 +333,28 @@ func checkSmallGridKit(t *testing.T, decos []store.MapDecoration) {
 		}
 	}
 }
+
+func TestDemoSeason_ReachesSixtyDaysAhead(t *testing.T) {
+	tests := []struct {
+		today, opens, closes string
+	}{
+		{"2026-01-01", "2026-01-01", "2026-12-31"},
+		{"2026-10-25", "2026-01-01", "2026-12-31"},
+		{"2026-11-01", "2026-01-01", "2026-12-31"},
+		// Fewer than 60 days left: a year ending 60 days from today.
+		{"2026-11-02", "2026-01-02", "2027-01-01"},
+		{"2026-12-31", "2026-03-02", "2027-03-01"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.today, func(t *testing.T) {
+			today := calendar.MustParse(tt.today)
+			year, opens, closes := demoSeason(today)
+			if year != today.Year() || opens.String() != tt.opens || closes.String() != tt.closes {
+				t.Fatalf("demoSeason(%s) = %d %s – %s, want %d %s – %s", tt.today, year, opens, closes, today.Year(), tt.opens, tt.closes)
+			}
+			if today.Before(opens) || today.AddDays(demoAheadDays).After(closes) || opens.DaysUntil(closes)+1 > maxSeasonDays {
+				t.Fatalf("season %s – %s does not cover today and the next %d days in at most a year", opens, closes, demoAheadDays)
+			}
+		})
+	}
+}

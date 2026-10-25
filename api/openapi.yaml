@@ -3258,6 +3258,54 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
+  /api/admin/v1/establishments/{establishmentId}/setup/reset:
+    post:
+      operationId: resetEstablishmentSetup
+      tags:
+        - setup
+      summary: Ricomincia la configurazione o azzera lo stabilimento
+      description: >-
+        Solo il titolare (permessi `establishment.configure`, `users.manage` e `payments.configure`), con una
+        sessione utente (non chiavi API né dispositivi). `confirm_name` deve essere il nome dello stabilimento.
+        `scope: configuration` cancella stagioni e periodi, chiusure, mappe, postazioni, zone, pool, catalogo,
+        prezzi, codici sconto, convenzioni, policy e biglietti d'ingresso, e riapre la configurazione guidata; è
+        rifiutato con `409` se lo stabilimento ha dati operativi (`SetupStatus.has_operations`). `scope:
+        everything` cancella anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti,
+        documenti fiscali, crediti, lista d'attesa e rinnovi; è rifiutato con `409` finché un pagamento online o un
+        rimborso è in corso presso il provider o se ci sono documenti di un registratore telematico (driver fiscale
+        diverso da `none`: emessi, annullati o ancora in stampa, o lavori del bridge in corso), che vanno conservati. Entrambi spengono `booking_enabled` e scrivono gli eventi
+        `config.map_changed` e `config.pricing_changed`. Restano sempre il profilo dello stabilimento, i contatori dei
+        biglietti del giorno,
+        gli utenti, i pagamenti online, le email, i dispositivi, le casse e le stampanti, il registro attività.
+        Irreversibile; tutto in una transazione, con una voce `setup.reset` nel registro attività.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupResetRequest"
+      responses:
+        "200":
+          description: Stabilimento azzerato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupResetResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /api/admin/v1/establishments/{establishmentId}/customers:
     get:
       operationId: listCustomers
@@ -9092,6 +9140,37 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "501":
           $ref: "#/components/responses/NotImplemented"
+
+  /api/device/v1/demo-pairing:
+    post:
+      operationId: createDemoPairingCode
+      tags: [device]
+      summary: Codice di abbinamento allo stabilimento dimostrativo
+      description: >-
+        Spec 29.2. Solo sulle istanze dimostrative (`ARENILE_DEMO_PAIRING_USER` e
+        `ARENILE_DEMO_PAIRING_ESTABLISHMENT`, spec 24.4); sulle altre risponde `404`. Non autenticato, limitato
+        per rete del client (5 richieste all'ora; la /64 per IPv6) e in totale (300 all'ora). Restituisce un
+        codice di abbinamento nuovo per l'utente dimostrativo
+        configurato, valido 5 minuti: il pulsante "Prova la demo" dell'app lo scambia subito con
+        `POST /api/device/v1/pair`. Il dispositivo abbinato ha il ruolo di quell'utente, ammesso solo se è
+        `cashier`, `beach_staff` o `viewer` (con un titolare o un gestore l'endpoint risponde `404`). Nessun corpo.
+      security: []
+      responses:
+        "201":
+          description: Codice creato
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevicePairingCode"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /api/device/v1/self:
     get:
@@ -16492,6 +16571,7 @@ components:
         - has_prices
         - booking_enabled
         - price_categories
+        - has_operations
       properties:
         price_categories:
           type: array
@@ -16514,6 +16594,35 @@ components:
           type: boolean
         booking_enabled:
           type: boolean
+        has_operations:
+          type: boolean
+          description: >-
+            Lo stabilimento ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti,
+            lista d'attesa, rinnovi o crediti): la configurazione si ricomincia solo azzerando tutto.
+    SetupResetRequest:
+      type: object
+      required: [scope, confirm_name]
+      properties:
+        scope:
+          type: string
+          enum: [configuration, everything]
+          description: "`configuration`: solo la configurazione; `everything`: anche i dati operativi."
+        confirm_name:
+          type: string
+          description: Nome dello stabilimento, scritto per confermare (spazi iniziali e finali ignorati).
+    SetupResetResult:
+      type: object
+      required: [scope, deleted]
+      properties:
+        scope:
+          type: string
+          enum: [configuration, everything]
+        deleted:
+          type: object
+          description: Righe cancellate per tabella (solo quelle con almeno una riga).
+          additionalProperties:
+            type: integer
+            format: int64
 
     # ---- M3: customers, bookings, availability, passes, payments, cash, fiscal ----
     AllocationConflict:

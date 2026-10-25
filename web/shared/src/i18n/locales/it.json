@@ -296,7 +296,10 @@
       "placeholder": "Seleziona una data",
       "rangePlaceholder": "Seleziona un periodo",
       "clear": "Cancella",
-      "open": "Apri il calendario"
+      "open": "Apri il calendario",
+      "from": "Dal",
+      "to": "Al",
+      "format": "gg/mm/aaaa"
     },
     "table": {
       "filter": "Filtra…",

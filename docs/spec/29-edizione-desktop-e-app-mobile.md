@@ -79,6 +79,7 @@ Al primo avvio, e in seguito dalle impostazioni, il gestore sceglie tra **Locale
 - Il QR contiene indirizzo dell'istanza e codice di abbinamento monouso a breve scadenza; l'app lo scambia con un **token per dispositivo** legato all'utente, con i permessi del suo ruolo (sezione 16).
 - I token per dispositivo sono elencati e revocabili dal pannello (nome del dispositivo, ultimo utilizzo). Niente cookie: autenticazione con header `Authorization`, quindi nessun requisito CORS né CSRF per l'app.
 - L'istanza può essere una VPS del gestore, un hosting gestito, oppure l'edizione desktop in modalità rete locale (29.1).
+- **Stabilimento dimostrativo:** un'istanza demo di Coste360 (`ARENILE_DEMO_PAIRING_USER` e `ARENILE_DEMO_PAIRING_ESTABLISHMENT`, sezione 24.4) espone `POST /api/device/v1/demo-pairing`, che restituisce un codice di abbinamento nuovo per l'utente dimostrativo, senza login e con un limite per rete del client (5 all'ora) e uno globale (300 all'ora). Il pulsante "Prova la demo" dell'app lo scambia subito con il token, così chi scarica l'app la prova senza avere un server. È l'unica eccezione al "nessun server predefinito": parte solo da una scelta esplicita della persona. Il dispositivo ha il ruolo dell'utente dimostrativo, che il server accetta solo se è cassiere, staff di spiaggia o sola lettura. Sulle istanze normali l'endpoint risponde sempre `404`.
 
 **Privacy first**
 - L'app parla solo con l'istanza del gestore: nessun dato passa da Coste360, nessuna telemetria, nessun SDK di analisi o pubblicità.

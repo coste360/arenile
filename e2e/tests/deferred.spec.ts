@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { DEMO_YEAR } from "./demo-dates";
 import { login } from "./helpers";
 
 /**
@@ -115,7 +116,7 @@ test("reports and lists download as Excel", async ({ page }) => {
   expect(body.subarray(0, 2).toString("latin1")).toBe("PK");
 
   const corr = await page.request.get(
-    `${api}/fiscal/corrispettivi?from=2027-07-01&to=2027-07-31&group_by=day&format=xlsx`,
+    `${api}/fiscal/corrispettivi?from=${DEMO_YEAR}-07-01&to=${DEMO_YEAR}-07-31&group_by=day&format=xlsx`,
   );
   expect(corr.ok()).toBeTruthy();
   expect((await corr.body()).subarray(0, 2).toString("latin1")).toBe("PK");

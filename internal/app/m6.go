@@ -52,10 +52,15 @@ func (a *App) wireDevices(aw *audit.Writer) {
 	a.Meta = meta.NewService(meta.Deps{Version: a.opts.version, Clock: c, Runtime: rt, Drivers: a.registry})
 	a.FiscalBridge = fiscalbridge.NewService(fiscalbridge.Deps{DB: a.db, Clock: c, Audit: aw, Log: a.log})
 	a.registry.fiscal[fiscalbridge.Code] = &fiscalbridge.Driver{Queue: a.FiscalBridge, EstablishmentFromContext: fiscalbridge.EstablishmentFromContext}
+	var demo *device.DemoPairing
+	if a.cfg.DemoPairingUser != "" && a.opts.desktop == nil {
+		demo = &device.DemoPairing{UserEmail: a.cfg.DemoPairingUser, EstablishmentSlug: a.cfg.DemoPairingEstablishment}
+	}
 	a.Devices = device.NewService(device.Deps{
 		DB: a.db, Clock: c, Audit: aw, Log: a.log,
 		Principals: a.Auth, Bridge: a.FiscalBridge,
 		Instance: instance{baseURL: a.cfg.EffectiveBaseURL(), desktop: a.opts.desktop},
+		Demo:     demo,
 	})
 }
 

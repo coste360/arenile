@@ -83,7 +83,9 @@ ok "stripe configured (secret never returned), webhook $(jq -r .webhook_url "$WO
 [[ "$(curl -fs "$PUB" | jq -r .online.payment.online)" == true ]] && ok "public profile: online payment on, test mode $(curl -fs "$PUB" | jq -r .online.payment.test_mode)"
 
 # --- public flow -------------------------------------------------------------
-DAY="$(curl -fs "$PUB" | jq -r '.season.opens_on' | awk -F- '{printf "%s-06-15", $1}')"
+# A day ahead of today: the demo season is bookable every day and covers the
+# next 60 days (spec 28), so the public flow never targets a past date.
+DAY="$(jq -rn 'now + 40 * 86400 | strftime("%Y-%m-%d")')"
 PACK="$(curl -fs "$PUB/catalog?starts_on=$DAY&ends_on=$DAY&formula=day" | jq -r '.packs[] | select(.code=="base") | .id')"
 free_spot() { curl -fs "$PUB/availability?from=$DAY&to=$DAY&slots=FULL&formula=day" | jq -r "[.zones[] | select(.assignment_mode==\"seat\") | .spots[] | select(.available)] | .[$1].spot_id"; }
 create() { # spot -> CheckoutSession json

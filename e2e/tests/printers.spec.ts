@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD, DEMO_SLUG } from "./helpers";
+import { bookableDay } from "./demo-dates";
 
 // ESC/POS network printing (ADR 0021) runs only on the desktop edition, so
 // this spec starts its own `arenile serve` with ARENILE_EDITION=desktop
@@ -159,21 +160,13 @@ async function printerIdByName(
   return id as string;
 }
 
-/** Sells a card ticket on a free spot of the demo season (10th day). */
+/** Sells a card ticket on a free spot of a future day of the demo season. */
 async function demoTicket(
   page: Page,
   est: string,
 ): Promise<{ id: string; label: string }> {
   const api = `/api/admin/v1/establishments/${est}`;
-  const seasons = (
-    (await (await page.request.get(`${api}/seasons`)).json()) as {
-      items: { opens_on: string; status: string }[];
-    }
-  ).items;
-  const season = seasons.find((x) => x.status === "active") ?? seasons[0]!;
-  const d = new Date(`${season.opens_on}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 9);
-  const date = d.toISOString().slice(0, 10);
+  const date = bookableDay(28).iso;
   const day = (await (
     await page.request.get(`${api}/operations/day?date=${date}&slot=FULL`)
   ).json()) as {

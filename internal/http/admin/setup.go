@@ -38,8 +38,24 @@ func (h *Handlers) GetSetupStatus(w http.ResponseWriter, r *http.Request, establ
 	writeJSON(w, http.StatusOK, api.SetupStatus{
 		HasSeason: st.HasSeason, HasRatePeriods: st.HasRatePeriods, HasMap: st.HasMap, SpotCount: st.SpotCount,
 		HasCatalog: st.HasCatalog, HasPrices: st.HasPrices, BookingEnabled: st.BookingEnabled,
-		PriceCategories: append([]string{}, st.PriceCategories...),
+		PriceCategories: append([]string{}, st.PriceCategories...), HasOperations: st.HasOperations,
 	})
+}
+
+// ResetEstablishmentSetup implements POST /establishments/{establishmentId}/setup/reset.
+func (h *Handlers) ResetEstablishmentSetup(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, _ api.ResetEstablishmentSetupParams) {
+	var req api.SetupResetRequest
+	if !decode(w, r, &req) {
+		return
+	}
+	res, err := h.Setup.Reset(r.Context(), principalOf(r), establishmentID, setup.ResetInput{
+		Scope: setup.ResetScope(req.Scope), ConfirmName: req.ConfirmName, IP: estClientIP(r),
+	})
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, api.SetupResetResult{Scope: api.SetupResetResultScope(res.Scope), Deleted: res.Deleted})
 }
 
 // ApplySetupTemplate implements POST /establishments/{establishmentId}/setup/apply-template.

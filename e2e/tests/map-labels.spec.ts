@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { DEMO_DAY } from "./demo-dates";
 import { login } from "./helpers";
 
 /**
@@ -9,7 +10,6 @@ import { login } from "./helpers";
  * season pass on A1 belongs to a customer named Rossi.
  */
 
-const DEMO_DAY = "2027-05-10";
 
 async function openMap(page: Page): Promise<void> {
   await login(page);

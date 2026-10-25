@@ -19,6 +19,9 @@ type Status struct {
 	HasCatalog     bool
 	HasPrices      bool
 	BookingEnabled bool
+	// HasOperations: operational data exists (store.HasOperations), so the
+	// configuration starts over only with ResetEverything.
+	HasOperations bool
 	// PriceCategories are the categories the quick price list must price:
 	// those of the zones and of the spot overrides, sorted.
 	PriceCategories []string
@@ -91,6 +94,9 @@ func (s *Service) status(ctx context.Context, db bun.IDB, es store.Establishment
 	st.HasPrices = results[5] > 0
 	if st.PriceCategories, err = categoriesInUse(ctx, db, es); err != nil {
 		return nil, err
+	}
+	if st.HasOperations, err = store.HasOperations(ctx, db, es); err != nil {
+		return nil, fmt.Errorf("setup: status: %w", err)
 	}
 	return st, nil
 }

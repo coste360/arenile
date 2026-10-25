@@ -67,7 +67,13 @@ const (
 	// EnvInstall is set by the official Docker image ("docker"); unset
 	// means a binary installation. It only picks the update instructions.
 	EnvInstall = "ARENILE_INSTALL"
-	EnvDev     = "ARENILE_DEV"
+	// EnvDemoPairingUser and EnvDemoPairingEstablishment (spec 29.2): on a
+	// demo instance, the user (email) and establishment (slug) of the codes
+	// of POST /api/device/v1/demo-pairing. Both or neither; unset, the
+	// endpoint answers 404.
+	EnvDemoPairingUser          = "ARENILE_DEMO_PAIRING_USER"
+	EnvDemoPairingEstablishment = "ARENILE_DEMO_PAIRING_ESTABLISHMENT"
+	EnvDev                      = "ARENILE_DEV"
 	// EnvEdition is set by the desktop launcher (never by an operator):
 	// "desktop" is the loopback profile of the core, see Config.Desktop.
 	EnvEdition = "ARENILE_EDITION"
@@ -136,6 +142,10 @@ type Config struct {
 	UpdateURL   string
 	// Install is InstallDocker or InstallBinary (default).
 	Install string
+	// DemoPairingUser and DemoPairingEstablishment enable the demo pairing
+	// of the mobile app (both set) on a demo instance.
+	DemoPairingUser          string
+	DemoPairingEstablishment string
 	// Edition is EditionServer (default) or EditionDesktop: the desktop
 	// launcher serves the panel on http://127.0.0.1 and needs no public
 	// base URL; cookies get Secure per request (TLS LAN listener). It is
@@ -225,6 +235,11 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	if cfg.UpdateCheck, err = parseBool(get(EnvUpdateCheck, "true")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvUpdateCheck, err))
+	}
+	cfg.DemoPairingUser = strings.TrimSpace(get(EnvDemoPairingUser, ""))
+	cfg.DemoPairingEstablishment = strings.TrimSpace(get(EnvDemoPairingEstablishment, ""))
+	if (cfg.DemoPairingUser == "") != (cfg.DemoPairingEstablishment == "") {
+		errs = append(errs, fmt.Errorf("%s and %s: set both or neither", EnvDemoPairingUser, EnvDemoPairingEstablishment))
 	}
 	cfg.UpdateURL = get(EnvUpdateURL, updates.DefaultURL)
 	if u, uerr := url.Parse(cfg.UpdateURL); uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {

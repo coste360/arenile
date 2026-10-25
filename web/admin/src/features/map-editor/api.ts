@@ -1,9 +1,10 @@
 import { ApiProblem, call, shouldRetry, toApiProblem, useApiClient } from '@arenile/shared/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { configKey } from '../configuration/api/resource';
-import { ifMatch } from '../configuration/lib/validation';
+import { ifMatch, newIdempotencyKey } from '../configuration/lib/validation';
 import type {
   ApiMapDocument,
+  ApiMapInput,
   ApiMapSaveRequest,
   MapReorientRequest,
   MapReorientResult,
@@ -11,6 +12,7 @@ import type {
   RowGeneratorResult,
 } from './model/types';
 
+const MAPS_PATH = '/api/admin/v1/establishments/{establishmentId}/maps' as const;
 const MAP_PATH = '/api/admin/v1/establishments/{establishmentId}/maps/{mapId}' as const;
 
 export const mapDocumentKey = (establishmentId: string, mapId: string) =>
@@ -27,6 +29,32 @@ export function useMapDocument(establishmentId: string, mapId: string) {
     // The editor keeps its own draft: never refetch behind the user's back.
     refetchOnWindowFocus: false,
     staleTime: Infinity,
+  });
+}
+
+/**
+ * Creates an empty map (POST /maps, Idempotency-Key). The answer is the full
+ * document, not a bare Map: it seeds the editor's query so the editor opens
+ * on it without a second request.
+ */
+export function useCreateMap(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<ApiMapDocument, ApiProblem, ApiMapInput>({
+    mutationFn: (body) =>
+      call(() =>
+        client.POST(MAPS_PATH, {
+          params: { path: { establishmentId }, header: { 'Idempotency-Key': newIdempotencyKey() } },
+          body,
+        }),
+      ),
+    onSuccess: (doc) => {
+      qc.setQueryData(mapDocumentKey(establishmentId, doc.map.id), doc);
+      void qc.invalidateQueries({
+        queryKey: configKey(establishmentId),
+        predicate: (q) => !(q.queryKey.includes('document') && q.queryKey.includes(doc.map.id)),
+      });
+    },
   });
 }
 

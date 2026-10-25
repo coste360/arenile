@@ -115,5 +115,28 @@
     "restart": "Rouvrir la configuration guidée",
     "summary": "Récapitulatif"
   },
-  "stepCounter": "Étape {{n}} sur {{total}}"
+  "stepCounter": "Étape {{n}} sur {{total}}",
+  "reset": {
+    "title": "Repartir de zéro",
+    "description": "Pour refaire la configuration guidée à partir d'un établissement vide. Propriétaire uniquement.",
+    "irreversible": "Action irréversible",
+    "keeps": "Le profil de l'établissement, les utilisateurs, les paiements en ligne, les e-mails, les appareils, les caisses, les imprimantes et le journal d'activité sont conservés.",
+    "typeName": "Saisissez le nom de l'établissement pour confirmer : {{name}}",
+    "configuration": {
+      "action": "Recommencer la configuration",
+      "blocked": "Il y a des réservations, des encaissements ou d'autres données d'exploitation : pour recommencer, réinitialisez l'établissement.",
+      "title": "Recommencer la configuration ?",
+      "deletes": "Supprime les saisons et périodes tarifaires, fermetures, plans et emplacements, zones et pools, catalogue, prix, codes promo, conventions, règles et billets d'entrée et désactive la page publique jusqu'à la nouvelle configuration.",
+      "confirm": "Supprimer la configuration",
+      "done": "Configuration supprimée : vous pouvez recommencer à la première étape."
+    },
+    "everything": {
+      "action": "Réinitialiser l'établissement",
+      "title": "Réinitialiser l'établissement ?",
+      "deletes": "Supprime toute la configuration ainsi que les réservations, abonnements, clients, encaissements, sessions de caisse, billets, documents fiscaux, crédits, liste d'attente et renouvellements et désactive la page publique jusqu'à la nouvelle configuration. Possible uniquement s'il n'y a aucun paiement en ligne ou remboursement en cours ni aucun reçu émis par une caisse enregistreuse télématique, qui doit être conservé.",
+      "ack": "Je comprends que les réservations, les clients et les encaissements sont supprimés définitivement.",
+      "confirm": "Réinitialiser l'établissement",
+      "done": "Établissement réinitialisé : vous pouvez recommencer à la première étape."
+    }
+  }
 }

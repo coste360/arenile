@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
+	"time"
 
 	"github.com/uptrace/bun"
 
@@ -59,26 +61,61 @@ func (s *Service) CreatePairingCode(ctx context.Context, p *auth.Principal, esta
 		return nil, err
 	}
 
+	return s.issueCode(ctx, es, issue{
+		userID: userID, createdBy: &p.UserID, kind: in.Kind, ttl: ttl, target: target,
+		actor: p.Actor(""), action: "device.pairing_code_created",
+	})
+}
+
+// issue is what issueCode needs to mint a pairing code.
+type issue struct {
+	userID    string
+	createdBy *string // nil: the demo pairing (nobody asked in the panel)
+	kind      string
+	ttl       time.Duration
+	target    PairingTarget
+	actor     audit.Actor
+	action    string
+	// roles, when set, are the only roles the user may hold on the
+	// establishment (every applicable membership): the demo pairing never
+	// hands out an owner or manager device.
+	roles []auth.Role
+}
+
+// errRoleNotAllowed: the user holds a role outside issue.roles.
+var errRoleNotAllowed = errors.New("device: role not allowed for this code")
+
+// issueCode stores a new single-use code for in.userID on es (who must be an
+// active member) and audits it as in.action, in one transaction, then
+// builds its QR.
+func (s *Service) issueCode(ctx context.Context, es store.EstablishmentScope, in issue) (*PairingCode, error) {
 	now := s.d.Clock.Now().UTC()
-	out := &PairingCode{ExpiresAt: now.Add(ttl), EstablishmentID: es.ID(), UserID: userID}
-	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
+	out := &PairingCode{ExpiresAt: now.Add(in.ttl), EstablishmentID: es.ID(), UserID: in.userID}
+	err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 		grants, err := store.ListTeamGrants(ctx, tx, es)
 		if err != nil {
 			return err
 		}
-		if !activeMember(grants, userID) {
+		if !activeMember(grants, in.userID) {
 			return configerr.Invalid("user_id", "l'utente non è attivo o non ha un ruolo in questo stabilimento")
+		}
+		if in.roles != nil {
+			for _, g := range grants {
+				if g.UserID == in.userID && !slices.Contains(in.roles, auth.Role(g.Role)) {
+					return errRoleNotAllowed
+				}
+			}
 		}
 		est, err := store.GetEstablishment(ctx, tx, es)
 		if err != nil {
 			return err
 		}
 		row := &store.DevicePairingCode{
-			ID: store.NewID(), UserID: userID, CreatedByUserID: &p.UserID,
+			ID: store.NewID(), UserID: in.userID, CreatedByUserID: in.createdBy,
 			ExpiresAt: out.ExpiresAt, CreatedAt: now,
 		}
-		if in.Kind != "" {
-			k := in.Kind
+		if in.kind != "" {
+			k := in.kind
 			row.Kind = &k
 		}
 		for attempt := 1; ; attempt++ {
@@ -100,11 +137,11 @@ func (s *Service) CreatePairingCode(ctx context.Context, p *auth.Principal, esta
 				return err
 			}
 		}
-		out.QR = QRPayload{V: QRVersion, URL: target.URL, Code: out.Code, Fingerprint: target.Fingerprint, EstablishmentName: est.Name}
+		out.QR = QRPayload{V: QRVersion, URL: in.target.URL, Code: out.Code, Fingerprint: in.target.Fingerprint, EstablishmentName: est.Name}
 		return s.d.Audit.Record(ctx, tx, audit.Entry{
-			EstablishmentID: es.ID(), Actor: p.Actor(""), Action: "device.pairing_code_created",
+			EstablishmentID: es.ID(), Actor: in.actor, Action: in.action,
 			EntityType: "device_pairing_code", EntityID: row.ID,
-			Diff: map[string]any{"user_id": userID, "kind": in.Kind, "expires_at": out.ExpiresAt},
+			Diff: map[string]any{"user_id": in.userID, "kind": in.kind, "expires_at": out.ExpiresAt},
 		})
 	})
 	if err != nil {
@@ -119,6 +156,75 @@ func (s *Service) CreatePairingCode(ctx context.Context, p *auth.Principal, esta
 		s.d.Log.WarnContext(ctx, "device: pairing qr not rendered", slog.String("error", err.Error()))
 	}
 	return out, nil
+}
+
+// DemoPairingRoles are the roles a demo user may hold: the server refuses
+// to hand an anonymous caller an owner or manager device (users, payments,
+// refunds, configuration), whatever the instance is configured with.
+var DemoPairingRoles = []auth.Role{auth.RoleCashier, auth.RoleBeachStaff, auth.RoleViewer}
+
+// DemoPairingEnabled reports whether the instance is configured for the
+// demo pairing (the server mounts its rate limits only then, so a normal
+// instance always answers 404).
+func (s *Service) DemoPairingEnabled() bool {
+	return s.d.Demo != nil && s.d.Demo.UserEmail != "" && s.d.Demo.EstablishmentSlug != ""
+}
+
+// CreateDemoPairingCode mints a pairing code for the demo user of the demo
+// establishment (Deps.Demo, ARENILE_DEMO_PAIRING_*), with no signed-in
+// caller: the "Prova la demo" button of the mobile app pairs with it. The
+// device gets the role of that user, which must be one of DemoPairingRoles.
+// Audit "device.demo_pairing_code_created" with the caller's IP.
+// ErrDemoPairingDisabled when the instance has no demo pairing (the endpoint
+// answers 404). The caller limits the requests (DemoPairingEnabled).
+func (s *Service) CreateDemoPairingCode(ctx context.Context, ip string) (*PairingCode, error) {
+	if !s.DemoPairingEnabled() {
+		return nil, ErrDemoPairingDisabled
+	}
+	demo := s.d.Demo
+	if s.d.Instance == nil {
+		return nil, ErrLANModeRequired
+	}
+	target, err := s.d.Instance.PairingTarget(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// A wrong configuration answers as a disabled demo (404, nothing to
+	// learn from outside) and is logged for the operator.
+	misconfigured := func(what string, err error) (*PairingCode, error) {
+		s.d.Log.WarnContext(ctx, "device: demo pairing misconfigured", slog.String("what", what), slog.String("error", err.Error()))
+		return nil, ErrDemoPairingDisabled
+	}
+	est, err := store.GetEstablishmentBySlug(ctx, s.d.DB, demo.EstablishmentSlug)
+	if errors.Is(err, store.ErrNotFound) {
+		return misconfigured("establishment", err)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("device: demo establishment: %w", err)
+	}
+	es, err := store.SystemEstablishmentScope(ctx, s.d.DB, est.ID)
+	if err != nil {
+		return nil, fmt.Errorf("device: demo establishment: %w", err)
+	}
+	user, err := store.GetUserByEmail(ctx, s.d.DB, demo.UserEmail)
+	if errors.Is(err, store.ErrNotFound) {
+		return misconfigured("user", err)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("device: demo user: %w", err)
+	}
+	out, err := s.issueCode(ctx, es, issue{
+		userID: user.ID, kind: store.DeviceKindMobile, ttl: DefaultPairingTTL, target: target,
+		roles: DemoPairingRoles,
+		actor: audit.Actor{Type: audit.ActorSystem, IP: ip}, action: "device.demo_pairing_code_created",
+	})
+	if errors.Is(err, configerr.ErrValidation) {
+		return misconfigured("membership", err) // the demo user has no active role there
+	}
+	if errors.Is(err, errRoleNotAllowed) {
+		return misconfigured("role", err) // owner or manager: never handed out anonymously
+	}
+	return out, err
 }
 
 // Pair exchanges a code for a device token: conditional UPDATE consuming

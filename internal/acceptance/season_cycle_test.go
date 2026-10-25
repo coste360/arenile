@@ -72,20 +72,22 @@ func TestAcceptance_SeasonCycle(t *testing.T) {
 		e.runJobs()
 		c.login(ownerEmail, ownerPassword) // months later: a new session
 
-		// 2. Rollover: preview, apply, apply again.
+		// 2. Rollover: preview, apply, apply again. The demo season is open
+		// all year; the new one is a real summer season.
+		opens, closes := calendar.MustParse("2028-05-01"), calendar.MustParse("2028-09-30")
 		dry := true
-		rp := c.must(c.post("rolloverSeason", e.path("/seasons/"+e.season.ID+"/rollover"), api.SeasonRolloverRequest{TargetYear: 2028, DryRun: &dry}), "rollover preview")
+		rp := c.must(c.post("rolloverSeason", e.path("/seasons/"+e.season.ID+"/rollover"), api.SeasonRolloverRequest{TargetYear: 2028, OpensOn: &opens, ClosesOn: &closes, DryRun: &dry}), "rollover preview")
 		preview := decode[api.SeasonRolloverResult](t, rp)
 		if rp.Status != http.StatusOK || !preview.DryRun || preview.Season != nil || preview.Counts.PriceRules == 0 || preview.SeasonPasses == nil || *preview.SeasonPasses != n {
 			t.Fatalf("rollover preview: %s", rp)
 		}
 		dry = false
-		ra := c.must(c.post("rolloverSeason", e.path("/seasons/"+e.season.ID+"/rollover"), api.SeasonRolloverRequest{TargetYear: 2028, DryRun: &dry}), "rollover")
+		ra := c.must(c.post("rolloverSeason", e.path("/seasons/"+e.season.ID+"/rollover"), api.SeasonRolloverRequest{TargetYear: 2028, OpensOn: &opens, ClosesOn: &closes, DryRun: &dry}), "rollover")
 		applied := decode[api.SeasonRolloverResult](t, ra)
 		if ra.Status != http.StatusCreated || applied.Season == nil || applied.Counts != preview.Counts || applied.RolloverId == nil {
 			t.Fatalf("rollover apply: %s", ra)
 		}
-		rr := c.must(c.post("rolloverSeason", e.path("/seasons/"+e.season.ID+"/rollover"), api.SeasonRolloverRequest{TargetYear: 2028, DryRun: &dry}), "rollover again")
+		rr := c.must(c.post("rolloverSeason", e.path("/seasons/"+e.season.ID+"/rollover"), api.SeasonRolloverRequest{TargetYear: 2028, OpensOn: &opens, ClosesOn: &closes, DryRun: &dry}), "rollover again")
 		if again := decode[api.SeasonRolloverResult](t, rr); rr.Status != http.StatusOK || !again.AlreadyApplied || *again.RolloverId != *applied.RolloverId {
 			t.Fatalf("rollover again: %s", rr)
 		}

@@ -5,6 +5,7 @@ package problem
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math"
 	"net/http"
@@ -30,6 +31,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/reqctx"
@@ -308,6 +310,7 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		ope *booking.OutsidePeriodError
 		dup *customer.DuplicateError
 		tpl *notify.TemplateError
+		npe *pricing.NoPriceError
 	)
 	if writeTicketing(w, r, err) {
 		return
@@ -341,6 +344,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, SignatureInvalid)
 	case errors.Is(err, device.ErrPairingCodeInvalid):
 		Write(w, r, PairingCodeInvalid)
+	case errors.Is(err, device.ErrDemoPairingDisabled):
+		Write(w, r, NotFound)
 	case errors.Is(err, device.ErrLANModeRequired):
 		Write(w, r, LANModeRequired)
 	case errors.Is(err, control.ErrLoopbackRequired):
@@ -399,10 +404,18 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, NotFound)
 	case errors.As(err, &dup):
 		Write(w, r, Conflict, Detail(dup.Error()), ExistingCustomerID(dup.ExistingID))
+	case errors.Is(err, setup.ErrPaymentsInFlight):
+		Write(w, r, Conflict, Detail("Ci sono pagamenti online o rimborsi ancora in corso: attendi che si concludano, poi riprova."))
+	case errors.Is(err, setup.ErrHasFiscalRecords):
+		Write(w, r, Conflict, Detail("Lo stabilimento ha scontrini emessi dal registratore telematico: i documenti fiscali vanno conservati, quindi non si può azzerare. Per ripartire crea un nuovo stabilimento."))
+	case errors.Is(err, setup.ErrHasOperations):
+		Write(w, r, Conflict, Detail("Lo stabilimento ha prenotazioni, incassi o altri dati operativi: per ricominciare va azzerato tutto."))
 	case errors.Is(err, configerr.ErrConflict):
 		Write(w, r, Conflict, Detail(err.Error()))
+	case errors.As(err, &npe):
+		Write(w, r, NoPrice, Detail(NoPriceDetail(npe)))
 	case errors.Is(err, pricing.ErrNoPrice):
-		Write(w, r, NoPrice, Detail(err.Error()))
+		Write(w, r, NoPrice)
 	case errors.As(err, &pve):
 		vs := make([]api.PolicyViolation, len(pve.Violations))
 		for i, v := range pve.Violations {
@@ -469,4 +482,26 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		}
 		Write(w, r, InternalError)
 	}
+}
+
+// NoPriceDetail says in plain words which item has no price, for the
+// operator who has to add the missing rule (never the internal error chain).
+func NoPriceDetail(e *pricing.NoPriceError) string {
+	item := fmt.Sprintf("il pack %q", e.ItemCode)
+	if e.Target == pricing.TargetExtra {
+		item = fmt.Sprintf("l'extra %q", e.ItemCode)
+	}
+	if e.PriceCategory != "" {
+		item += fmt.Sprintf(" nella categoria di prezzo %q", e.PriceCategory)
+	}
+	slot := map[calendar.Slots]string{
+		calendar.SlotsFull: "giornata intera",
+		calendar.SlotsAM:   "mattina",
+		calendar.SlotsPM:   "pomeriggio",
+	}[e.Slots]
+	when := fmt.Sprintf("%02d/%02d/%d", e.Date.Day(), int(e.Date.Month()), e.Date.Year())
+	if slot != "" {
+		when += ", " + slot
+	}
+	return fmt.Sprintf("Nessun prezzo per %s il %s: aggiungi una regola base o un prezzo fisso in Prezzi.", item, when)
 }

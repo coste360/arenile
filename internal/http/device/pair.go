@@ -51,6 +51,22 @@ func (h *Handlers) PairDevice(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// CreateDemoPairingCode implements POST /api/device/v1/demo-pairing (404
+// unless the instance is a demo, limited per IP by the server).
+func (h *Handlers) CreateDemoPairingCode(w http.ResponseWriter, r *http.Request) {
+	if h.Devices == nil {
+		problem.Write(w, r, problem.NotFound)
+		return
+	}
+	pc, err := h.Devices.CreateDemoPairingCode(r.Context(), reqctx.From(r.Context()).ClientIP)
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeDeviceJSON(w, http.StatusCreated, admin.PairingCodeToAPI(pc))
+}
+
 // GetCurrentDevice implements GET /api/device/v1/self.
 func (h *Handlers) GetCurrentDevice(w http.ResponseWriter, r *http.Request) {
 	if h.Devices == nil {

@@ -916,6 +916,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/setup/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ricomincia la configurazione o azzera lo stabilimento
+         * @description Solo il titolare (permessi `establishment.configure`, `users.manage` e `payments.configure`), con una sessione utente (non chiavi API né dispositivi). `confirm_name` deve essere il nome dello stabilimento. `scope: configuration` cancella stagioni e periodi, chiusure, mappe, postazioni, zone, pool, catalogo, prezzi, codici sconto, convenzioni, policy e biglietti d'ingresso, e riapre la configurazione guidata; è rifiutato con `409` se lo stabilimento ha dati operativi (`SetupStatus.has_operations`). `scope: everything` cancella anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti, documenti fiscali, crediti, lista d'attesa e rinnovi; è rifiutato con `409` finché un pagamento online o un rimborso è in corso presso il provider o se ci sono documenti di un registratore telematico (driver fiscale diverso da `none`: emessi, annullati o ancora in stampa, o lavori del bridge in corso), che vanno conservati. Entrambi spengono `booking_enabled` e scrivono gli eventi `config.map_changed` e `config.pricing_changed`. Restano sempre il profilo dello stabilimento, i contatori dei biglietti del giorno, gli utenti, i pagamenti online, le email, i dispositivi, le casse e le stampanti, il registro attività. Irreversibile; tutto in una transazione, con una voce `setup.reset` nel registro attività.
+         */
+        post: operations["resetEstablishmentSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/establishments/{establishmentId}/customers": {
         parameters: {
             query?: never;
@@ -3258,6 +3278,26 @@ export interface paths {
          * @description Spec 29.2. Non autenticato, limitato per IP (10 tentativi al minuto). Il codice è monouso: lo scambio lo consuma con un UPDATE condizionale, quindi due richieste concorrenti con lo stesso codice producono un solo token. Codice inesistente, scaduto o già usato rispondono tutti `400 pairing_code_invalid` (nessun oracolo). Il token (`ar_dev_<prefix>_<secret>`) è restituito solo qui; il server conserva lo SHA-256. Si usa poi come `Authorization: Bearer` sulle API admin (permessi del ruolo dell'utente nello stabilimento del codice) e sulle API `/api/device/v1`. Nessun cookie, quindi nessun CSRF.
          */
         post: operations["pairDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/device/v1/demo-pairing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Codice di abbinamento allo stabilimento dimostrativo
+         * @description Spec 29.2. Solo sulle istanze dimostrative (`ARENILE_DEMO_PAIRING_USER` e `ARENILE_DEMO_PAIRING_ESTABLISHMENT`, spec 24.4); sulle altre risponde `404`. Non autenticato, limitato per rete del client (5 richieste all'ora; la /64 per IPv6) e in totale (300 all'ora). Restituisce un codice di abbinamento nuovo per l'utente dimostrativo configurato, valido 5 minuti: il pulsante "Prova la demo" dell'app lo scambia subito con `POST /api/device/v1/pair`. Il dispositivo abbinato ha il ruolo di quell'utente, ammesso solo se è `cashier`, `beach_staff` o `viewer` (con un titolare o un gestore l'endpoint risponde `404`). Nessun corpo.
+         */
+        post: operations["createDemoPairingCode"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6055,6 +6095,25 @@ export interface components {
             has_catalog: boolean;
             has_prices: boolean;
             booking_enabled: boolean;
+            /** @description Lo stabilimento ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti, lista d'attesa, rinnovi o crediti): la configurazione si ricomincia solo azzerando tutto. */
+            has_operations: boolean;
+        };
+        SetupResetRequest: {
+            /**
+             * @description `configuration`: solo la configurazione; `everything`: anche i dati operativi.
+             * @enum {string}
+             */
+            scope: "configuration" | "everything";
+            /** @description Nome dello stabilimento, scritto per confermare (spazi iniziali e finali ignorati). */
+            confirm_name: string;
+        };
+        SetupResetResult: {
+            /** @enum {string} */
+            scope: "configuration" | "everything";
+            /** @description Righe cancellate per tabella (solo quelle con almeno una riga). */
+            deleted: {
+                [key: string]: number;
+            };
         };
         /** @description Mezza giornata non disponibile per una risorsa (spec 7.2), restituita in Problem.conflicts e nelle anteprime. */
         AllocationConflict: {
@@ -13682,6 +13741,43 @@ export interface operations {
             409: components["responses"]["Conflict"];
         };
     };
+    resetEstablishmentSetup: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Stabilimento azzerato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupResetResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
     listCustomers: {
         parameters: {
             query?: {
@@ -19217,6 +19313,29 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             429: components["responses"]["TooManyRequests"];
             501: components["responses"]["NotImplemented"];
+        };
+    };
+    createDemoPairingCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Codice creato */
+            201: {
+                headers: {
+                    "Cache-Control"?: "no-store";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevicePairingCode"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     getCurrentDevice: {

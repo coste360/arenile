@@ -99,6 +99,8 @@ describe('SeasonsPage', () => {
     await user.click(
       within(dialog).getByRole('button', { name: 'Intervallo 1: 01/05/2027 – 30/09/2027' }),
     );
+    // The first click starts a new range, the second one ends it.
+    await user.click(await screen.findByRole('button', { name: /\b1 maggio 2027/i }));
     await user.click(await screen.findByRole('button', { name: /30 giugno 2027/i }));
     await user.keyboard('{Escape}');
     await user.click(within(dialog).getByRole('button', { name: 'Salva' }));

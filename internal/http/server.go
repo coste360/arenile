@@ -127,6 +127,9 @@ type Deps struct {
 	DesktopUsers desktophttp.UsersCounter
 	// PairingsPerMinute overrides the per-IP limit of POST /api/device/v1/pair (default 10).
 	PairingsPerMinute int
+	// DemoPairingsPerHour overrides the per-IP limit of POST
+	// /api/device/v1/demo-pairing (default 5).
+	DemoPairingsPerHour int
 
 	// M5B services (season rollover, renewals, waitlist, customer credits);
 	// nil ones answer 501 until implemented.
@@ -171,7 +174,11 @@ const (
 	authPathPrefix = "/api/admin/v1/auth/"
 	metaPath       = "/api/admin/v1/meta"
 	pairPath       = "/api/device/v1/pair"
-	firstRunPath   = "/api/desktop/v1/first-run"
+	demoPairPath   = "/api/device/v1/demo-pairing"
+	// demoPairingsGlobalPerHour caps the demo pairing codes of all clients
+	// together (ADR 0027).
+	demoPairingsGlobalPerHour = 300
+	firstRunPath              = "/api/desktop/v1/first-run"
 )
 
 // New builds the root handler.
@@ -195,6 +202,19 @@ func New(d Deps) http.Handler {
 	pairings := d.PairingsPerMinute
 	if pairings <= 0 {
 		pairings = 10
+	}
+	demoPairings := d.DemoPairingsPerHour
+	if demoPairings <= 0 {
+		demoPairings = 5
+	}
+	// Only a demo instance limits demo pairing: elsewhere the route always
+	// answers 404, never a 429 that would reveal it.
+	demoPairLimit := func(next http.Handler) http.Handler { return next }
+	if d.Devices != nil && d.Devices.DemoPairingEnabled() {
+		demoPairLimit = middleware.RateLimitByIPPrefix(
+			auth.NewRateLimiter(d.Clock, demoPairings, time.Hour),
+			auth.NewRateLimiter(d.Clock, demoPairingsGlobalPerHour, time.Hour),
+		)
 	}
 	sessionTTL := 7 * 24 * time.Hour
 	if d.Auth != nil {
@@ -233,8 +253,9 @@ func New(d Deps) http.Handler {
 				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
 				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
 			)),
+			middleware.OnPrefix(demoPairPath, demoPairLimit),
 			middleware.Authenticate(devicedomain.DeviceOnly{Devices: deviceAuthenticator(d)}, d.Log),
-			middleware.RequireAuth([]string{pairPath}, ""),
+			middleware.RequireAuth([]string{pairPath, demoPairPath}, ""),
 		),
 		desktopGuard(d, sessionTTL),
 		middleware.OnPrefix("/api/public/", middleware.PublicRateLimit(

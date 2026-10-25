@@ -1,0 +1,198 @@
+//go:build integration
+
+package acceptance
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"testing"
+
+	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/http/api"
+	"github.com/coste360/arenile/internal/store"
+)
+
+// TestAcceptance_SetupReset runs the two levels of the setup reset on the
+// full demo (configuration and real operational data, both dialects):
+//
+//  1. with operational data the configuration-only reset is a conflict, a
+//     wrong name is refused, nothing is deleted;
+//  2. "everything" empties every table of the establishment it owns, keeps
+//     the establishment, its team and the audit log, and writes setup.reset;
+//  3. the setup wizard starts over (template applied again), and a
+//     configuration-only reset now succeeds.
+func TestAcceptance_SetupReset(t *testing.T) {
+	eachDialect(t, func(t *testing.T, e *env) {
+		ctx := context.Background()
+		owner, err := store.GetUserByEmail(ctx, e.db, ownerEmail)
+		if err != nil {
+			t.Fatal(err)
+		}
+		p := &auth.Principal{
+			Kind: auth.PrincipalUser, UserID: owner.ID, Name: owner.Name,
+			Grants: []auth.Grant{{OrganizationID: e.es.OrganizationID(), Role: auth.RoleOwner}},
+		}
+		if res, err := e.app.Setup.SeedDemoOperations(ctx, e.estID, e.app.DemoOperations(p)); err != nil || !res.Applied {
+			t.Fatalf("demo operations: %+v %v", res, err)
+		}
+		est, err := store.GetEstablishment(ctx, e.db, e.es)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c := newClient(t, e.srv.URL)
+		c.login(ownerEmail, ownerPassword)
+		status := func() api.SetupStatus {
+			return decode[api.SetupStatus](t, c.must(c.get("getSetupStatus", e.path("/setup/status")), "setup status"))
+		}
+		reset := func(scope api.SetupResetRequestScope, name string) result {
+			return c.post("resetEstablishmentSetup", e.path("/setup/reset"), api.SetupResetRequest{Scope: scope, ConfirmName: name})
+		}
+		rows := func(table string) int64 {
+			n, err := e.db.NewSelect().TableExpr(table).Where("establishment_id = ?", e.estID).Count(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return int64(n)
+		}
+
+		// 0. An online payment still pending at the provider blocks "everything".
+		now := e.clock.Now()
+		intent := &store.PaymentIntent{
+			ID: store.NewID(), EstablishmentID: e.estID, Provider: "stripe", Mode: "live", Kind: "payment",
+			ExternalID: "cs_reset_" + store.NewID(), Status: "pending", Amount: 1000, Currency: "EUR", Attempt: 1,
+			RawEventIDs: []string{}, CreatedAt: now, UpdatedAt: now,
+		}
+		if _, err := e.db.NewInsert().Model(intent).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if r := reset(api.SetupResetRequestScopeEverything, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
+			t.Fatalf("reset with a payment in flight: %d %s", r.Status, r.Body)
+		}
+		if _, err := e.db.NewUpdate().Model(intent).Set("status = ?", "expired").WherePK().Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+
+		// 0b. Receipts of a real registratore telematico, issued, voided or
+		// still at the device, and bridge jobs in progress block "everything"
+		// (fiscal records are kept); the demo ones ("none") and failed ones do not.
+		var paid store.Payment
+		if err := e.db.NewSelect().Model(&paid).Where("establishment_id = ?", e.estID).
+			Where("test = ?", false).Limit(1).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		for _, tc := range []struct {
+			name, driver, status string
+			job                  bool
+			blocks               bool
+		}{
+			{"issued bridge", "bridge", store.FiscalIssued, false, true},
+			{"pending bridge", "bridge", store.FiscalPending, false, true},
+			{"void bridge", "bridge", store.FiscalVoid, false, true},
+			{"failed bridge", "bridge", store.FiscalFailed, false, false},
+			{"issued none", "none", store.FiscalIssued, false, false},
+			{"queued job without document", "", "queued", true, true},
+			{"succeeded job without document", "", "succeeded", true, false},
+		} {
+			var row any
+			if tc.job {
+				row = &store.FiscalBridgeJob{
+					ID: store.NewID(), EstablishmentID: e.estID, Kind: "issue", IdempotencyKey: store.NewID(), Status: tc.status,
+					Payload: store.JSON(`{}`), NextAttemptAt: now, CreatedAt: now, UpdatedAt: now,
+				}
+			} else {
+				row = &store.FiscalDocument{
+					ID: store.NewID(), EstablishmentID: e.estID, PaymentID: paid.ID, Driver: tc.driver, Status: tc.status,
+					BusinessDate: paid.BusinessDate, Payload: store.JSON(`{}`), CreatedAt: now, UpdatedAt: now,
+				}
+			}
+			if _, err := e.db.NewInsert().Model(row).Exec(ctx); err != nil {
+				t.Fatalf("%s: %v", tc.name, err)
+			}
+			if got, err := store.HasFiscalRecords(ctx, e.db, e.es); err != nil || got != tc.blocks {
+				t.Errorf("%s: fiscal records %v, want %v (%v)", tc.name, got, tc.blocks, err)
+			}
+			if tc.blocks && tc.name == "issued bridge" {
+				if r := reset(api.SetupResetRequestScopeEverything, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
+					t.Fatalf("reset with a real receipt: %d %s", r.Status, r.Body)
+				}
+			}
+			if _, err := e.db.NewDelete().Model(row).WherePK().Exec(ctx); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		// 1. Operational data: configuration only is refused; a wrong name too.
+		if st := status(); !st.HasOperations || !st.HasSeason {
+			t.Fatalf("status before: %+v", st)
+		}
+		if r := reset(api.SetupResetRequestScopeConfiguration, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
+			t.Fatalf("configuration reset with operations: %d %s", r.Status, r.Body)
+		}
+		if r := reset(api.SetupResetRequestScopeEverything, "Un altro lido"); r.Status != http.StatusBadRequest || r.Problem.Type != "validation_failed" {
+			t.Fatalf("wrong name: %d %s", r.Status, r.Body)
+		}
+		bookings, customers, spots := rows("bookings"), rows("customers"), rows("spots")
+		if bookings == 0 || customers == 0 || spots == 0 {
+			t.Fatalf("demo rows: bookings %d customers %d spots %d", bookings, customers, spots)
+		}
+
+		// 2. Everything, with the name typed in another case and spaces.
+		r := c.must(reset(api.SetupResetRequestScopeEverything, "  "+est.Name+" "), "reset everything")
+		var out api.SetupResetResult
+		if err := json.Unmarshal(r.Body, &out); err != nil {
+			t.Fatal(err)
+		}
+		if r.Status != http.StatusOK || out.Scope != api.SetupResetResultScopeEverything ||
+			out.Deleted["bookings"] != bookings || out.Deleted["customers"] != customers || out.Deleted["spots"] != spots {
+			t.Fatalf("reset everything: %d %+v", r.Status, out)
+		}
+		for _, table := range []string{
+			"bookings", "booking_lines", "spot_allocations", "pool_allocations", "pool_usage", "season_releases",
+			"payments", "fiscal_documents", "cash_sessions", "cash_movements", "tickets", "customers",
+			"seasons", "rate_periods", "price_rules", "fixed_duration_prices", "booking_policies", "promo_codes",
+			"agreements", "maps", "spots", "map_decorations", "zones", "pools", "components", "packs", "extras",
+		} {
+			if n := rows(table); n != 0 {
+				t.Errorf("%s: %d rows left", table, n)
+			}
+		}
+		if _, err := store.GetEstablishment(ctx, e.db, e.es); err != nil {
+			t.Fatalf("establishment gone: %v", err)
+		}
+		if n, err := e.db.NewSelect().TableExpr("memberships").Where("user_id = ?", owner.ID).Count(ctx); err != nil || n == 0 {
+			t.Fatalf("team deleted: %d %v", n, err)
+		}
+		// The public page goes off and the map and price list changes are announced (INV-39).
+		if after, err := store.GetEstablishment(ctx, e.db, e.es); err != nil || after.BookingEnabled {
+			t.Fatalf("booking still enabled: %v", err)
+		}
+		for _, typ := range []string{"config.map_changed", "config.pricing_changed"} {
+			n, err := e.db.NewSelect().TableExpr("outbox_events").Where("establishment_id = ?", e.estID).
+				Where("type = ?", typ).Where("CAST(payload AS TEXT) LIKE ?", "%setup_reset%").Count(ctx)
+			if err != nil || n != 1 {
+				t.Fatalf("%s events: %d %v", typ, n, err)
+			}
+		}
+		audited, err := e.db.NewSelect().TableExpr("audit_log").Where("establishment_id = ?", e.estID).Where("action = ?", "setup.reset").Count(ctx)
+		if err != nil || audited != 1 {
+			t.Fatalf("audit: %d %v", audited, err)
+		}
+
+		// 3. The wizard starts over.
+		if st := status(); st.HasOperations || st.HasSeason || st.HasMap || st.SpotCount != 0 {
+			t.Fatalf("status after: %+v", st)
+		}
+		c.must(c.post("applySetupTemplate", e.path("/setup/apply-template"), api.ApplyTemplateRequest{Template: "classic_rows"}), "template again")
+		if st := status(); !st.HasMap || st.SpotCount == 0 {
+			t.Fatalf("status after the template: %+v", st)
+		}
+		r = c.must(reset(api.SetupResetRequestScopeConfiguration, est.Name), "reset configuration")
+		if r.Status != http.StatusOK {
+			t.Fatalf("configuration reset without operations: %d %s", r.Status, r.Body)
+		}
+		if st := status(); st.HasMap || st.HasSeason {
+			t.Fatalf("status after the configuration reset: %+v", st)
+		}
+	})
+}

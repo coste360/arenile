@@ -1,18 +1,15 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { DEMO_DAY, DEMO_YEAR, FREE_DAY, displayDate } from "./demo-dates";
 import { login } from "./helpers";
 
 /**
  * M3 "Prenotazioni dal pannello e cassa" against the real binary seeded with
- * `seed demo` (season 2027 from 1 May; demo bookings in May, a closed and an
+ * `seed demo` (the current year's season; demo bookings in the next 30 days, a closed and an
  * open cash session). Each test works on its own spots and dates so the
  * suite runs in parallel on the shared database.
  */
 
-/** A demo day with passes, daily bookings and free spots. */
-const DEMO_DAY = "2027-05-10";
-/** A season day far from the demo bookings, for creating new ones. */
-const FREE_DAY = "2027-06-16";
 
 /** Signs in and returns the panel base path of the demo establishment. */
 async function openPanel(page: Page): Promise<string> {
@@ -58,7 +55,7 @@ test("the operational map shows statuses and opens the spot sheet", async ({ pag
   await spot(page, "A1").click();
   const sheet = page.getByRole("dialog", { name: /Postazione A1/ });
   await expect(sheet).toBeVisible();
-  await expect(sheet.getByText("LD-2027-", { exact: false })).toBeVisible();
+  await expect(sheet.getByText(`LD-${DEMO_YEAR}-`, { exact: false })).toBeVisible();
   await expect(sheet.getByText("Abbonamento", { exact: true })).toBeVisible();
   // Pack names, never codes.
   await expect(sheet.getByText("Base", { exact: true })).toBeVisible();
@@ -81,7 +78,7 @@ test("a booking created from the new booking sheet appears on the map", async ({
   const form = page.getByRole("dialog", { name: "Nuova prenotazione" });
   await expect(form).toBeVisible();
   // Prefilled with the day and the spot from the map.
-  await expect(form.getByText("16/06/2027 – 16/06/2027")).toBeVisible();
+  await expect(form.getByText(`${displayDate(FREE_DAY)} – ${displayDate(FREE_DAY)}`)).toBeVisible();
 
   await form.getByRole("combobox", { name: "Pack" }).click();
   await page.getByRole("option", { name: "Base", exact: true }).click();
@@ -142,15 +139,15 @@ test("the cashier records a cash payment and closes the session", async ({ page 
   // Pick a demo booking with a balance due (pass of spot A15).
   await page.getByRole("button", { name: "Incassa" }).click();
   const pay = page.getByRole("dialog", { name: "Incassa prenotazione" });
-  await pay.getByLabel("Codice prenotazione o cliente").fill("LD-2027-000015");
-  await pay.getByRole("button", { name: /Seleziona la prenotazione LD-2027-000015/ }).click();
+  await pay.getByLabel("Codice prenotazione o cliente").fill(`LD-${DEMO_YEAR}-000015`);
+  await pay.getByRole("button", { name: new RegExp(`Seleziona la prenotazione LD-${DEMO_YEAR}-000015`) }).click();
   await pay.getByLabel("Importo").fill("50,00");
   await pay.getByLabel("Metodo").selectOption("cash");
   await pay.getByRole("button", { name: "Registra incasso" }).click();
-  await expect(page.getByText(/Incasso di 50,00\s€ registrato su LD-2027-000015/)).toBeVisible();
+  await expect(page.getByText(new RegExp(`Incasso di 50,00\\s€ registrato su LD-${DEMO_YEAR}-000015`))).toBeVisible();
   await expect(pay).toBeHidden();
   await expect(
-    page.getByRole("table", { name: "Incassi" }).getByText("Prenotazione LD-2027-000015"),
+    page.getByRole("table", { name: "Incassi" }).getByText(`Prenotazione LD-${DEMO_YEAR}-000015`),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Chiudi cassa" }).click();

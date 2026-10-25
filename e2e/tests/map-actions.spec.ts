@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { MAP_ACTIONS_DAY as DAY } from "./demo-dates";
 import { login } from "./helpers";
 
 /**
@@ -8,8 +9,6 @@ import { login } from "./helpers";
  * Works on its own day and spots so the suite stays parallel.
  */
 
-/** A season day no other test touches. */
-const DAY = "2027-07-21";
 
 async function openPanel(page: Page): Promise<string> {
   await login(page);
@@ -63,7 +62,7 @@ test("three spots selected on the map become one group booking", async ({ page }
     await spot(page, l).click();
     const sheet = page.getByRole("dialog", { name: new RegExp(`Postazione ${l}`) });
     await expect(sheet.getByText("Gruppo P.")).toBeVisible();
-    codes.add((await sheet.getByText(/^LD-2027-\d+$/).textContent()) ?? "");
+    codes.add((await sheet.getByText(new RegExp(`^LD-${DAY.slice(0, 4)}-\\d+$`)).textContent()) ?? "");
     await page.keyboard.press("Escape");
     await expect(sheet).toBeHidden();
   }

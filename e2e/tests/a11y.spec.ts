@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DEMO_SLUG, login } from "./helpers";
+import { bookableDay } from "./demo-dates";
 
 /**
  * Accessibility pass (WCAG 2.1 AA, European Accessibility Act for consumer
@@ -48,16 +49,17 @@ async function seriousViolations(
     );
 }
 
-/** Opens the calendar, picks one day of June (twice = a single day) and closes it. */
-async function pickJuneDay(page: Page, day: number) {
+/** Opens the calendar, picks one free season day (twice = a single day) and closes it. */
+async function pickDay(page: Page, n: number) {
+  const target = bookableDay(n);
   await page.getByRole("button", { name: /Date del soggiorno/ }).click();
   const grid = page.getByRole("grid").first();
   await expect(grid).toBeVisible();
   for (let i = 0; i < 12; i++) {
-    if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
+    if (target.month.test((await grid.getAttribute("aria-label")) ?? "")) break;
     await page.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
-  const name = new RegExp(`\\b${day} giugno`);
+  const name = target.name;
   await grid.getByRole("button", { name }).click();
   await page.getByRole("grid").first().getByRole("button", { name }).click();
   await expect(grid).toBeHidden();
@@ -109,7 +111,7 @@ test.describe("public booking page", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: /Date del soggiorno/ })).toBeFocused();
 
-    await pickJuneDay(page, 9);
+    await pickDay(page, 9);
     expect(await seriousViolations(page), "1 Quando (dates chosen)").toEqual([]);
     await page.getByRole("button", { name: "Avanti" }).click();
 
@@ -279,7 +281,7 @@ async function tabTo(page: Page, name: RegExp, max = 80): Promise<void> {
 
 test("a public booking can be completed with the keyboard only", async ({ page }) => {
   test.setTimeout(150_000);
-  const day = 10;
+  const target = bookableDay(10);
   await page.goto(`/b/${DEMO_SLUG}`);
   await expect(page.getByRole("button", { name: /Date del soggiorno/ })).toBeVisible();
 
@@ -294,25 +296,24 @@ test("a public booking can be completed with the keyboard only", async ({ page }
     if (inGrid) break;
     await page.keyboard.press("Tab");
   }
-  const target = new RegExp(`\\b${day} giugno`);
   for (let i = 0; i < 14; i++) {
-    if (/giugno/.test((await focusedName(page)).name)) break;
+    if (target.month.test((await focusedName(page)).name)) break;
     await page.keyboard.press("PageDown");
   }
   for (let i = 0; i < 40; i++) {
     const n = (await focusedName(page)).name;
-    if (target.test(n)) break;
-    const current = Number(/\b(\d{1,2}) giugno/.exec(n)?.[1] ?? 0);
-    await page.keyboard.press(current < day ? "ArrowRight" : "ArrowLeft");
+    if (target.name.test(n)) break;
+    const current = Number(/\b(\d{1,2}) \p{L}+ \d{4}/u.exec(n)?.[1] ?? 0);
+    await page.keyboard.press(current < target.day ? "ArrowRight" : "ArrowLeft");
   }
-  expect((await focusedName(page)).name).toMatch(target);
+  expect((await focusedName(page)).name).toMatch(target.name);
   await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog", { name: "Date del soggiorno" })).toBeHidden();
   // Focus returns to the field, which now shows the day.
   await expect(page.getByRole("button", { name: /Date del soggiorno/ })).toBeFocused();
   await expect(page.getByRole("button", { name: /Date del soggiorno/ })).toHaveText(
-    new RegExp(`^${day}/06/\\d{4}$`),
+    new RegExp(`^${target.display}$`),
   );
   await tabTo(page, /^Avanti$/);
   await page.keyboard.press("Enter");

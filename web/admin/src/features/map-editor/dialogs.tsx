@@ -87,18 +87,23 @@ function SelectRow<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        // min-w-0: a long value (a zone name) must not widen the grid column.
+        <FormItem className="min-w-0">
           <FormLabel>{label}</FormLabel>
           <Select value={field.value as string} onValueChange={field.onChange}>
             <FormControl>
-              <SelectTrigger className="w-full" onBlur={field.onBlur}>
+              <SelectTrigger className="w-full min-w-0" onBlur={field.onBlur}>
                 <SelectValue />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
               {options.map((o) => (
                 <SelectItem key={o.value} value={o.value} disabled={o.disabled}>
-                  {o.label}
+                  {typeof o.label === 'string' ? (
+                    <span className="truncate">{o.label}</span>
+                  ) : (
+                    o.label
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -202,7 +207,7 @@ export function RowGeneratorForm({
                 };
               })}
             />
-            <FormItem>
+            <FormItem className="min-w-0">
               <FormLabel htmlFor="generator-asset">{t('fields.illustration')}</FormLabel>
               <IllustrationField
                 id="generator-asset"

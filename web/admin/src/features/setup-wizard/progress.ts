@@ -40,7 +40,9 @@ export type WizardAction =
   | { type: 'goto'; step: number }
   | { type: 'setTemplate'; template: TemplateCode }
   | { type: 'applied'; seasonId?: string; mapId?: string }
-  | { type: 'restart' };
+  | { type: 'restart' }
+  /** The establishment was reset: every step is pending again. */
+  | { type: 'reset' };
 
 function allPending(): Record<StepId, StepState> {
   return Object.fromEntries(STEPS.map((s) => [s, 'pending'])) as Record<StepId, StepState>;
@@ -98,6 +100,8 @@ export function wizardReducer(p: WizardProgress, action: WizardAction): WizardPr
       };
     case 'restart':
       return { ...p, current: 0, finished: false };
+    case 'reset':
+      return initialProgress();
     default:
       return p;
   }

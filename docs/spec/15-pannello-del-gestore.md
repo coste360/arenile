@@ -24,6 +24,21 @@ Al primo avvio:
 
 Ogni passo è saltabile e modificabile in seguito.
 
+**Ricomincia da zero** (solo il titolare, con il nome dello stabilimento scritto per conferma, irreversibile):
+- *Ricomincia la configurazione* cancella stagioni, periodi, chiusure, mappe, postazioni, zone, pool, catalogo,
+  prezzi, codici sconto, convenzioni, policy e biglietti d'ingresso; è possibile solo finché lo stabilimento non
+  ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti, lista d'attesa, rinnovi,
+  crediti);
+- *Azzera lo stabilimento* cancella anche i dati operativi e i clienti, con una seconda conferma; è rifiutato
+  finché un pagamento online o un rimborso è ancora in corso presso il provider o quando ci sono scontrini di un
+  registratore telematico (driver fiscale diverso da `none`: emessi, annullati o ancora in stampa): i documenti fiscali vanno
+  conservati e per ripartire serve un nuovo stabilimento.
+
+Entrambi spengono la pagina pubblica fino alla nuova configurazione. La numerazione dei biglietti del giorno prosegue.
+
+Restano sempre profilo dello stabilimento, utenti, pagamenti online, email, dispositivi, casse, stampanti e
+registro attività (`POST /api/admin/v1/establishments/{id}/setup/reset`).
+
 ### 15.3 Report (MVP)
 
 - Occupazione per giorno e per zona (percentuale di fasce occupate).

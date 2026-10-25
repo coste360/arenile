@@ -34,6 +34,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0024](0024-kit-mappa-v3-e-scelta-del-kit.md) | Kit mappa v3 "Moderno" predefinito e "Classico" (v2.1) come alternativa, scelti per stabilimento nel tema (`theme.map_kit`, nessuna migrazione); generatore multi-kit con regole per profilo; stato sul disegno con `--beach-state`, palette degli stati per tema, barra sul bloccato | accettato |
 | [0025](0025-avviso-nuova-versione-acceso-di-default.md) | Avviso di nuova versione acceso di default su tutte le edizioni (`ARENILE_UPDATE_CHECK`, impostazione desktop): un GET al giorno di un file pubblico di Coste360 con solo versione, edizione e sistema nell'User-Agent, nessun identificativo, non è telemetria; esito fallito mai mostrato come errore | accettato |
 | [0026](0026-verifica-aggiornamenti-manuale.md) | Verifica aggiornamenti su richiesta (`POST /api/admin/v1/system/update/check`, menu dell'app desktop): al massimo un controllo di rete al minuto e mai due insieme, nessuna chiamata con il controllo spento; `pending` nello stato perché il pannello rilegga presto lo stato dopo l'avvio | accettato |
+| [0027](0027-abbinamento-demo-app-mobile.md) | Abbinamento allo stabilimento dimostrativo (`POST /api/device/v1/demo-pairing`): codice per l'utente demo senza login, solo con `ARENILE_DEMO_PAIRING_*`, 5 all'ora per IP, `404` altrove; unica eccezione dell'app al "nessun server predefinito" | accettato |
 
 ## Come aggiungere un ADR
 

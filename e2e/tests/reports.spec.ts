@@ -1,9 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+import { DEMO_YEAR } from "./demo-dates";
 import { login } from "./helpers";
 
 /**
- * M5A reports (spec 15.3) against the demo season 2027: the KPIs of the
- * season, the year-over-year comparison with 2026 (no data there, so the
+ * M5A reports (spec 15.3) against the demo season: the KPIs of the
+ * season, the year-over-year comparison with the previous year (no data there, so the
  * deltas read "Nuovo") and the CSV export of what is shown.
  */
 
@@ -21,17 +22,17 @@ test("reports show the season and compare it with the previous year", async ({ p
   await page.goto(`${base}/report`);
   await expect(page.getByRole("heading", { name: "Report", level: 1 })).toBeVisible();
 
-  // The demo season 2027 (the only one).
+  // The demo season (the only one).
   const season = page.getByLabel("Stagione", { exact: true });
-  const value = await season.locator("option", { hasText: "2027" }).first().getAttribute("value");
+  const value = await season.locator("option", { hasText: String(DEMO_YEAR) }).first().getAttribute("value");
   await season.selectOption(value as string);
 
   const kpis = page.getByRole("region", { name: "Indicatori del periodo" });
   await expect(kpis).toBeVisible();
   await expect(kpis.getByText(/fasce occupate su \d+/)).toBeVisible();
 
-  // Year over year: 2026 has no data, so every change reads "Nuovo".
-  await page.getByRole("switch", { name: "Confronta con il 2026" }).click();
+  // Year over year: the previous year has no data, so every change reads "Nuovo".
+  await page.getByRole("switch", { name: `Confronta con il ${DEMO_YEAR - 1}` }).click();
   const metrics = page.getByRole("table", {
     name: "Indicatori a confronto con l'anno precedente",
   });
@@ -42,9 +43,9 @@ test("reports show the season and compare it with the previous year", async ({ p
   ).toBeVisible();
 
   // The comparison CSV is the spreadsheet format of spec 15.3 (BOM, ";").
-  const csvLink = page.getByRole("link", { name: "Esporta CSV: Confronto con il 2026" });
+  const csvLink = page.getByRole("link", { name: `Esporta CSV: Confronto con il ${DEMO_YEAR - 1}` });
   const href = await csvLink.getAttribute("href");
-  expect(href).toContain("compare_year=2026");
+  expect(href).toContain(`compare_year=${DEMO_YEAR - 1}`);
   const csv = await page.request.get(href as string);
   expect(csv.ok()).toBeTruthy();
   expect(csv.headers()["content-type"]).toContain("text/csv");

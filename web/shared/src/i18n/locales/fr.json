@@ -296,7 +296,10 @@
       "placeholder": "Choisir une date",
       "rangePlaceholder": "Choisir une période",
       "clear": "Effacer",
-      "open": "Ouvrir le calendrier"
+      "open": "Ouvrir le calendrier",
+      "from": "Du",
+      "to": "Au",
+      "format": "jj/mm/aaaa"
     },
     "table": {
       "filter": "Filtrer…",

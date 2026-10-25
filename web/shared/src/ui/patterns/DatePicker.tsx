@@ -201,7 +201,12 @@ export function DateRangePicker({
             <span id={valueId}>{label}</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent
+          className="w-auto p-0"
+          align="start"
+          // Keep the focus off the typed fields: on phones it would open the keyboard over the calendar.
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <Suspense
             fallback={<CalendarLoading label={t('common.loading')} wide={numberOfMonths > 1} />}
           >

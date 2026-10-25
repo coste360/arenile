@@ -7,13 +7,47 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 ## [Unreleased]
 
 ### Aggiunto
+- Configurazione guidata, **Ricomincia da zero** (solo il titolare, scrivendo il nome dello stabilimento):
+  **Ricomincia la configurazione** cancella stagioni, mappe, zone, catalogo, prezzi e policy e riparte dal primo
+  passo, finché non ci sono prenotazioni o incassi; **Azzera lo stabilimento** cancella anche prenotazioni,
+  abbonamenti, clienti, incassi, cassa e biglietti, con una seconda conferma, ma non mentre un pagamento online o
+  un rimborso è in corso né quando ci sono scontrini di un registratore telematico (vanno conservati). Entrambi
+  spengono la pagina pubblica. Restano profilo, utenti, pagamenti online, email, dispositivi, casse, stampanti,
+  numerazione dei biglietti del giorno e registro attività. Nuovo `POST …/setup/reset` e
+  `has_operations` nello stato della configurazione.
+- Istanze dimostrative: `POST /api/device/v1/demo-pairing` restituisce un codice di abbinamento per l'utente
+  dimostrativo (solo con ruolo di cassiere, staff di spiaggia o sola lettura), senza login, con un limite di 5
+  richieste all'ora per rete del client e 300 in totale. Serve al pulsante **Prova la demo**
+  dell'app mobile, che così si prova senza avere un server. Si attiva con `ARENILE_DEMO_PAIRING_USER` e
+  `ARENILE_DEMO_PAIRING_ESTABLISHMENT`; sulle istanze normali risponde sempre `404`.
 - La coda offline dell'app mobile (check-in, ingresso al varco, rilasci degli abbonati, blocchi, note, incassi) è
   coperta da `Idempotency-Key` su tutte le operazioni: `checkInEntryTicket` ora la dichiara nel contratto e le
   descrizioni spiegano la ripetizione (risposta originale con `Idempotent-Replayed: true`, 24 ore, per utente). Una
   risposta memorizzata sotto 500, compresi i rifiuti 4xx, è definitiva per quella chiave: dopo aver corretto la causa
   il client invia di nuovo con una chiave nuova (INV-99).
 
+### Modificato
+- `arenile seed demo`: la stagione dimostrativa è sempre quella dell'anno in corso ed è prenotabile tutti i giorni
+  (dall'1 gennaio al 31 dicembre; fuori da maggio-settembre vale la bassa stagione), così vendita rapida, cassa e
+  prenotazioni si provano il giorno stesso. Negli ultimi due mesi dell'anno la stagione si sposta in avanti e copre
+  sempre i 60 giorni successivi. Prima, dopo il 30 settembre, creava solo la stagione dell'anno dopo. La stagione
+  successiva non viene creata: si prova con **Passaggio di stagione**.
+
 ### Corretto
+- Mappe: **Crea e apri l'editor** apriva l'editor con "Risorsa non trovata" (si apriva un indirizzo senza l'id della
+  mappa); la mappa era creata e compariva solo tornando all'elenco. Ora l'editor si apre subito sulla nuova mappa.
+- Editor della mappa: nel **Generatore di file** un nome di zona lungo copriva il campo **Tipo** e il campo
+  **Illustrazione** usciva dalla finestra. Ora i valori lunghi sono troncati con i puntini.
+- Calendari delle date: cambiando mese il calendario cambiava altezza e si spostava sopra o sotto il campo. Ora
+  mostra sempre sei settimane e resta fermo.
+- Scelta di un periodo (stagioni, periodi tariffari, chiusure, prenotazioni, report e gli altri campi con due
+  date): con un periodo già impostato il primo clic spostava la data finale. Ora il primo clic sceglie sempre
+  l'inizio e il secondo la fine; in alto ci sono i campi **Dal** e **Al** per scrivere le date a mano
+  (gg/mm/aaaa).
+- Prezzo mancante (vendita rapida, prenotazioni, simulatore): il messaggio mostrava il testo tecnico interno
+  ("pricingconfig: simulate: pricing: no price for pack…"). Ora dice in italiano cosa manca, per esempio
+  "Nessun prezzo per il pack "base" nella categoria di prezzo "row5" il 25/10/2026, giornata intera: aggiungi una
+  regola base o un prezzo fisso in Prezzi."
 - App desktop su Windows: un reindirizzamento del server verso un altro sito (o fuori da `/admin`) e **Apri
   collegamento in una nuova finestra** del menu contestuale aprivano la pagina dentro l'app, senza modo di tornare al
   pannello. Ora seguono la stessa regola degli altri link, come su macOS: si aprono nel browser predefinito, mentre
