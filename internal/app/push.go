@@ -7,6 +7,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/push"
+	"github.com/coste360/arenile/internal/domain/webhook"
 	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/pushrelay"
 	"github.com/coste360/arenile/pkg/ext"
@@ -27,9 +28,10 @@ func (a *App) wirePush(aw *audit.Writer) {
 	var relay push.Relay
 	if a.cfg.PushRelayConfigured() {
 		relay = pushrelay.Client{URL: a.cfg.PushRelayURL, Key: a.cfg.PushRelayKey, Version: a.opts.version, Now: a.opts.clock.Now}
-		// The key logs as "<id>.***" (pushrelay.Key.LogValue).
+		// The key logs as "<id>.***" (pushrelay.Key.LogValue); the URL without
+		// its query string, which could carry a credential.
 		a.log.Info("push notifications available through the relay",
-			slog.String("relay_url", a.cfg.PushRelayURL), slog.Any("relay_key", a.cfg.PushRelayKey))
+			slog.String("relay_url", webhook.RedactURL(a.cfg.PushRelayURL)), slog.Any("relay_key", a.cfg.PushRelayKey))
 	}
 	a.Push = push.NewService(push.Deps{
 		DB: a.db, Clock: a.opts.clock, Audit: aw, Log: a.log, Keys: a.keys,

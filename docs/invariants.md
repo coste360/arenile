@@ -956,7 +956,8 @@ quell'argomento; consenso, dispositivo (revoca, scadenza per inattività) e ruol
 chiave non si accoda nulla e non parte alcuna richiesta. Il corpo verso il relay è il solo payload chiuso v1 (token
 nativo, piattaforma, ambiente, chiave del catalogo e lingua), firmato con HMAC; nessun nome, codice, importo o nome
 dello stabilimento. Il token è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
-dispositivo. Un evento riconsegnato non accoda una seconda notifica e due worker non inviano mai insieme la stessa
+dispositivo. Un evento riconsegnato non accoda una seconda notifica alla stessa registrazione (se il
+dispositivo si registra di nuovo in mezzo, la nuova registrazione può riceverla una volta) e due worker non inviano mai insieme la stessa
 consegna (lease condizionale); la consegna al relay è almeno una volta (risposta persa, arresto durante l'invio) e il
 relay deduplica sull'`id` della consegna.
 Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
