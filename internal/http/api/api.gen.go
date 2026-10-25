@@ -2234,6 +2234,7 @@ const (
 	ProblemTypePrintRouteMissing          ProblemType = "print_route_missing"
 	ProblemTypePrinterAddressNotAllowed   ProblemType = "printer_address_not_allowed"
 	ProblemTypePrintingUnavailable        ProblemType = "printing_unavailable"
+	ProblemTypePushUnavailable            ProblemType = "push_unavailable"
 	ProblemTypeQuotaExceeded              ProblemType = "quota_exceeded"
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
 	ProblemTypeRefundInProgress           ProblemType = "refund_in_progress"
@@ -2335,6 +2336,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypePrinterAddressNotAllowed:
 		return true
 	case ProblemTypePrintingUnavailable:
+		return true
+	case ProblemTypePushUnavailable:
 		return true
 	case ProblemTypeQuotaExceeded:
 		return true
@@ -2517,6 +2520,69 @@ func (e PublicRenewalAcceptRequestPayment) Valid() bool {
 	case PublicRenewalAcceptRequestPaymentDeposit:
 		return true
 	case PublicRenewalAcceptRequestPaymentFull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PushEnvironment.
+const (
+	Production PushEnvironment = "production"
+	Sandbox    PushEnvironment = "sandbox"
+)
+
+// Valid indicates whether the value is a known member of the PushEnvironment enum.
+func (e PushEnvironment) Valid() bool {
+	switch e {
+	case Production:
+		return true
+	case Sandbox:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PushLocale.
+const (
+	PushLocaleDe PushLocale = "de"
+	PushLocaleEn PushLocale = "en"
+	PushLocaleFr PushLocale = "fr"
+	PushLocaleIt PushLocale = "it"
+)
+
+// Valid indicates whether the value is a known member of the PushLocale enum.
+func (e PushLocale) Valid() bool {
+	switch e {
+	case PushLocaleDe:
+		return true
+	case PushLocaleEn:
+		return true
+	case PushLocaleFr:
+		return true
+	case PushLocaleIt:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PushTopic.
+const (
+	PushTopicBookingApprovalRequested PushTopic = "booking_approval_requested"
+	PushTopicBookingNewOnline         PushTopic = "booking_new_online"
+	PushTopicPaymentFailed            PushTopic = "payment_failed"
+)
+
+// Valid indicates whether the value is a known member of the PushTopic enum.
+func (e PushTopic) Valid() bool {
+	switch e {
+	case PushTopicBookingApprovalRequested:
+		return true
+	case PushTopicBookingNewOnline:
+		return true
+	case PushTopicPaymentFailed:
 		return true
 	default:
 		return false
@@ -6870,7 +6936,7 @@ type MetaCapabilities struct {
 	OnlinePayments   bool     `json:"online_payments"`
 	PaymentProviders []string `json:"payment_providers"`
 
-	// PushNotifications Notifiche push tramite relay configurate (M7).
+	// PushNotifications Notifiche push disponibili sull'istanza: chiave del relay configurata (`ARENILE_PUSH_RELAY_KEY`) ed edizione server (sempre falso nell'edizione desktop). Ogni stabilimento le accende a parte (`push-settings`, spente di default); l'app legge lo stato effettivo da `GET /api/device/v1/push` (ADR 0027).
 	PushNotifications bool `json:"push_notifications"`
 
 	// Realtime Flusso SSE `GET /api/admin/v1/stream` disponibile.
@@ -8781,6 +8847,86 @@ type PublicZoneAvailability struct {
 	Spots  *[]PublicSpotAvailability `json:"spots,omitempty"`
 	ZoneId string                    `json:"zone_id"`
 }
+
+// PushEnvironment `sandbox` per le build di sviluppo iOS (APNs di sviluppo), `production` altrimenti.
+type PushEnvironment string
+
+// PushEvents Avvisi che lo stabilimento invia quando le push sono accese.
+type PushEvents struct {
+	BookingApprovalRequested bool `json:"booking_approval_requested"`
+	BookingNewOnline         bool `json:"booking_new_online"`
+	PaymentFailed            bool `json:"payment_failed"`
+}
+
+// PushLocale Lingua del testo generico composto dal relay.
+type PushLocale string
+
+// PushRegistrationInput defines model for PushRegistrationInput.
+type PushRegistrationInput struct {
+	// Environment `sandbox` per le build di sviluppo iOS (APNs di sviluppo), `production` altrimenti.
+	Environment *PushEnvironment `json:"environment,omitempty"`
+
+	// Locale Lingua del testo generico composto dal relay.
+	Locale PushLocale `json:"locale"`
+
+	// Token Token push nativo dato dal sistema operativo all'app (APNs o FCM), caratteri ASCII stampabili senza spazi. Non è mai restituito.
+	Token string `json:"token"`
+
+	// Topics Argomenti scelti dall'utente, tra quelli ammessi dal suo ruolo.
+	Topics []PushTopic `json:"topics"`
+}
+
+// PushRegistrationStatus defines model for PushRegistrationStatus.
+type PushRegistrationStatus struct {
+	// AllowedTopics Argomenti ammessi dal ruolo dell'utente e accesi dal gestore.
+	AllowedTopics []PushTopic `json:"allowed_topics"`
+
+	// Available Push utilizzabili ora (chiave del relay e push accese dal gestore).
+	Available bool `json:"available"`
+
+	// Environment `sandbox` per le build di sviluppo iOS (APNs di sviluppo), `production` altrimenti.
+	Environment          *PushEnvironment `json:"environment,omitempty"`
+	EstablishmentEnabled bool             `json:"establishment_enabled"`
+
+	// Locale Lingua del testo generico composto dal relay.
+	Locale *PushLocale `json:"locale,omitempty"`
+
+	// Registered Questo dispositivo ha un token registrato.
+	Registered      bool `json:"registered"`
+	RelayConfigured bool `json:"relay_configured"`
+
+	// Topics Argomenti registrati (vuoto se non registrato).
+	Topics []PushTopic `json:"topics"`
+
+	// UpdatedAt Ultima registrazione del token.
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// PushSettings defines model for PushSettings.
+type PushSettings struct {
+	// Enabled Push accese dal gestore (falso di default).
+	Enabled bool `json:"enabled"`
+
+	// Events Avvisi che lo stabilimento invia quando le push sono accese.
+	Events PushEvents `json:"events"`
+
+	// RelayConfigured L'istanza ha la chiave del relay (`ARENILE_PUSH_RELAY_KEY`); senza, nessuna push parte.
+	RelayConfigured bool `json:"relay_configured"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// PushSettingsInput defines model for PushSettingsInput.
+type PushSettingsInput struct {
+	Enabled bool `json:"enabled"`
+
+	// Events Avvisi che lo stabilimento invia quando le push sono accese.
+	Events PushEvents `json:"events"`
+}
+
+// PushTopic Argomento di una notifica push, chiave del catalogo chiuso del relay (ADR 0027). `booking_new_online`: nuova prenotazione online (bookings.read); `booking_approval_requested`: prenotazione da approvare (bookings.write); `payment_failed`: pagamento non riuscito (refunds.issue).
+type PushTopic string
 
 // QuickPrice defines model for QuickPrice.
 type QuickPrice struct {
@@ -12932,6 +13078,16 @@ type UpdatePromoCodeParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// UpdatePushSettingsParams defines parameters for UpdatePushSettings.
+type UpdatePushSettingsParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListRatePeriodsParams defines parameters for ListRatePeriods.
 type ListRatePeriodsParams struct {
 	// SeasonId Filtra per stagione.
@@ -14401,6 +14557,9 @@ type CreatePromoCodeJSONRequestBody = PromoCodeInput
 // UpdatePromoCodeJSONRequestBody defines body for UpdatePromoCode for application/json ContentType.
 type UpdatePromoCodeJSONRequestBody = PromoCodeInput
 
+// UpdatePushSettingsJSONRequestBody defines body for UpdatePushSettings for application/json ContentType.
+type UpdatePushSettingsJSONRequestBody = PushSettingsInput
+
 // CreateRatePeriodJSONRequestBody defines body for CreateRatePeriod for application/json ContentType.
 type CreateRatePeriodJSONRequestBody = RatePeriodInput
 
@@ -14529,6 +14688,9 @@ type SubmitFiscalBridgeJobResultJSONRequestBody = FiscalBridgeJobResult
 
 // PairDeviceJSONRequestBody defines body for PairDevice for application/json ContentType.
 type PairDeviceJSONRequestBody = DevicePairRequest
+
+// RegisterDevicePushJSONRequestBody defines body for RegisterDevicePush for application/json ContentType.
+type RegisterDevicePushJSONRequestBody = PushRegistrationInput
 
 // CreatePublicBookingJSONRequestBody defines body for CreatePublicBooking for application/json ContentType.
 type CreatePublicBookingJSONRequestBody = PublicBookingCreate
@@ -15117,6 +15279,12 @@ type ServerInterface interface {
 	// UpdatePromoCode Sostituisce codice promozionale
 	// (PUT /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
 	UpdatePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID, params UpdatePromoCodeParams)
+	// GetPushSettings Impostazioni delle notifiche push dello stabilimento
+	// (GET /api/admin/v1/establishments/{establishmentId}/push-settings)
+	GetPushSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// UpdatePushSettings Accende o spegne le notifiche push dello stabilimento
+	// (PUT /api/admin/v1/establishments/{establishmentId}/push-settings)
+	UpdatePushSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdatePushSettingsParams)
 	// ListRatePeriods Elenco periodi tariffari
 	// (GET /api/admin/v1/establishments/{establishmentId}/rate-periods)
 	ListRatePeriods(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRatePeriodsParams)
@@ -15453,6 +15621,15 @@ type ServerInterface interface {
 	// PairDevice Scambia un codice di abbinamento con un token per dispositivo
 	// (POST /api/device/v1/pair)
 	PairDevice(w http.ResponseWriter, r *http.Request)
+	// UnregisterDevicePush Cancella il token push di questo dispositivo (l'utente spegne le notifiche)
+	// (DELETE /api/device/v1/push)
+	UnregisterDevicePush(w http.ResponseWriter, r *http.Request)
+	// GetDevicePushRegistration Stato delle notifiche push di questo dispositivo
+	// (GET /api/device/v1/push)
+	GetDevicePushRegistration(w http.ResponseWriter, r *http.Request)
+	// RegisterDevicePush Registra (o sostituisce) il token push nativo di questo dispositivo
+	// (PUT /api/device/v1/push)
+	RegisterDevicePush(w http.ResponseWriter, r *http.Request)
 	// UnpairCurrentDevice Scollega questo dispositivo (revoca il proprio token)
 	// (DELETE /api/device/v1/self)
 	UnpairCurrentDevice(w http.ResponseWriter, r *http.Request)
@@ -16653,6 +16830,18 @@ func (_ Unimplemented) UpdatePromoCode(w http.ResponseWriter, r *http.Request, e
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// GetPushSettings Impostazioni delle notifiche push dello stabilimento
+// (GET /api/admin/v1/establishments/{establishmentId}/push-settings)
+func (_ Unimplemented) GetPushSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePushSettings Accende o spegne le notifiche push dello stabilimento
+// (PUT /api/admin/v1/establishments/{establishmentId}/push-settings)
+func (_ Unimplemented) UpdatePushSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdatePushSettingsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListRatePeriods Elenco periodi tariffari
 // (GET /api/admin/v1/establishments/{establishmentId}/rate-periods)
 func (_ Unimplemented) ListRatePeriods(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRatePeriodsParams) {
@@ -17322,6 +17511,24 @@ func (_ Unimplemented) SubmitFiscalBridgeJobResult(w http.ResponseWriter, r *htt
 // PairDevice Scambia un codice di abbinamento con un token per dispositivo
 // (POST /api/device/v1/pair)
 func (_ Unimplemented) PairDevice(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UnregisterDevicePush Cancella il token push di questo dispositivo (l'utente spegne le notifiche)
+// (DELETE /api/device/v1/push)
+func (_ Unimplemented) UnregisterDevicePush(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetDevicePushRegistration Stato delle notifiche push di questo dispositivo
+// (GET /api/device/v1/push)
+func (_ Unimplemented) GetDevicePushRegistration(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RegisterDevicePush Registra (o sostituisce) il token push nativo di questo dispositivo
+// (PUT /api/device/v1/push)
+func (_ Unimplemented) RegisterDevicePush(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -29086,6 +29293,101 @@ func (siw *ServerInterfaceWrapper) UpdatePromoCode(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r)
 }
 
+// GetPushSettings operation middleware
+func (siw *ServerInterfaceWrapper) GetPushSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPushSettings(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePushSettings operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePushSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePushSettingsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePushSettings(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListRatePeriods operation middleware
 func (siw *ServerInterfaceWrapper) ListRatePeriods(w http.ResponseWriter, r *http.Request) {
 
@@ -35879,6 +36181,48 @@ func (siw *ServerInterfaceWrapper) PairDevice(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// UnregisterDevicePush operation middleware
+func (siw *ServerInterfaceWrapper) UnregisterDevicePush(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UnregisterDevicePush(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetDevicePushRegistration operation middleware
+func (siw *ServerInterfaceWrapper) GetDevicePushRegistration(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetDevicePushRegistration(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RegisterDevicePush operation middleware
+func (siw *ServerInterfaceWrapper) RegisterDevicePush(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RegisterDevicePush(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // UnpairCurrentDevice operation middleware
 func (siw *ServerInterfaceWrapper) UnpairCurrentDevice(w http.ResponseWriter, r *http.Request) {
 
@@ -38495,6 +38839,15 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/device/v1/self", wrapper.GetCurrentDevice)
 	})
 	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/device/v1/push", wrapper.UnregisterDevicePush)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/device/v1/push", wrapper.GetDevicePushRegistration)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/device/v1/push", wrapper.RegisterDevicePush)
+	})
+	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/api/device/v1/fiscal-bridge", wrapper.UnregisterFiscalBridge)
 	})
 	r.Group(func(r chi.Router) {
@@ -38592,6 +38945,12 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist-settings", wrapper.UpdateWaitlistSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/push-settings", wrapper.GetPushSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/push-settings", wrapper.UpdatePushSettings)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits", wrapper.GetCustomerCredits)

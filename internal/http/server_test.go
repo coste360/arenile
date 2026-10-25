@@ -28,6 +28,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/pass"
+	"github.com/coste360/arenile/internal/domain/push"
 	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/report"
@@ -113,6 +114,7 @@ func newEnv(t *testing.T, db *store.DB) *env {
 		TestMode: testmode.NewService(testmode.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob, Keys: kr}),
 		Refunds:  refund.NewService(refund.Deps{DB: db, Clock: c, Audit: aw}),
 		Imports:  importer.NewService(importer.Deps{DB: db, Clock: c}),
+		Push:     push.NewService(push.Deps{DB: db, Clock: c, Audit: aw, Keys: kr}),
 	})
 	srv := httptest.NewServer(h)
 	t.Cleanup(srv.Close)

@@ -49,6 +49,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/printing"
+	"github.com/coste360/arenile/internal/domain/push"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
@@ -147,6 +148,8 @@ type Deps struct {
 	Printing *printing.Service
 	// Update notice (ADR 0025); nil answers 501.
 	Updates *update.Service
+	// Push notifications (ADR 0027); nil answers 501.
+	Push *push.Service
 
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
@@ -268,8 +271,9 @@ func New(d Deps) http.Handler {
 			Imports:  d.Imports,
 			Printing: d.Printing,
 			Updates:  d.Updates,
+			Push:     d.Push,
 		},
-		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
+		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Push: d.Push, Log: d.Log},
 		desktopHandlers: &desktopHandlers{
 			Control: d.Desktop, Auth: d.Auth, Users: d.DesktopUsers, Log: d.Log, SecureCookies: d.SecureCookies,
 		},

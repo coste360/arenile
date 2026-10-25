@@ -28,6 +28,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
+	"github.com/coste360/arenile/internal/domain/push"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/waitlist"
@@ -113,6 +114,7 @@ const (
 // Email template type slugs (ADR 0022).
 const (
 	EmailTemplateInvalid = api.ProblemType("email_template_invalid")
+	PushUnavailable      = api.ProblemType("push_unavailable")
 )
 
 type meta struct {
@@ -178,6 +180,7 @@ var catalog = map[api.ProblemType]meta{
 	PrintingUnavailable:      {http.StatusConflict, "La stampa ESC/POS è disponibile solo con l'app desktop"},
 	PrinterAddressNotAllowed: {http.StatusUnprocessableEntity, "L'indirizzo della stampante deve essere della rete locale"},
 	EmailTemplateInvalid:     {http.StatusUnprocessableEntity, "Il testo dell'email non è valido"},
+	PushUnavailable:          {http.StatusConflict, "Notifiche push non disponibili: chiave del relay mancante o push spente dal gestore"},
 	PrintRouteMissing:        {http.StatusConflict, "Nessuna stampante configurata per questo documento"},
 }
 
@@ -343,6 +346,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, PairingCodeInvalid)
 	case errors.Is(err, device.ErrLANModeRequired):
 		Write(w, r, LANModeRequired)
+	case errors.Is(err, push.ErrUnavailable):
+		Write(w, r, PushUnavailable)
 	case errors.Is(err, control.ErrLoopbackRequired):
 		Write(w, r, LoopbackRequired)
 	case errors.Is(err, control.ErrSetupTokenInvalid):

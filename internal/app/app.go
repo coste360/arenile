@@ -59,6 +59,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/printing"
+	"github.com/coste360/arenile/internal/domain/push"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
@@ -161,6 +162,8 @@ type App struct {
 	Meta         *meta.Service
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
+	// Push notifications through the relay (wired by wirePush, see push.go).
+	Push *push.Service
 
 	// M5B services (wired by wireRenewals, see m5b.go); own block.
 	Rollover *rollover.Service
@@ -292,6 +295,7 @@ func (a *App) wire() error {
 	a.wireOperations(aw)
 	a.wireOnline(aw)
 	a.wireDevices(aw)
+	a.wirePush(aw)
 	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{
 		Egress: event.EgressPolicy{AllowPrivate: a.cfg.WebhooksAllowPrivate},
 	})
@@ -309,7 +313,7 @@ func (a *App) wire() error {
 		bus = x.EventBus
 	}
 	a.Bus = sse.NewReplayBus(bus, 0)
-	sinks := slices.Concat(x.EventSinks, a.onlineSinks(), a.renewalSinks())
+	sinks := slices.Concat(x.EventSinks, a.onlineSinks(), a.renewalSinks(), a.pushSinks())
 	dispatcher := event.NewDispatcher(a.db, c, sinks, a.Bus, a.log)
 
 	a.runner = jobs.NewRunner(a.log)
@@ -326,7 +330,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs(), a.printingJobs(), a.Updates.Jobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs(), a.printingJobs(), a.Updates.Jobs(), a.Push.Jobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -349,6 +353,7 @@ func (a *App) wire() error {
 		Imports:        a.Imports,
 		Printing:       a.Printing,
 		Updates:        a.Updates,
+		Push:           a.Push,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
