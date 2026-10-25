@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-// The Windows layer is plain Win32 through golang.org/x/sys (no C): the
+// The Windows layer is plain Win32 through golang.org/x/sys: the
 // WebView2 control already handles downloads (Downloads folder, its own
 // download flyout), window.print (print preview), the edit shortcuts
 // (Ctrl+C/V/X/Z/A), reload (F5, Ctrl+R) and zoom (Ctrl +/-/0). This file
@@ -20,10 +20,12 @@ import (
 // before the state is saved), the window placement and the focus on a
 // second launch. Links and navigations that leave the panel are sent to
 // the default browser by the injected script (desktop.LinkScript: clicks,
-// window.open and the Navigation API's navigate event, which WebView2
-// supports), so no WebView2 COM handler is needed here; a same-origin
-// panel URL opened in a new window (a server document) gets WebView2's own
-// popup, which the operator closes to return to the panel.
+// window.open and the Navigation API's navigate event) and, for what the
+// script cannot see (HTTP redirects, the context menu's "Open link in new
+// window"), by two WebView2 event handlers (webview2_windows.go:
+// NavigationStarting, NewWindowRequested). A panel API URL opened in a
+// new window (a server document) gets WebView2's own popup, which the
+// operator closes to return to the panel.
 
 var (
 	user32                  = windows.NewLazySystemDLL("user32.dll")
@@ -69,9 +71,10 @@ var (
 )
 
 type platform struct {
-	w    webview.WebView
-	c    *Controller
-	hwnd uintptr
+	w     webview.WebView
+	c     *Controller
+	hwnd  uintptr
+	links *linkHooks
 }
 
 // platformAvailable reports whether the Evergreen WebView2 runtime is
@@ -128,6 +131,9 @@ func (p *platform) install(st WindowState) {
 	}
 	origProc = prev
 	origMu.Unlock()
+	if p.links = installLinkHooks(browserController(p.w, p.hwnd), p.c); p.links == nil {
+		p.c.o.Log.Warn("desktop window: WebView2 link handlers not installed, redirects and new windows leaving the panel stay in the app")
+	}
 	if st.Placed || st.Maximized {
 		wp := windowPlacement{ShowCmd: swShowNormal}
 		wp.Length = uint32(unsafe.Sizeof(wp))
@@ -149,6 +155,8 @@ func (p *platform) install(st WindowState) {
 }
 
 func (p *platform) uninstall() {
+	p.links.remove()
+	p.links = nil
 	origMu.Lock()
 	if origProc != 0 {
 		_, _, _ = procSetWindowLongPtrW.Call(p.hwnd, gwlpWndProc, origProc)

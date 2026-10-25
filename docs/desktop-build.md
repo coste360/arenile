@@ -333,8 +333,19 @@ keychain entry afterwards (service `it.coste360.arenile`, account
   (exit backup) and exits; macOS reports that Arenile interrupted the logout, the next try
   succeeds. A Windows logoff ends the process without the exit backup (as in the tray build);
   the daily backup covers it.
-- On macOS a top-level navigation of the window to another origin (redirect, script, form)
-  is sent to the default browser; on Windows webview_go has no navigation hook, so only links
-  and `window.open` are diverted (the panel itself never navigates away).
+- The window shows the panel only: a top-level navigation that leaves it (another origin, or
+  a same-origin page outside `/admin` and `/api`; link, script, form or HTTP redirect) and a
+  new-window request towards it (`window.open`, `target=_blank`, the context menu's "Open
+  link in new window") go to the default browser. On macOS the shim's WebKit delegates apply
+  the rule; on Windows two WebView2 handlers do (`NavigationStarting`, `NewWindowRequested`,
+  `internal/desktop/shell/webview2_windows.go`), registered on the `ICoreWebView2Controller`
+  that webview_go exposes through `webview_get_native_handle`. The handle is used only when
+  the pointer read from webview_go's wrapper matches the one the library stores in its window;
+  otherwise the handlers are skipped with a warning in the log and only the injected script
+  applies (links, `window.open`, the Navigation API). These handlers are type-checked for
+  amd64 and arm64 but have not been run on a Windows PC yet. A panel API URL opened in a new
+  window on Windows (a server document) still gets WebView2's own popup.
+- Desktop-tag tests: `make test-desktop` (CGO, macOS or Windows) runs the launcher's tests
+  with the `desktop` tag, as the macOS and Windows jobs of the desktop workflow do.
 - Open SSE streams keep `app.Run`'s graceful shutdown waiting up to its timeout (15 s) on
   every edition; the window unloads its page before quitting, a browser tab does not.
