@@ -76,7 +76,7 @@ func TestWebviewHandle_Shapes(t *testing.T) {
 		{"nil handle", &fakeWebview{}, nil, false},
 		{"nil pointer", (*fakeWebview)(nil), nil, false},
 		{"not a pointer", fakeWebview{w: p}, nil, false},
-		{"more fields", &twoFields{w: p}, nil, false},
+		{"more fields", &twoFields{w: p, n: 1}, nil, false},
 		{"not a pointer field", &wrongKind{w: 1}, nil, false},
 		{"nil", nil, nil, false},
 	}
