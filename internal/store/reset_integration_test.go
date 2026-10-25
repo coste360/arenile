@@ -86,7 +86,7 @@ func TestResetEstablishment_EveryTableClassified(t *testing.T) {
 
 		// Restrictive foreign keys: the child is deleted before its parent,
 		// in the full order and in the configuration-only order.
-		firstIndex := func(list []string, tb string) int { return slices.Index(list, tb) }
+		firstIndex := slices.Index[[]string]
 		lastIndex := func(list []string, tb string) int {
 			for i := len(list) - 1; i >= 0; i-- {
 				if list[i] == tb {

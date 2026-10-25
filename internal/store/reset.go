@@ -122,7 +122,7 @@ func HasPaymentsInFlight(ctx context.Context, db bun.IDB, es EstablishmentScope)
 		{"refund_requests", []string{"pending", "processing", "failed"}},
 	} {
 		ok, err := db.NewSelect().TableExpr(c.table).Where("establishment_id = ?", es.ID()).
-			Where("status IN (?)", bun.In(c.statuses)).Exists(ctx)
+			Where("status IN (?)", bun.List(c.statuses)).Exists(ctx)
 		if err != nil {
 			return false, fmt.Errorf("store: payments in flight (%s): %w", c.table, err)
 		}
@@ -145,7 +145,7 @@ func HasFiscalRecords(ctx context.Context, db bun.IDB, es EstablishmentScope) (b
 		return false, err
 	}
 	ok, err := db.NewSelect().TableExpr("fiscal_documents").Where("establishment_id = ?", es.ID()).
-		Where("driver <> ?", "none").Where("status IN (?)", bun.In([]string{FiscalPending, FiscalIssued, FiscalVoid})).
+		Where("driver <> ?", "none").Where("status IN (?)", bun.List([]string{FiscalPending, FiscalIssued, FiscalVoid})).
 		Exists(ctx)
 	if err != nil {
 		return false, fmt.Errorf("store: has fiscal records: %w", err)
@@ -154,7 +154,7 @@ func HasFiscalRecords(ctx context.Context, db bun.IDB, es EstablishmentScope) (b
 		return true, nil
 	}
 	ok, err = db.NewSelect().TableExpr("fiscal_bridge_jobs").Where("establishment_id = ?", es.ID()).
-		Where("status IN (?)", bun.In([]string{"queued", "leased"})).Exists(ctx)
+		Where("status IN (?)", bun.List([]string{"queued", "leased"})).Exists(ctx)
 	if err != nil {
 		return false, fmt.Errorf("store: has fiscal records (bridge jobs): %w", err)
 	}
@@ -191,7 +191,7 @@ func ResetEstablishment(ctx context.Context, tx bun.Tx, es EstablishmentScope, o
 		// printed yet (their payload names the holder) and the panel
 		// notifications pointing at a booking, payment or customer.
 		res, err := tx.NewDelete().TableExpr("print_jobs").Where("establishment_id = ?", es.ID()).
-			Where("status IN (?)", bun.In([]string{"queued", "failed"})).Exec(ctx)
+			Where("status IN (?)", bun.List([]string{"queued", "failed"})).Exec(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("store: reset establishment (print_jobs): %w", err)
 		}
