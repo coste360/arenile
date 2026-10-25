@@ -1,7 +1,15 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { EST_ID, baseRoutes, callsTo, json, meFor, renderApp } from '../configuration/testing';
+import {
+  EST_ID,
+  baseRoutes,
+  callsTo,
+  establishment,
+  json,
+  meFor,
+  renderApp,
+} from '../configuration/testing';
 import { opBooking, opDay, opSpot } from './testing/fixtures';
 import { API, operationsRoutes } from './testing/routes';
 
@@ -278,5 +286,29 @@ describe('OperationalMapPage', () => {
     expect(a2).not.toHaveAccessibleName(/Rossi/);
     expect(document.querySelector('[data-map-label="caption"]')).toBeNull();
     expect(screen.queryByRole('radiogroup', { name: 'Etichette' })).toBeNull();
+  });
+});
+
+describe('OperationalMapPage in the establishment time zone', () => {
+  // 12:00 UTC on 13 July is already 14 July at the establishment (UTC+14),
+  // while browsers below UTC+12 are still on 13 July: the map of 14 July is today and offers the
+  // check-in.
+  beforeAll(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-07-13T12:00:00Z'));
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
+  it('offers the check-in on the establishment day, not the browser day', async () => {
+    const user = userEvent.setup();
+    renderApp(PATH, {
+      ...baseRoutes('cashier', establishment({ timezone: 'Pacific/Kiritimati' })),
+      ...operationsRoutes(day, {}),
+    });
+    await user.click(await screen.findByRole('button', { name: /Postazione A2/ }));
+    const sheet = await screen.findByRole('dialog');
+    expect(await within(sheet).findByRole('button', { name: 'Check-in' })).toBeInTheDocument();
   });
 });

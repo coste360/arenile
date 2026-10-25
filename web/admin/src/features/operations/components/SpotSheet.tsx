@@ -33,11 +33,12 @@ import {
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { todayIso } from '../../bookings/model';
 import { usePackName } from '../../bookings/usePackName';
 import { OfflineSpotActions } from '../../../offline/OfflineSpotActions';
 import { spotLabel } from '../../../offline/labels';
 import { useQueueableCheckIn } from '../../../offline/useQueueableCheckIn';
+import { useCurrentEstablishment } from '../../../establishment';
+import { todayIn } from '../lib/dates';
 import { useDeleteSpotBlock, useReleaseDay, useRevokeRelease } from '../api/operations';
 import type { OperationsPermissions } from '../lib/permissions';
 import { spotActions } from '../lib/actions';
@@ -96,6 +97,7 @@ export function SpotSheet({
   const problemText = useProblemText();
   const packName = usePackName(establishmentId);
   const checkIn = useQueueableCheckIn(establishmentId);
+  const { establishment } = useCurrentEstablishment();
   const release = useReleaseDay(establishmentId);
   const revoke = useRevokeRelease(establishmentId);
   const unblock = useDeleteSpotBlock(establishmentId);
@@ -121,7 +123,10 @@ export function SpotSheet({
   const status = slotStatus(spot, slot);
   const colour = toSpotStatus(status, spot.booking);
   const b = spot.booking;
-  const actions = spotActions(spot, slot, permissions, { date, today: todayIso() });
+  const actions = spotActions(spot, slot, permissions, {
+    date,
+    today: todayIn(establishment?.timezone),
+  });
   const vip = b?.customer_tags.some((tag) => tag.toLowerCase() === VIP_TAG);
 
   const doCheckIn = () => {
