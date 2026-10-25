@@ -10,8 +10,9 @@
 //     the macOS application menu as data (AppMenu, Menu, MenuEntry) and its
 //     wiring to Go handlers (Commands), CloseAction (hide or quit when the
 //     window is closed), the download file naming (SanitizeFileName,
-//     UniquePath, DownloadsDir), the external-link policy (AllowExternal)
-//     and the script injected in the window (InitScript).
+//     UniquePath, DownloadsDir), the external-link policy (AllowExternal),
+//     the native link decisions (NavigationAction, NewWindowAction) and the
+//     script injected in the window (InitScript).
 //   - Controller holds the window behaviour over the Native port (navigate,
 //     show, hide, reload, zoom, terminate): which URL is shown, what closing
 //     does, where a download goes, what a menu action runs.
@@ -19,8 +20,11 @@
 //     !linux": window_webview.go (github.com/webview/webview_go: WKWebView on
 //     macOS, WebView2 on Windows), cocoa_darwin.{go,m} (a small Objective-C
 //     shim: main menu, close-to-hide, Dock reopen, Cmd+Q, WKDownload to
-//     ~/Downloads, printing, window frame and zoom) and win_windows.go
-//     (Win32: WM_CLOSE subclass, window placement, focus, WebView2 presence).
+//     ~/Downloads, printing, window frame and zoom), win_windows.go
+//     (Win32: WM_CLOSE subclass, window placement, focus, WebView2 presence)
+//     and webview2_windows.go (WebView2 NavigationStarting and
+//     NewWindowRequested handlers: redirects and new windows that leave the
+//     panel go to the default browser).
 //     WebView2 handles downloads, printing, zoom and the edit shortcuts by
 //     itself; WKWebView needs the shim for each of them.
 //

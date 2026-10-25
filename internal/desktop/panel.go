@@ -206,13 +206,14 @@ const LeavesPanelJS = `function (u) {
 // Navigation API (WebView2 on Windows), every other navigation the page
 // starts (location.href and location.assign, form submissions: a POST
 // reaches the browser as a GET of its URL, no panel form leaves it). <a
-// download> is never intercepted (the window saves the file). Not covered
-// on Windows: HTTP redirects (the navigate event fires for the first URL
-// only; the panel's server redirects only within /admin) and WebView2's
-// own "open in new window" of the context menu. On macOS the navigation
-// delegate of the shim applies the same rule natively to all of them
-// (cocoa_darwin.m). The binding's Go policy (AllowExternal) is the
-// security boundary, not this script.
+// download> is never intercepted (the window saves the file). What the
+// script cannot see (HTTP redirects: the navigate event fires for the
+// first URL only; the context menu's "open link in new window") is
+// handled natively with the same rule: the navigation delegate of the
+// macOS shim (cocoa_darwin.m) and the WebView2 NavigationStarting and
+// NewWindowRequested handlers on Windows (shell/webview2_windows.go). The
+// binding's Go policy (AllowExternal) is the security boundary, not this
+// script.
 const LinkScript = `var leavesPanel = ` + LeavesPanelJS + `;
   var onLink = function (e) {
     if (e.type === "auxclick" && e.button !== 1) return;

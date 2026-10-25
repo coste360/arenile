@@ -229,6 +229,10 @@ test-race: ## Test di concorrenza TestConcurrency_* con -race su SQLite e Postgr
 	echo "test-race: $$n test di concorrenza"; \
 	POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-race go test -race -tags=integration -run '^TestConcurrency' ./internal/...
 
+.PHONY: test-desktop
+test-desktop: ## Test del launcher desktop con il tag "desktop" (CGO, finestra e tray: su macOS e Windows)
+	CGO_ENABLED=1 go test -tags desktop ./cmd/arenile-desktop/... ./internal/desktop/...
+
 .PHONY: e2e
 e2e: web-build ## Test end-to-end Playwright con server di prova e dati demo
 ifneq ($(HAS_E2E),)

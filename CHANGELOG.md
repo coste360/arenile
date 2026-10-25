@@ -20,6 +20,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   richieste all'ora per rete del client e 300 in totale. Serve al pulsante **Prova la demo**
   dell'app mobile, che così si prova senza avere un server. Si attiva con `ARENILE_DEMO_PAIRING_USER` e
   `ARENILE_DEMO_PAIRING_ESTABLISHMENT`; sulle istanze normali risponde sempre `404`.
+- La coda offline dell'app mobile (check-in, ingresso al varco, rilasci degli abbonati, blocchi, note, incassi) è
+  coperta da `Idempotency-Key` su tutte le operazioni: `checkInEntryTicket` ora la dichiara nel contratto e le
+  descrizioni spiegano la ripetizione (risposta originale con `Idempotent-Replayed: true`, 24 ore, per utente). Una
+  risposta memorizzata sotto 500, compresi i rifiuti 4xx, è definitiva per quella chiave: dopo aver corretto la causa
+  il client invia di nuovo con una chiave nuova (INV-99).
 
 ### Modificato
 - `arenile seed demo`: la stagione dimostrativa è sempre quella dell'anno in corso ed è prenotabile tutti i giorni
@@ -43,6 +48,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   ("pricingconfig: simulate: pricing: no price for pack…"). Ora dice in italiano cosa manca, per esempio
   "Nessun prezzo per il pack "base" nella categoria di prezzo "row5" il 25/10/2026, giornata intera: aggiungi una
   regola base o un prezzo fisso in Prezzi."
+- App desktop su Windows: un reindirizzamento del server verso un altro sito (o fuori da `/admin`) e **Apri
+  collegamento in una nuova finestra** del menu contestuale aprivano la pagina dentro l'app, senza modo di tornare al
+  pannello. Ora seguono la stessa regola degli altri link, come su macOS: si aprono nel browser predefinito, mentre
+  una pagina del pannello aperta in una nuova finestra si apre nella finestra dell'app.
+- Sviluppo: i test del launcher desktop con il tag `desktop` si interrompevano su macOS (SIGTRAP), perché il test
+  della modalità remota apriva una vera finestra fuori dal thread principale. Il nuovo `make test-desktop` li esegue
+  (anche nel job macOS del workflow desktop); il job Windows compila lo strato della finestra ed esegue i test delle
+  regole sui link.
 
 ## [1.0.3] - 2026-10-25
 

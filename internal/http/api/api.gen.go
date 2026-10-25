@@ -6906,7 +6906,7 @@ type MetaCapabilities struct {
 	OnlinePayments   bool     `json:"online_payments"`
 	PaymentProviders []string `json:"payment_providers"`
 
-	// PushNotifications Notifiche push tramite relay configurate (M7).
+	// PushNotifications Notifiche push non disponibili in questa edizione (spec 29.2), sempre false.
 	PushNotifications bool `json:"push_notifications"`
 
 	// Realtime Flusso SSE `GET /api/admin/v1/stream` disponibile.
@@ -11301,7 +11301,16 @@ type ListEstablishmentsParams struct {
 type CreateEstablishmentParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11335,7 +11344,16 @@ type ListAgreementsParams struct {
 type CreateAgreementParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11464,7 +11482,16 @@ type ListBookingsParams struct {
 type CreateBookingParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11519,7 +11546,16 @@ type CheckInBookingParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11568,7 +11604,16 @@ type MarkBookingNoShowParams struct {
 type AddBookingNoteParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11580,7 +11625,16 @@ type AddBookingNoteParams struct {
 type RecordBookingPaymentParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11592,7 +11646,16 @@ type RecordBookingPaymentParams struct {
 type RecordBookingRefundParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11627,7 +11690,16 @@ type ListCashRegistersParams struct {
 type CreateCashRegisterParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11683,7 +11755,16 @@ type ListCashSessionsParams struct {
 type OpenCashSessionParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11714,7 +11795,16 @@ type CloseCashSessionParams struct {
 type AddCashMovementParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11750,7 +11840,16 @@ type ListClosureDaysParams struct {
 type CreateClosureDayParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11791,7 +11890,16 @@ type ListComponentsParams struct {
 type CreateComponentParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11844,7 +11952,16 @@ type CreateCustomerParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11885,7 +12002,16 @@ type GetCustomerCreditsParams struct {
 type CreateCustomerCreditParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -11911,7 +12037,16 @@ type CreateDailySaleParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -11999,6 +12134,20 @@ type SendEmailTemplateTestParams struct {
 
 // CheckInEntryTicketParams defines parameters for CheckInEntryTicket.
 type CheckInEntryTicketParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -12012,7 +12161,16 @@ type CreateEntrySaleParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -12075,7 +12233,16 @@ type ListExtrasParams struct {
 type CreateExtraParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12164,7 +12331,16 @@ type ListFixedPricesParams struct {
 type CreateFixedPriceParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12196,7 +12372,16 @@ type UpdateFixedPriceParams struct {
 type CreateHoldParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12230,7 +12415,16 @@ type CreateImportJobParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12278,7 +12472,16 @@ type ListMapsParams struct {
 type CreateMapParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12402,7 +12605,16 @@ type ListPacksParams struct {
 type CreatePackParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12475,7 +12687,16 @@ type ListPaymentsParams struct {
 type RecordCounterSaleParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12530,7 +12751,16 @@ type ListPoliciesParams struct {
 type CreatePolicyParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12574,7 +12804,16 @@ type ListPoolsParams struct {
 type CreatePoolParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12624,7 +12863,16 @@ type ListPriceRulesParams struct {
 type CreatePriceRuleParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12701,7 +12949,16 @@ type ListPrintJobsParams struct {
 type CreatePrintJobParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12742,7 +12999,16 @@ type ListPrintersParams struct {
 type CreatePrinterParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12781,7 +13047,16 @@ type CheckPrinterParams struct {
 type TestPrinterParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12805,7 +13080,16 @@ type ListPromoCodesParams struct {
 type CreatePromoCodeParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12849,7 +13133,16 @@ type ListRatePeriodsParams struct {
 type CreateRatePeriodParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12918,7 +13211,16 @@ type ListRenewalCampaignsParams struct {
 type CreateRenewalCampaignParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12961,7 +13263,16 @@ type ListRenewalProposalsParams struct {
 type BulkRenewalProposalsParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12976,7 +13287,16 @@ type AcceptRenewalProposalParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -12998,7 +13318,16 @@ type DeclineRenewalProposalParams struct {
 type SendRenewalProposalParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13178,7 +13507,16 @@ type ListSeasonPassesParams struct {
 type CreateSeasonPassParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13220,7 +13558,16 @@ type SetSeasonPassPriceOverrideParams struct {
 type CreateSeasonPassReleasesParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13257,7 +13604,16 @@ type ListSeasonsParams struct {
 type CreateSeasonParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13289,7 +13645,16 @@ type UpdateSeasonParams struct {
 type CopySeasonParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13301,7 +13666,16 @@ type CopySeasonParams struct {
 type RolloverSeasonParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13313,7 +13687,16 @@ type RolloverSeasonParams struct {
 type ApplySetupTemplateParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13325,7 +13708,16 @@ type ApplySetupTemplateParams struct {
 type CreateQuickPricelistParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13362,7 +13754,16 @@ type ListSpotBlocksParams struct {
 type CreateSpotBlockParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13390,7 +13791,16 @@ type ListTeamMembersParams struct {
 type CreateTeamMemberParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13416,7 +13826,16 @@ type UpdateTeamMemberParams struct {
 type PublishTermsVersionParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13529,7 +13948,16 @@ type VoidTicketParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
@@ -13567,7 +13995,16 @@ type ListWaitlistEntriesParams struct {
 type CreateWaitlistEntryParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13616,7 +14053,16 @@ type UpdateWaitlistEntryParams struct {
 type OfferWaitlistEntryParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13710,7 +14156,16 @@ type ListZonesParams struct {
 type CreateZoneParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -13802,7 +14257,16 @@ type GetPublicAvailabilityParams struct {
 type CreatePublicBookingParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XArenilePreview Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403 test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide).
@@ -13840,7 +14304,16 @@ type PayPublicBookingParams struct {
 
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -13882,7 +14355,16 @@ type GetPublicCatalogParams struct {
 type ApplyManagedCreditParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -13902,7 +14384,16 @@ type ModifyManagedBookingParams struct {
 type PayManagedBookingBalanceParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -13919,7 +14410,16 @@ type GetManagedBookingQrParamsFormat string
 type AcceptManagedRenewalParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -13933,7 +14433,16 @@ type GetPublicMapParams struct {
 type JoinWaitlistParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -13941,7 +14450,16 @@ type JoinWaitlistParams struct {
 type AcceptWaitlistOfferParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
-	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	// originale (header `Idempotent-Replayed: true`) senza ripetere
+	// l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+	// mentre la prima è ancora in corso `409 idempotency_in_progress`
+	// (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+	// token del dispositivo) e per 24 ore: una coda offline più vecchia va
+	// ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+	// (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+	// i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+	// definitiva per quella chiave. Quando l'utente corregge la causa e
+	// invia di nuovo, il client deve usare una chiave nuova.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -22753,6 +23271,25 @@ func (siw *ServerInterfaceWrapper) CheckInEntryTicket(w http.ResponseWriter, r *
 	var params CheckInEntryTicketParams
 
 	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
 
 	// ------------- Optional header parameter "X-CSRF-Token" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {

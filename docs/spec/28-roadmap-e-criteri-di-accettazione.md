@@ -54,8 +54,8 @@
 ### M7 — App mobile (sezione 29.2)
 - Lato core: token per dispositivo con abbinamento tramite QR code, pagina *Dispositivi* nel pannello con revoca, endpoint `GET /api/admin/v1/meta`, pubblicazione di `openapi.yaml` come asset di release, uso della modalità rete locale dell'edizione desktop da parte dell'app.
 - Repository `coste360/arenile-mobile` (Expo): collegamento all'istanza, mappa del giorno, check-in con QR, incasso in contanti, rilasci, offline con coda.
-- Notifiche push facoltative tramite relay che non riceve dati personali.
-- **Accettazione:** lo staff collega un telefono a un'istanza scansionando un QR in meno di un minuto; con il telefono offline esegue check-in e incassi che, alla riconnessione, arrivano al server senza duplicati; nessuna richiesta di rete verso domini diversi dall'istanza (verificato con un proxy di ispezione), salvo il relay push se attivato.
+- Notifiche push non incluse in questa edizione: l'app aggiorna i dati all'apertura; un'eventuale futura edizione a pagamento potrà offrirle.
+- **Accettazione:** lo staff collega un telefono a un'istanza scansionando un QR in meno di un minuto; con il telefono offline esegue check-in e incassi che, alla riconnessione, arrivano al server senza duplicati; nessuna richiesta di rete verso domini diversi dall'istanza (verificato con un proxy di ispezione).
 
 ### Dopo l'MVP
 - Driver Satispay e altri provider; driver per registratori telematici.

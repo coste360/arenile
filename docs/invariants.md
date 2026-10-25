@@ -941,6 +941,22 @@ Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsS
 (`internal/domain/update`), `TestUpdates_WiringAndNoNetworkWhenDisabled` (`internal/app`),
 `TestChecker_RequestCarriesOnlyTheUserAgent` (`internal/updates`). Stato: implemented.
 
+## App mobile: coda offline (spec 29.2 — M7)
+
+**INV-99 — La coda offline dell'app non applica mai due volte un'operazione.**
+Check-in, ingresso al varco, rilascio del giorno di un abbonamento, blocco di una postazione, nota e incasso su una
+prenotazione esistente dichiarano `Idempotency-Key` nel contratto e passano dal middleware di idempotenza (anche
+l'ingresso al varco, verificato sul percorso). Ripetuti con il token del dispositivo e la stessa
+chiave (entro 24 ore, per lo stesso utente) restituiscono la risposta originale byte per byte con
+`Idempotent-Replayed: true` e nessun nuovo effetto; la stessa chiave con un altro corpo risponde
+`422 idempotency_key_reused`. Le risposte 5xx non sono memorizzate e si possono ritentare con la stessa chiave; una
+risposta memorizzata sotto 500, compresi i rifiuti 4xx, è definitiva per quella chiave, e quando l'utente corregge la
+causa e invia di nuovo la coda usa una chiave nuova. 100 invii paralleli della stessa nota o dello stesso incasso
+producono un solo effetto e solo risposte identiche o `409 idempotency_in_progress`.
+Verificata da: `TestAcceptance_OfflineQueueReplay`, `TestConcurrency_OfflineQueueReplay` (`internal/acceptance`, tag
+`integration`, SQLite e PostgreSQL), `TestOfflineQueueContract_IdempotencyKey` (`internal/http`), oltre a INV-31.
+Stato: implemented.
+
 ## Ricomincia da zero (spec 15.2)
 
 **INV-100 — Azzeramento dello stabilimento: tutto o niente, solo il suo, senza resti.**
