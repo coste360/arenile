@@ -876,3 +876,31 @@ func TestSeedDemo_UpgradesPreKitMaps(t *testing.T) {
 		}
 	})
 }
+
+func TestReset_OnlyTheOwnerAsAPerson(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		ctx := context.Background()
+		f := newFixture(t, db, "lido-reset")
+		in := ResetInput{Scope: ResetEverything, ConfirmName: f.est.Name}
+		apiKey := f.owner()
+		apiKey.Kind = auth.PrincipalAPIKey
+		device := f.owner()
+		device.DeviceID = store.NewID()
+		for name, p := range map[string]*auth.Principal{
+			"manager": f.principal(auth.RoleManager), "cashier": f.principal(auth.RoleCashier),
+			"api key": apiKey, "device": device,
+		} {
+			// Refused either way (an API key may not even reach the establishment).
+			if _, err := f.svc.Reset(ctx, p, f.est.ID, in); !errors.Is(err, auth.ErrForbidden) && !errors.Is(err, configerr.ErrNotFound) {
+				t.Fatalf("%s: %v", name, err)
+			}
+		}
+		if _, err := f.svc.Reset(ctx, f.owner(), f.est.ID, ResetInput{Scope: "all", ConfirmName: f.est.Name}); !errors.Is(err, configerr.ErrValidation) {
+			t.Fatalf("bad scope: %v", err)
+		}
+		res, err := f.svc.Reset(ctx, f.owner(), f.est.ID, ResetInput{Scope: ResetConfiguration, ConfirmName: strings.ToUpper(f.est.Name)})
+		if err != nil || len(res.Deleted) != 0 {
+			t.Fatalf("empty establishment: %+v %v", res, err)
+		}
+	})
+}

@@ -115,5 +115,28 @@
     "restart": "Geführte Einrichtung erneut öffnen",
     "summary": "Zusammenfassung"
   },
-  "stepCounter": "Schritt {{n}} von {{total}}"
+  "stepCounter": "Schritt {{n}} von {{total}}",
+  "reset": {
+    "title": "Neu beginnen",
+    "description": "Um die geführte Einrichtung mit einem leeren Betrieb erneut zu durchlaufen. Nur für Inhaber.",
+    "irreversible": "Kann nicht rückgängig gemacht werden",
+    "keeps": "Erhalten bleiben das Profil des Betriebs, die Benutzer, die Online-Zahlungen, die E-Mails, die Geräte, die Kassen, die Drucker und das Aktivitätsprotokoll.",
+    "typeName": "Geben Sie zur Bestätigung den Namen des Betriebs ein: {{name}}",
+    "configuration": {
+      "action": "Konfiguration neu beginnen",
+      "blocked": "Es gibt Buchungen, Zahlungen oder andere Betriebsdaten: Um neu zu beginnen, setzen Sie den Betrieb zurück.",
+      "title": "Konfiguration neu beginnen?",
+      "deletes": "Löscht Saisons und Tarifzeiträume, Schließtage, Pläne und Plätze, Zonen und Pools, Katalog, Preise, Rabattcodes, Vereinbarungen, Regeln und Eintrittskarten.",
+      "confirm": "Konfiguration löschen",
+      "done": "Konfiguration gelöscht: Sie können mit dem ersten Schritt neu beginnen."
+    },
+    "everything": {
+      "action": "Betrieb zurücksetzen",
+      "title": "Betrieb zurücksetzen?",
+      "deletes": "Löscht die gesamte Konfiguration sowie Buchungen, Saisonabos, Kunden, Zahlungen, Kassensitzungen, Tickets, Steuerbelege, Guthaben, Warteliste und Verlängerungen.",
+      "ack": "Mir ist klar, dass Buchungen, Kunden und Zahlungen endgültig gelöscht werden.",
+      "confirm": "Betrieb zurücksetzen",
+      "done": "Betrieb zurückgesetzt: Sie können mit dem ersten Schritt neu beginnen."
+    }
+  }
 }

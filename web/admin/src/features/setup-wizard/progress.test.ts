@@ -36,6 +36,7 @@ const emptyStatus = {
   has_prices: false,
   booking_enabled: false,
   price_categories: [] as string[],
+  has_operations: false,
 };
 
 describe('wizard navigation', () => {

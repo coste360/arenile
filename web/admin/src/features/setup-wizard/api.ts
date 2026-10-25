@@ -80,3 +80,27 @@ export function useQuickPricelist(establishmentId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: configKey(establishmentId) }),
   });
 }
+
+export type SetupResetScope = Schemas['SetupResetRequest']['scope'];
+export type SetupResetResult = Schemas['SetupResetResult'];
+
+/**
+ * Reset of the establishment (owner only): its configuration, or everything
+ * with the operational data. Every cached query is stale afterwards.
+ */
+export function useResetSetup(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<SetupResetResult, ApiProblem, { scope: SetupResetScope; confirmName: string }>(
+    {
+      mutationFn: ({ scope, confirmName }) =>
+        call(() =>
+          client.POST('/api/admin/v1/establishments/{establishmentId}/setup/reset', {
+            params: { path: { establishmentId } },
+            body: { scope, confirm_name: confirmName },
+          }),
+        ),
+      onSuccess: () => qc.invalidateQueries(),
+    },
+  );
+}

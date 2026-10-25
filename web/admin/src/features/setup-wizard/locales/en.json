@@ -115,5 +115,28 @@
     "restart": "Reopen the guided setup",
     "summary": "Summary"
   },
-  "stepCounter": "Step {{n}} of {{total}}"
+  "stepCounter": "Step {{n}} of {{total}}",
+  "reset": {
+    "title": "Start from scratch",
+    "description": "To go through the guided setup again from an empty establishment. Owner only.",
+    "irreversible": "This cannot be undone",
+    "keeps": "The establishment profile, users, online payments, emails, devices, cash registers, printers and the activity log are kept.",
+    "typeName": "Type the establishment name to confirm: {{name}}",
+    "configuration": {
+      "action": "Start the configuration over",
+      "blocked": "There are bookings, payments or other operational data: to start over, reset the establishment.",
+      "title": "Start the configuration over?",
+      "deletes": "Deletes seasons and rate periods, closures, maps and spots, zones and pools, catalog, prices, promo codes, agreements, policies and entry tickets.",
+      "confirm": "Delete the configuration",
+      "done": "Configuration deleted: you can start again from the first step."
+    },
+    "everything": {
+      "action": "Reset the establishment",
+      "title": "Reset the establishment?",
+      "deletes": "Deletes the whole configuration as well as bookings, season passes, customers, payments, cash sessions, tickets, fiscal documents, credits, waiting list and renewals.",
+      "ack": "I understand that bookings, customers and payments are deleted for good.",
+      "confirm": "Reset the establishment",
+      "done": "Establishment reset: you can start again from the first step."
+    }
+  }
 }

@@ -35,6 +35,7 @@ import { useTranslation } from 'react-i18next';
 import { useConfigContext, type ConfigContext } from '../configuration/api/useConfigContext';
 import { ConfigPage } from '../configuration/components/ConfigPage';
 import { useSetupStatus, type SetupStatus } from './api';
+import { ResetSection } from './ResetSection';
 import {
   STEPS,
   browserStorage,
@@ -127,68 +128,79 @@ function Wizard({ ctx, status }: { ctx: ConfigContext; status: SetupStatus | und
   return (
     <ConfigPage title={t('title')} description={t('description')}>
       <div className="grid items-start gap-6 lg:grid-cols-[17rem_1fr]">
-        <Card className="gap-4 py-5 lg:sticky lg:top-4">
-          <CardContent className="space-y-4 px-5">
-            <div className="space-y-2">
-              <div className="flex items-baseline justify-between text-sm">
-                <span className="font-medium">{t('progress')}</span>
-                <span className="text-muted-foreground tabular-nums">
-                  {handled}/{STEPS.length}
-                </span>
+        <div className="space-y-4 lg:sticky lg:top-4">
+          <Card className="gap-4 py-5">
+            <CardContent className="space-y-4 px-5">
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="font-medium">{t('progress')}</span>
+                  <span className="text-muted-foreground tabular-nums">
+                    {handled}/{STEPS.length}
+                  </span>
+                </div>
+                <Progress
+                  value={(handled / STEPS.length) * 100}
+                  max={100}
+                  aria-label={t('progress')}
+                  getValueLabel={() => t('progressText', { done: handled, total: STEPS.length })}
+                />
               </div>
-              <Progress
-                value={(handled / STEPS.length) * 100}
-                max={100}
-                aria-label={t('progress')}
-                getValueLabel={() => t('progressText', { done: handled, total: STEPS.length })}
-              />
-            </div>
-            <nav aria-label={t('stepsLabel')}>
-              <ol className="space-y-1">
-                {STEPS.map((s, i) => {
-                  const state = progress.states[s];
-                  const current = i === progress.current && !progress.finished;
-                  const Icon = STEP_ICONS[s];
-                  return (
-                    <li key={s}>
-                      <Button
-                        variant={current ? 'secondary' : 'ghost'}
-                        onClick={() => dispatch({ type: 'goto', step: i })}
-                        aria-current={current ? 'step' : undefined}
-                        className="h-auto w-full justify-start gap-3 px-2 py-2 text-left"
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            'flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold',
-                            state === 'done' && 'border-primary bg-primary text-primary-foreground',
-                            state === 'skipped' && 'border-dashed text-muted-foreground',
-                            state === 'pending' &&
-                              current &&
-                              'border-primary text-primary-on-surface',
-                          )}
+              <nav aria-label={t('stepsLabel')}>
+                <ol className="space-y-1">
+                  {STEPS.map((s, i) => {
+                    const state = progress.states[s];
+                    const current = i === progress.current && !progress.finished;
+                    const Icon = STEP_ICONS[s];
+                    return (
+                      <li key={s}>
+                        <Button
+                          variant={current ? 'secondary' : 'ghost'}
+                          onClick={() => dispatch({ type: 'goto', step: i })}
+                          aria-current={current ? 'step' : undefined}
+                          className="h-auto w-full justify-start gap-3 px-2 py-2 text-left"
                         >
-                          {state === 'done' ? (
-                            <CheckIcon className="size-3.5" />
-                          ) : state === 'skipped' ? (
-                            <CircleMinusIcon className="size-3.5" />
-                          ) : (
-                            i + 1
-                          )}
-                        </span>
-                        <span className="flex min-w-0 flex-1 items-center gap-2">
-                          <Icon aria-hidden="true" className="text-muted-foreground" />
-                          <span className="truncate">{t(`steps.${s}`)}</span>
-                        </span>
-                        <span className="sr-only">({t(`state.${state}`)})</span>
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ol>
-            </nav>
-          </CardContent>
-        </Card>
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              'flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold',
+                              state === 'done' &&
+                                'border-primary bg-primary text-primary-foreground',
+                              state === 'skipped' && 'border-dashed text-muted-foreground',
+                              state === 'pending' &&
+                                current &&
+                                'border-primary text-primary-on-surface',
+                            )}
+                          >
+                            {state === 'done' ? (
+                              <CheckIcon className="size-3.5" />
+                            ) : state === 'skipped' ? (
+                              <CircleMinusIcon className="size-3.5" />
+                            ) : (
+                              i + 1
+                            )}
+                          </span>
+                          <span className="flex min-w-0 flex-1 items-center gap-2">
+                            <Icon aria-hidden="true" className="text-muted-foreground" />
+                            <span className="truncate">{t(`steps.${s}`)}</span>
+                          </span>
+                          <span className="sr-only">({t(`state.${state}`)})</span>
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </nav>
+            </CardContent>
+          </Card>
+          {ctx.canManageUsers && ctx.establishment && (
+            <ResetSection
+              establishmentId={establishmentId}
+              establishmentName={ctx.establishment.name}
+              hasOperations={status?.has_operations ?? false}
+              onReset={() => dispatch({ type: 'reset' })}
+            />
+          )}
+        </div>
 
         {progress.finished ? (
           <Finished ctx={ctx} progress={progress} onRestart={() => dispatch({ type: 'restart' })} />

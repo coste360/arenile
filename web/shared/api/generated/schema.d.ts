@@ -916,6 +916,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/setup/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ricomincia la configurazione o azzera lo stabilimento
+         * @description Solo il titolare (permessi `establishment.configure`, `users.manage` e `payments.configure`), con una sessione utente (non chiavi API né dispositivi). `confirm_name` deve essere il nome dello stabilimento. `scope: configuration` cancella stagioni e periodi, chiusure, mappe, postazioni, zone, pool, catalogo, prezzi, codici sconto, convenzioni, policy e biglietti d'ingresso, e riapre la configurazione guidata; è rifiutato con `409` se lo stabilimento ha dati operativi (`SetupStatus.has_operations`). `scope: everything` cancella anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti, documenti fiscali, crediti, lista d'attesa e rinnovi. Restano sempre il profilo dello stabilimento, gli utenti, i pagamenti online, le email, i dispositivi, le casse e le stampanti, il registro attività. Irreversibile; tutto in una transazione, con una voce `setup.reset` nel registro attività.
+         */
+        post: operations["resetEstablishmentSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/establishments/{establishmentId}/customers": {
         parameters: {
             query?: never;
@@ -6075,6 +6095,25 @@ export interface components {
             has_catalog: boolean;
             has_prices: boolean;
             booking_enabled: boolean;
+            /** @description Lo stabilimento ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti, lista d'attesa, rinnovi o crediti): la configurazione si ricomincia solo azzerando tutto. */
+            has_operations: boolean;
+        };
+        SetupResetRequest: {
+            /**
+             * @description `configuration`: solo la configurazione; `everything`: anche i dati operativi.
+             * @enum {string}
+             */
+            scope: "configuration" | "everything";
+            /** @description Nome dello stabilimento, scritto per confermare (spazi iniziali e finali ignorati). */
+            confirm_name: string;
+        };
+        SetupResetResult: {
+            /** @enum {string} */
+            scope: "configuration" | "everything";
+            /** @description Righe cancellate per tabella (solo quelle con almeno una riga). */
+            deleted: {
+                [key: string]: number;
+            };
         };
         /** @description Mezza giornata non disponibile per una risorsa (spec 7.2), restituita in Problem.conflicts e nelle anteprime. */
         AllocationConflict: {
@@ -13513,6 +13552,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuickPricelistResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    resetEstablishmentSetup: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Stabilimento azzerato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupResetResult"];
                 };
             };
             400: components["responses"]["BadRequest"];

@@ -26,6 +26,7 @@ const EMPTY_STATUS = {
   has_prices: false,
   booking_enabled: false,
   price_categories: [] as string[],
+  has_operations: false,
 };
 
 const TEMPLATES = [
@@ -365,5 +366,87 @@ describe('SetupWizardPage', () => {
     await waitFor(() =>
       expect(screen.queryByRole('heading', { level: 2, name: /^Passo/ })).toBeNull(),
     );
+  });
+
+  describe('start from scratch', () => {
+    const ownerRoutes = (extra: Record<string, Handler> = {}, status = EMPTY_STATUS) => ({
+      ...routes(extra, status),
+      ...baseRoutes('owner'),
+    });
+
+    it('is offered to the owner only', async () => {
+      const first = renderApp(PATH, routes());
+      await stepHeading();
+      expect(screen.queryByRole('heading', { name: 'Ricomincia da zero' })).toBeNull();
+      first.unmount();
+      renderApp(PATH, ownerRoutes());
+      expect(
+        await screen.findByRole('heading', { name: 'Ricomincia da zero' }),
+      ).toBeInTheDocument();
+    });
+
+    it('with operational data only the full reset is possible, after the name and the acknowledgement', async () => {
+      const user = userEvent.setup();
+      let body: Record<string, unknown> | undefined;
+      const { fetchMock } = renderApp(
+        PATH,
+        ownerRoutes(
+          {
+            [`POST ${API}/setup/reset`]: async (req) => {
+              body = (await req.json()) as Record<string, unknown>;
+              return json(200, { scope: 'everything', deleted: { bookings: 70 } });
+            },
+          },
+          { ...EMPTY_STATUS, has_season: true, has_map: true, has_operations: true },
+        ),
+      );
+      const restart = await screen.findByRole('button', { name: 'Ricomincia la configurazione' });
+      expect(restart).toBeDisabled();
+      expect(restart).toHaveAccessibleDescription(/Ci sono prenotazioni/);
+
+      await user.click(screen.getByRole('button', { name: 'Azzera lo stabilimento' }));
+      const dialog = await screen.findByRole('alertdialog', { name: 'Azzerare lo stabilimento?' });
+      const confirm = within(dialog).getByRole('button', { name: 'Azzera lo stabilimento' });
+      expect(confirm).toBeDisabled();
+      await user.type(
+        within(dialog).getByLabelText(/Scrivi il nome dello stabilimento/),
+        ' lido demo ',
+      );
+      expect(confirm).toBeDisabled();
+      await user.click(
+        within(dialog).getByRole('checkbox', { name: /vengono cancellati per sempre/ }),
+      );
+      await user.click(confirm);
+      await waitFor(() =>
+        expect(body).toEqual({ scope: 'everything', confirm_name: ' lido demo ' }),
+      );
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+      expect(callsTo(fetchMock, 'POST', `${API}/setup/reset`)).toHaveLength(1);
+      // The wizard starts over from the first step.
+      expect(await stepHeading()).toHaveTextContent('Passo 1 di 6');
+    });
+
+    it('shows the server refusal in the dialog', async () => {
+      const user = userEvent.setup();
+      renderApp(
+        PATH,
+        ownerRoutes({
+          [`POST ${API}/setup/reset`]: () =>
+            problem(409, 'conflict', { detail: 'Lo stabilimento ha prenotazioni.' }),
+        }),
+      );
+      await user.click(await screen.findByRole('button', { name: 'Ricomincia la configurazione' }));
+      const dialog = await screen.findByRole('alertdialog', {
+        name: 'Ricominciare la configurazione?',
+      });
+      await user.type(
+        within(dialog).getByLabelText(/Scrivi il nome dello stabilimento/),
+        'Lido Demo',
+      );
+      await user.click(within(dialog).getByRole('button', { name: 'Cancella la configurazione' }));
+      expect(
+        await within(dialog).findByText('Lo stabilimento ha prenotazioni.'),
+      ).toBeInTheDocument();
+    });
   });
 });

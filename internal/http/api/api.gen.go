@@ -3117,6 +3117,42 @@ func (e SeasonStatus) Valid() bool {
 	}
 }
 
+// Defines values for SetupResetRequestScope.
+const (
+	SetupResetRequestScopeConfiguration SetupResetRequestScope = "configuration"
+	SetupResetRequestScopeEverything    SetupResetRequestScope = "everything"
+)
+
+// Valid indicates whether the value is a known member of the SetupResetRequestScope enum.
+func (e SetupResetRequestScope) Valid() bool {
+	switch e {
+	case SetupResetRequestScopeConfiguration:
+		return true
+	case SetupResetRequestScopeEverything:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SetupResetResultScope.
+const (
+	SetupResetResultScopeConfiguration SetupResetResultScope = "configuration"
+	SetupResetResultScopeEverything    SetupResetResultScope = "everything"
+)
+
+// Valid indicates whether the value is a known member of the SetupResetResultScope enum.
+func (e SetupResetResultScope) Valid() bool {
+	switch e {
+	case SetupResetResultScopeConfiguration:
+		return true
+	case SetupResetResultScopeEverything:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SetupTemplateCode.
 const (
 	ClassicRows   SetupTemplateCode = "classic_rows"
@@ -9759,11 +9795,36 @@ type SeasonRolloverWarningCode string
 // SeasonStatus defines model for SeasonStatus.
 type SeasonStatus string
 
+// SetupResetRequest defines model for SetupResetRequest.
+type SetupResetRequest struct {
+	// ConfirmName Nome dello stabilimento, scritto per confermare (spazi iniziali e finali ignorati).
+	ConfirmName string `json:"confirm_name"`
+
+	// Scope `configuration`: solo la configurazione; `everything`: anche i dati operativi.
+	Scope SetupResetRequestScope `json:"scope"`
+}
+
+// SetupResetRequestScope `configuration`: solo la configurazione; `everything`: anche i dati operativi.
+type SetupResetRequestScope string
+
+// SetupResetResult defines model for SetupResetResult.
+type SetupResetResult struct {
+	// Deleted Righe cancellate per tabella (solo quelle con almeno una riga).
+	Deleted map[string]int64      `json:"deleted"`
+	Scope   SetupResetResultScope `json:"scope"`
+}
+
+// SetupResetResultScope defines model for SetupResetResult.Scope.
+type SetupResetResultScope string
+
 // SetupStatus Avanzamento della configurazione guidata.
 type SetupStatus struct {
 	BookingEnabled bool `json:"booking_enabled"`
 	HasCatalog     bool `json:"has_catalog"`
 	HasMap         bool `json:"has_map"`
+
+	// HasOperations Lo stabilimento ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti, lista d'attesa, rinnovi o crediti): la configurazione si ricomincia solo azzerando tutto.
+	HasOperations  bool `json:"has_operations"`
 	HasPrices      bool `json:"has_prices"`
 	HasRatePeriods bool `json:"has_rate_periods"`
 	HasSeason      bool `json:"has_season"`
@@ -13272,6 +13333,13 @@ type CreateQuickPricelistParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ResetEstablishmentSetupParams defines parameters for ResetEstablishmentSetup.
+type ResetEstablishmentSetupParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListSpotBlocksParams defines parameters for ListSpotBlocks.
 type ListSpotBlocksParams struct {
 	// From Blocchi che terminano da questa data.
@@ -14162,6 +14230,9 @@ type ApplySetupTemplateJSONRequestBody = ApplyTemplateRequest
 // CreateQuickPricelistJSONRequestBody defines body for CreateQuickPricelist for application/json ContentType.
 type CreateQuickPricelistJSONRequestBody = QuickPricelistRequest
 
+// ResetEstablishmentSetupJSONRequestBody defines body for ResetEstablishmentSetup for application/json ContentType.
+type ResetEstablishmentSetupJSONRequestBody = SetupResetRequest
+
 // CreateSpotBlockJSONRequestBody defines body for CreateSpotBlock for application/json ContentType.
 type CreateSpotBlockJSONRequestBody = SpotBlockCreate
 
@@ -14962,6 +15033,9 @@ type ServerInterface interface {
 	// CreateQuickPricelist Listino rapido: genera le regole base da prezzo per categoria e periodo
 	// (POST /api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist)
 	CreateQuickPricelist(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateQuickPricelistParams)
+	// ResetEstablishmentSetup Ricomincia la configurazione o azzera lo stabilimento
+	// (POST /api/admin/v1/establishments/{establishmentId}/setup/reset)
+	ResetEstablishmentSetup(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ResetEstablishmentSetupParams)
 	// GetSetupStatus Avanzamento della configurazione guidata
 	// (GET /api/admin/v1/establishments/{establishmentId}/setup/status)
 	GetSetupStatus(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
@@ -16633,6 +16707,12 @@ func (_ Unimplemented) ApplySetupTemplate(w http.ResponseWriter, r *http.Request
 // CreateQuickPricelist Listino rapido: genera le regole base da prezzo per categoria e periodo
 // (POST /api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist)
 func (_ Unimplemented) CreateQuickPricelist(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateQuickPricelistParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ResetEstablishmentSetup Ricomincia la configurazione o azzera lo stabilimento
+// (POST /api/admin/v1/establishments/{establishmentId}/setup/reset)
+func (_ Unimplemented) ResetEstablishmentSetup(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ResetEstablishmentSetupParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -32078,6 +32158,56 @@ func (siw *ServerInterfaceWrapper) CreateQuickPricelist(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
+// ResetEstablishmentSetup operation middleware
+func (siw *ServerInterfaceWrapper) ResetEstablishmentSetup(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ResetEstablishmentSetupParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ResetEstablishmentSetup(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetSetupStatus operation middleware
 func (siw *ServerInterfaceWrapper) GetSetupStatus(w http.ResponseWriter, r *http.Request) {
 
@@ -37757,6 +37887,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist", wrapper.CreateQuickPricelist)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/setup/reset", wrapper.ResetEstablishmentSetup)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/customers", wrapper.ListCustomers)

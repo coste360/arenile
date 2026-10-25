@@ -31,6 +31,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/reqctx"
@@ -403,6 +404,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, NotFound)
 	case errors.As(err, &dup):
 		Write(w, r, Conflict, Detail(dup.Error()), ExistingCustomerID(dup.ExistingID))
+	case errors.Is(err, setup.ErrHasOperations):
+		Write(w, r, Conflict, Detail("Lo stabilimento ha prenotazioni, incassi o altri dati operativi: per ricominciare va azzerato tutto."))
 	case errors.Is(err, configerr.ErrConflict):
 		Write(w, r, Conflict, Detail(err.Error()))
 	case errors.As(err, &npe):

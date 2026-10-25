@@ -3257,6 +3257,50 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
+  /api/admin/v1/establishments/{establishmentId}/setup/reset:
+    post:
+      operationId: resetEstablishmentSetup
+      tags:
+        - setup
+      summary: Ricomincia la configurazione o azzera lo stabilimento
+      description: >-
+        Solo il titolare (permessi `establishment.configure`, `users.manage` e `payments.configure`), con una
+        sessione utente (non chiavi API né dispositivi). `confirm_name` deve essere il nome dello stabilimento.
+        `scope: configuration` cancella stagioni e periodi, chiusure, mappe, postazioni, zone, pool, catalogo,
+        prezzi, codici sconto, convenzioni, policy e biglietti d'ingresso, e riapre la configurazione guidata; è
+        rifiutato con `409` se lo stabilimento ha dati operativi (`SetupStatus.has_operations`). `scope:
+        everything` cancella anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti,
+        documenti fiscali, crediti, lista d'attesa e rinnovi. Restano sempre il profilo dello stabilimento,
+        gli utenti, i pagamenti online, le email, i dispositivi, le casse e le stampanti, il registro attività.
+        Irreversibile; tutto in una transazione, con una voce `setup.reset` nel registro attività.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupResetRequest"
+      responses:
+        "200":
+          description: Stabilimento azzerato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupResetResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /api/admin/v1/establishments/{establishmentId}/customers:
     get:
       operationId: listCustomers
@@ -16503,6 +16547,7 @@ components:
         - has_prices
         - booking_enabled
         - price_categories
+        - has_operations
       properties:
         price_categories:
           type: array
@@ -16525,6 +16570,35 @@ components:
           type: boolean
         booking_enabled:
           type: boolean
+        has_operations:
+          type: boolean
+          description: >-
+            Lo stabilimento ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti,
+            lista d'attesa, rinnovi o crediti): la configurazione si ricomincia solo azzerando tutto.
+    SetupResetRequest:
+      type: object
+      required: [scope, confirm_name]
+      properties:
+        scope:
+          type: string
+          enum: [configuration, everything]
+          description: "`configuration`: solo la configurazione; `everything`: anche i dati operativi."
+        confirm_name:
+          type: string
+          description: Nome dello stabilimento, scritto per confermare (spazi iniziali e finali ignorati).
+    SetupResetResult:
+      type: object
+      required: [scope, deleted]
+      properties:
+        scope:
+          type: string
+          enum: [configuration, everything]
+        deleted:
+          type: object
+          description: Righe cancellate per tabella (solo quelle con almeno una riga).
+          additionalProperties:
+            type: integer
+            format: int64
 
     # ---- M3: customers, bookings, availability, passes, payments, cash, fiscal ----
     AllocationConflict:
