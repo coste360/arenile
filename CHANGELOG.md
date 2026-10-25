@@ -6,6 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Corretto
+- App desktop su Windows: un reindirizzamento del server verso un altro sito (o fuori da `/admin`) e **Apri
+  collegamento in una nuova finestra** del menu contestuale aprivano la pagina dentro l'app, senza modo di tornare al
+  pannello. Ora seguono la stessa regola degli altri link, come su macOS: si aprono nel browser predefinito, mentre
+  una pagina del pannello aperta in una nuova finestra si apre nella finestra dell'app.
+- Sviluppo: i test del launcher desktop con il tag `desktop` si interrompevano su macOS (SIGTRAP), perché il test
+  della modalità remota apriva una vera finestra fuori dal thread principale. Il nuovo `make test-desktop` li esegue,
+  anche nei job macOS e Windows del workflow desktop.
+
 ## [1.0.3] - 2026-10-25
 
 ### Aggiunto
