@@ -175,6 +175,34 @@ func TestRelayClient_SignatureAndOutcomes(t *testing.T) {
 			}
 		})
 	}
+	t.Run("redirect is not followed", func(t *testing.T) {
+		var hit bool
+		other := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			hit = true
+			w.WriteHeader(http.StatusAccepted)
+		}))
+		defer other.Close()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, other.URL, http.StatusTemporaryRedirect)
+		}))
+		defer srv.Close()
+		res := pushrelay.Client{URL: srv.URL, Key: mustKey(t), HTTP: srv.Client()}.Send(context.Background(), pushrelay.Notification{DevicePushID: "native-token-abc"})
+		if res.Outcome != pushrelay.Rejected || res.Status != http.StatusTemporaryRedirect || hit {
+			t.Fatalf("result %+v, redirect target hit %v", res, hit)
+		}
+	})
+	t.Run("cancelled", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			<-r.Context().Done()
+		}))
+		defer srv.Close()
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		res := pushrelay.Client{URL: srv.URL, Key: mustKey(t)}.Send(ctx, pushrelay.Notification{DevicePushID: "native-token-abc"})
+		if res.Outcome != pushrelay.Retry || !res.Cancelled {
+			t.Fatalf("result %+v", res)
+		}
+	})
 	t.Run("network error", func(t *testing.T) {
 		srv := httptest.NewServer(http.NotFoundHandler())
 		url := srv.URL

@@ -538,6 +538,23 @@ func TestPushService_DeliveryOutcomes(t *testing.T) {
 			t.Fatalf("rejected %+v", d)
 		}
 
+		// Shutdown during the relay call: back to the queue, not counted;
+		// the next run sends it.
+		queue()
+		f.relay.results = []pushrelay.Result{{Outcome: pushrelay.Retry, Cancelled: true, Error: "cancelled"}}
+		if _, err := f.svc.DeliverDue(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if d := last(); d.Status != store.PushDeliveryQueued || d.Attempts != 0 {
+			t.Fatalf("cancelled %+v", d)
+		}
+		if _, err := f.svc.DeliverDue(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if d := last(); d.Status != store.PushDeliverySent || d.Attempts != 1 {
+			t.Fatalf("after cancelled %+v", d)
+		}
+
 		// Retry until MaxAttempts, honouring Retry-After (10 minutes, longer
 		// than the first backoff steps of 30 s, 2 and 5 minutes, shorter
 		// than the last of 15), then failed.

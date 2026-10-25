@@ -1,4 +1,4 @@
-import { useMe, useProblemText } from '@arenile/shared/api';
+import { useMe, useProblemText, type Schemas } from '@arenile/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import { Label } from '@arenile/shared/ui/label';
@@ -22,27 +22,19 @@ import {
   useInstantFormat,
   useRequiredEstablishmentId,
 } from '../../establishment';
+import { hasPermission } from '../online/lib/permissions';
 import { useDevices, useRevokeDevice, type Device } from './api';
 import { byLastActivity } from './lib';
 import { PairDeviceDialog } from './PairDeviceDialog';
 import { PushSettingsCard } from './PushSettingsCard';
 import { usePairingAvailability } from './usePairingAvailability';
 
-/** Whether the caller holds perm on the establishment (role or API key scope). */
-function useHasPermission(establishmentId: string, perm: string): boolean {
+/** Whether the caller holds perm on the establishment of the page. */
+function useHasPermission(establishmentId: string, perm: Schemas['Permission']): boolean {
   const me = useMe();
   const { establishment } = useCurrentEstablishment();
-  if (!me.data || !establishment || establishment.id !== establishmentId) return false;
-  if (me.data.principal_type === 'api_key') {
-    return me.data.api_key?.scopes.some((s) => s === perm) ?? false;
-  }
-  return me.data.memberships.some(
-    (m) =>
-      (m.establishment_id
-        ? m.establishment_id === establishmentId
-        : m.organization_id === establishment.organization_id) &&
-      m.permissions.some((p) => p === perm),
-  );
+  if (establishment?.id !== establishmentId) return false;
+  return hasPermission(me.data, establishment, perm);
 }
 
 /**

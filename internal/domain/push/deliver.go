@@ -60,19 +60,27 @@ func (s *Service) DeliverDue(ctx context.Context) (int, error) {
 		return 0, err
 	}
 	n := 0
+	var firstErr error
 	for _, d := range due {
 		if err := ctx.Err(); err != nil {
 			return n, err
 		}
+		// One failing delivery must not hold back the others: log, keep
+		// going, report the first error at the end. Its lease expires and
+		// it is retried later.
 		handled, err := s.deliver(ctx, d)
 		if err != nil {
-			return n, err
+			s.d.Log.WarnContext(ctx, "push: delivery failed", slog.String("delivery_id", d.ID), slog.String("error", err.Error()))
+			if firstErr == nil {
+				firstErr = err
+			}
+			continue
 		}
 		if handled {
 			n++
 		}
 	}
-	return n, nil
+	return n, firstErr
 }
 
 // deliver claims one delivery and sends it. It returns false when another
@@ -137,15 +145,19 @@ func (s *Service) deliver(ctx context.Context, due store.DuePushDelivery) (bool,
 		Message: pushrelay.Message{Key: d.MessageKey, Locale: r.Locale},
 	})
 	done := s.now()
-	switch res.Outcome {
-	case pushrelay.Delivered:
+	switch {
+	case res.Cancelled:
+		// Shutdown during the request: back to the queue, attempt not
+		// counted (the relay deduplicates on the delivery id if it got it).
+		_, err = store.FinishPushDeliveryUnsent(context.WithoutCancel(ctx), s.d.DB, d.ID, until, done, &done, store.PushDeliveryQueued, res.Error, false)
+	case res.Outcome == pushrelay.Delivered:
 		_, err = store.FinishPushDeliverySent(ctx, s.d.DB, d.ID, until, done)
-	case pushrelay.Gone:
+	case res.Outcome == pushrelay.Gone:
 		// The token is no longer valid: forget the registration (its
 		// deliveries cascade).
 		s.d.Log.InfoContext(ctx, "push: token gone, registration deleted", slog.String("registration_id", r.ID))
 		err = store.DeletePushRegistration(ctx, s.d.DB, es, r.ID)
-	case pushrelay.Retry:
+	case res.Outcome == pushrelay.Retry:
 		attempts := d.Attempts + 1
 		var next *time.Time
 		if attempts < MaxAttempts {

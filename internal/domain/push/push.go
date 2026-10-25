@@ -169,7 +169,23 @@ func (s *Service) UpdateSettings(ctx context.Context, p *auth.Principal, establi
 		return nil, err
 	}
 	var out *Settings
-	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
+	update := func() error {
+		return s.updateSettings(ctx, p, es, expected, in, ip, &out)
+	}
+	err = update()
+	if errors.Is(err, store.ErrConflict) {
+		// If-Match "*" (expected nil) racing another first save: the row
+		// exists now, save over it.
+		err = update()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (s *Service) updateSettings(ctx context.Context, p *auth.Principal, es store.EstablishmentScope, expected *int64, in SettingsInput, ip string, out **Settings) error {
+	return store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 		now := s.now()
 		row := &store.PushSettings{
 			Enabled: in.Enabled, NewOnlineBooking: in.Events.NewOnlineBooking,
@@ -184,6 +200,9 @@ func (s *Service) UpdateSettings(ctx context.Context, p *auth.Principal, establi
 			row.Version, row.CreatedAt = 2, now
 			if err := store.InsertPushSettings(ctx, tx, es, row); err != nil {
 				if errors.Is(err, store.ErrConflict) {
+					if expected == nil {
+						return store.ErrConflict // retried as an update
+					}
 					return ErrVersionMismatch
 				}
 				return fmt.Errorf("push: settings: %w", err)
@@ -203,7 +222,7 @@ func (s *Service) UpdateSettings(ctx context.Context, p *auth.Principal, establi
 				return ErrVersionMismatch
 			}
 		}
-		out = s.settingsOf(row)
+		*out = s.settingsOf(row)
 		return s.d.Audit.Record(ctx, tx, audit.Entry{
 			EstablishmentID: es.ID(), Actor: p.Actor(ip), Action: ActionSettingsUpdated,
 			EntityType: "establishment", EntityID: es.ID(),
@@ -213,10 +232,6 @@ func (s *Service) UpdateSettings(ctx context.Context, p *auth.Principal, establi
 			},
 		})
 	})
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 // settings returns the settings of es (defaults when no row: disabled,
@@ -448,20 +463,25 @@ func (s *Service) Register(ctx context.Context, p *auth.Principal, in RegisterIn
 }
 
 // Unregister deletes the registration of the device of p (idempotent).
-// Audit "device.push_unregistered" when one existed.
+// Withdrawing consent needs no permission: the authenticated device token
+// proves the establishment. Audit "device.push_unregistered" when one
+// existed.
 func (s *Service) Unregister(ctx context.Context, p *auth.Principal) error {
-	es, d, err := s.deviceContext(ctx, s.d.DB, p)
+	if p == nil || p.DeviceID == "" {
+		return auth.ErrUnauthenticated
+	}
+	es, err := store.SystemEstablishmentScope(ctx, s.d.DB, p.DeviceEstablishmentID)
 	if err != nil {
-		return err
+		return auth.ErrUnauthenticated
 	}
 	return store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
-		deleted, err := store.DeletePushRegistrationByDevice(ctx, tx, es, d.ID)
+		deleted, err := store.DeletePushRegistrationByDevice(ctx, tx, es, p.DeviceID)
 		if err != nil || !deleted {
 			return err
 		}
 		return s.d.Audit.Record(ctx, tx, audit.Entry{
 			EstablishmentID: es.ID(), Actor: p.Actor(""), Action: ActionUnregistered,
-			EntityType: "device", EntityID: d.ID, Diff: map[string]any{"reason": "user"},
+			EntityType: "device", EntityID: p.DeviceID, Diff: map[string]any{"reason": "user"},
 		})
 	})
 }

@@ -939,7 +939,8 @@ Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsS
 
 **INV-99 — La coda offline dell'app non applica mai due volte un'operazione.**
 Check-in, ingresso al varco, rilascio del giorno di un abbonamento, blocco di una postazione, nota e incasso su una
-prenotazione esistente dichiarano `Idempotency-Key` nel contratto. Ripetuti con il token del dispositivo e la stessa
+prenotazione esistente dichiarano `Idempotency-Key` nel contratto e passano dal middleware di idempotenza (anche
+l'ingresso al varco, verificato sul percorso). Ripetuti con il token del dispositivo e la stessa
 chiave (entro 24 ore, per lo stesso utente) restituiscono la risposta originale byte per byte con
 `Idempotent-Replayed: true` e nessun nuovo effetto; la stessa chiave con un altro corpo risponde
 `422 idempotency_key_reused`; 100 invii paralleli della stessa nota o dello stesso incasso producono un solo effetto e
@@ -955,7 +956,9 @@ quell'argomento; consenso, dispositivo (revoca, scadenza per inattività) e ruol
 chiave non si accoda nulla e non parte alcuna richiesta. Il corpo verso il relay è il solo payload chiuso v1 (token
 nativo, piattaforma, ambiente, chiave del catalogo e lingua), firmato con HMAC; nessun nome, codice, importo o nome
 dello stabilimento. Il token è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
-dispositivo. Un evento riconsegnato non accoda una seconda notifica e una consegna non parte mai due volte.
+dispositivo. Un evento riconsegnato non accoda una seconda notifica e due worker non inviano mai insieme la stessa
+consegna (lease condizionale); la consegna al relay è almeno una volta (risposta persa, arresto durante l'invio) e il
+relay deduplica sull'`id` della consegna.
 Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
 `TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestConcurrency_PushDeliveriesSingleSend`
 (`internal/domain/push`, tag `integration`), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`

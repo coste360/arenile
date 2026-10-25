@@ -165,11 +165,14 @@ const (
 
 // Result is the outcome of one request. Status is the HTTP status (0 on a
 // network error); RetryAfter is the relay's Retry-After, capped at an hour.
-// Error is a short description without tokens or secrets.
+// Error is a short description without tokens or secrets. Cancelled is
+// true when the caller's context ended during the request (shutdown): the
+// attempt does not count.
 type Result struct {
 	Outcome    Outcome
 	Status     int
 	RetryAfter time.Duration
+	Cancelled  bool
 	Error      string
 }
 
@@ -208,20 +211,28 @@ func (c Client) Send(ctx context.Context, n Notification) Result {
 	req.Header.Set("User-Agent", userAgent(c.Version))
 	req.Header.Set(KeyHeader, c.Key.ID)
 	req.Header.Set(SignatureHeader, c.Key.Sign(body, now()))
-	hc := c.HTTP
-	if hc == nil {
-		hc = &http.Client{Timeout: 10 * time.Second}
-	}
-	resp, err := hc.Do(req)
+	resp, err := c.httpClient().Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
-			return Result{Outcome: Retry, Error: "cancelled"}
+			return Result{Outcome: Retry, Cancelled: true, Error: "cancelled"}
 		}
 		return Result{Outcome: Retry, Error: "network error"}
 	}
 	defer resp.Body.Close()
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
 	return classify(resp)
+}
+
+// httpClient never follows redirects: a 3xx would resend the token and a
+// valid signature to another host (Go strips only Authorization and
+// cookies). A redirect is classified as Rejected.
+func (c Client) httpClient() *http.Client {
+	hc := http.Client{Timeout: 10 * time.Second}
+	if c.HTTP != nil {
+		hc = *c.HTTP
+	}
+	hc.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	return &hc
 }
 
 func classify(resp *http.Response) Result {
