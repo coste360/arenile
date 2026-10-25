@@ -3271,8 +3271,8 @@ paths:
         rifiutato con `409` se lo stabilimento ha dati operativi (`SetupStatus.has_operations`). `scope:
         everything` cancella anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti,
         documenti fiscali, crediti, lista d'attesa e rinnovi; è rifiutato con `409` finché un pagamento online o un
-        rimborso è in corso presso il provider o se ci sono scontrini emessi da un registratore telematico (driver
-        fiscale diverso da `none`, pagamenti non di prova), che vanno conservati. Entrambi spengono `booking_enabled` e scrivono gli eventi
+        rimborso è in corso presso il provider o se ci sono documenti di un registratore telematico (driver fiscale
+        diverso da `none`: emessi, annullati o ancora in stampa, o lavori del bridge in corso), che vanno conservati. Entrambi spengono `booking_enabled` e scrivono gli eventi
         `config.map_changed` e `config.pricing_changed`. Restano sempre il profilo dello stabilimento, i contatori dei
         biglietti del giorno,
         gli utenti, i pagamenti online, le email, i dispositivi, le casse e le stampanti, il registro attività.

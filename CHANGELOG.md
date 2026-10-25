@@ -11,8 +11,9 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   **Ricomincia la configurazione** cancella stagioni, mappe, zone, catalogo, prezzi e policy e riparte dal primo
   passo, finché non ci sono prenotazioni o incassi; **Azzera lo stabilimento** cancella anche prenotazioni,
   abbonamenti, clienti, incassi, cassa e biglietti, con una seconda conferma, ma non mentre un pagamento online o
-  un rimborso è in corso né quando ci sono scontrini emessi da un registratore telematico (vanno conservati). Entrambi spengono la pagina pubblica. Restano profilo, utenti, pagamenti online, email,
-  dispositivi, casse, stampanti, numerazione dei biglietti del giorno e registro attività. Nuovo `POST …/setup/reset` e
+  un rimborso è in corso né quando ci sono scontrini di un registratore telematico (vanno conservati). Entrambi
+  spengono la pagina pubblica. Restano profilo, utenti, pagamenti online, email, dispositivi, casse, stampanti,
+  numerazione dei biglietti del giorno e registro attività. Nuovo `POST …/setup/reset` e
   `has_operations` nello stato della configurazione.
 - Istanze dimostrative: `POST /api/device/v1/demo-pairing` restituisce un codice di abbinamento per l'utente
   dimostrativo (solo con ruolo di cassiere, staff di spiaggia o sola lettura), senza login, con un limite di 5

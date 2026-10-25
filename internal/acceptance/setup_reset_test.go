@@ -73,25 +73,53 @@ func TestAcceptance_SetupReset(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		// 0b. A receipt issued by a real registratore telematico blocks
-		// "everything" (fiscal records are kept); the demo ones ("none") do not.
+		// 0b. Receipts of a real registratore telematico, issued, voided or
+		// still at the device, and bridge jobs in progress block "everything"
+		// (fiscal records are kept); the demo ones ("none") and failed ones do not.
 		var paid store.Payment
 		if err := e.db.NewSelect().Model(&paid).Where("establishment_id = ?", e.estID).
 			Where("test = ?", false).Limit(1).Scan(ctx); err != nil {
 			t.Fatal(err)
 		}
-		receipt := &store.FiscalDocument{
-			ID: store.NewID(), EstablishmentID: e.estID, PaymentID: paid.ID, Driver: "rt_bridge", Status: "issued",
-			BusinessDate: paid.BusinessDate, Payload: store.JSON(`{}`), CreatedAt: now, UpdatedAt: now,
-		}
-		if _, err := e.db.NewInsert().Model(receipt).Exec(ctx); err != nil {
-			t.Fatal(err)
-		}
-		if r := reset(api.SetupResetRequestScopeEverything, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
-			t.Fatalf("reset with a real receipt: %d %s", r.Status, r.Body)
-		}
-		if _, err := e.db.NewDelete().Model(receipt).WherePK().Exec(ctx); err != nil {
-			t.Fatal(err)
+		for _, tc := range []struct {
+			name, driver, status string
+			job                  bool
+			blocks               bool
+		}{
+			{"issued bridge", "bridge", store.FiscalIssued, false, true},
+			{"pending bridge", "bridge", store.FiscalPending, false, true},
+			{"void bridge", "bridge", store.FiscalVoid, false, true},
+			{"failed bridge", "bridge", store.FiscalFailed, false, false},
+			{"issued none", "none", store.FiscalIssued, false, false},
+			{"queued job without document", "", "queued", true, true},
+			{"succeeded job without document", "", "succeeded", true, false},
+		} {
+			var row any
+			if tc.job {
+				row = &store.FiscalBridgeJob{
+					ID: store.NewID(), EstablishmentID: e.estID, Kind: "issue", IdempotencyKey: store.NewID(), Status: tc.status,
+					Payload: store.JSON(`{}`), NextAttemptAt: now, CreatedAt: now, UpdatedAt: now,
+				}
+			} else {
+				row = &store.FiscalDocument{
+					ID: store.NewID(), EstablishmentID: e.estID, PaymentID: paid.ID, Driver: tc.driver, Status: tc.status,
+					BusinessDate: paid.BusinessDate, Payload: store.JSON(`{}`), CreatedAt: now, UpdatedAt: now,
+				}
+			}
+			if _, err := e.db.NewInsert().Model(row).Exec(ctx); err != nil {
+				t.Fatalf("%s: %v", tc.name, err)
+			}
+			if got, err := store.HasFiscalRecords(ctx, e.db, e.es); err != nil || got != tc.blocks {
+				t.Errorf("%s: fiscal records %v, want %v (%v)", tc.name, got, tc.blocks, err)
+			}
+			if tc.blocks && tc.name == "issued bridge" {
+				if r := reset(api.SetupResetRequestScopeEverything, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
+					t.Fatalf("reset with a real receipt: %d %s", r.Status, r.Body)
+				}
+			}
+			if _, err := e.db.NewDelete().Model(row).WherePK().Exec(ctx); err != nil {
+				t.Fatal(err)
+			}
 		}
 
 		// 1. Operational data: configuration only is refused; a wrong name too.

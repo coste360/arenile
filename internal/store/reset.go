@@ -134,20 +134,29 @@ func HasPaymentsInFlight(ctx context.Context, db bun.IDB, es EstablishmentScope)
 }
 
 // HasFiscalRecords reports whether the establishment has fiscal documents
-// issued by a real fiscal driver (a registratore telematico through the
-// fiscal bridge): status issued, a driver other than "none" (builtin.
-// NoneFiscal, which performs no I/O) and a payment not in test mode. They
-// are records the law requires to keep, so a reset must not delete them.
+// of a real fiscal driver (the registratore telematico behind the fiscal
+// bridge; "none", builtin.NoneFiscal, performs no I/O): issued or voided
+// receipts the law requires to keep, documents still pending at the device,
+// or bridge jobs queued or leased (a job may have no document linked). A
+// reset must not delete them. Failed documents do not count: nothing was
+// issued. Test payments never get a fiscal document.
 func HasFiscalRecords(ctx context.Context, db bun.IDB, es EstablishmentScope) (bool, error) {
 	if err := es.mustBeValid(); err != nil {
 		return false, err
 	}
-	ok, err := db.NewSelect().TableExpr("fiscal_documents AS fd").
-		Join("JOIN payments AS p ON p.id = fd.payment_id").
-		Where("fd.establishment_id = ?", es.ID()).Where("fd.status = ?", "issued").
-		Where("fd.driver <> ?", "none").Where("p.test = ?", false).Exists(ctx)
+	ok, err := db.NewSelect().TableExpr("fiscal_documents").Where("establishment_id = ?", es.ID()).
+		Where("driver <> ?", "none").Where("status IN (?)", bun.In([]string{FiscalPending, FiscalIssued, FiscalVoid})).
+		Exists(ctx)
 	if err != nil {
 		return false, fmt.Errorf("store: has fiscal records: %w", err)
+	}
+	if ok {
+		return true, nil
+	}
+	ok, err = db.NewSelect().TableExpr("fiscal_bridge_jobs").Where("establishment_id = ?", es.ID()).
+		Where("status IN (?)", bun.In([]string{"queued", "leased"})).Exists(ctx)
+	if err != nil {
+		return false, fmt.Errorf("store: has fiscal records (bridge jobs): %w", err)
 	}
 	return ok, nil
 }
