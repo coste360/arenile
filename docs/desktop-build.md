@@ -346,6 +346,8 @@ keychain entry afterwards (service `it.coste360.arenile`, account
   amd64 and arm64 but have not been run on a Windows PC yet. A panel API URL opened in a new
   window on Windows (a server document) still gets WebView2's own popup.
 - Desktop-tag tests: `make test-desktop` (CGO, macOS or Windows) runs the launcher's tests
-  with the `desktop` tag, as the macOS and Windows jobs of the desktop workflow do.
+  with the `desktop` tag, as the macOS job of the desktop workflow does; the Windows jobs only
+  vet and link the window layer and run the link policy tests (the other desktop-tag tests
+  have not been run on Windows yet).
 - Open SSE streams keep `app.Run`'s graceful shutdown waiting up to its timeout (15 s) on
   every edition; the window unloads its page before quitting, a browser tab does not.

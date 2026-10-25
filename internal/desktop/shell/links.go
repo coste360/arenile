@@ -31,8 +31,9 @@ const (
 	LinkExternal
 )
 
-// NavigationAction decides a top-level navigation of the window shown at
-// panelURL towards target (pure): links, location changes, form
+// NavigationAction decides a top-level navigation of the window towards
+// target (pure); panelURL is the page the window shows (as the webview
+// reports it, so canonicalised like target): links, location changes, form
 // submissions and HTTP redirects. A navigation that leaves the panel
 // goes to the default browser; everything else proceeds. With no web
 // page shown yet (panelURL empty or not http(s), the first load, the

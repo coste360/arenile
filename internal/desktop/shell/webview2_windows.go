@@ -1,4 +1,4 @@
-//go:build desktop && windows
+//go:build desktop && cgo && windows
 
 package shell
 
@@ -12,7 +12,7 @@ import (
 
 // The native link policy on Windows: two WebView2 event handlers on the
 // ICoreWebView2 of the window, written as COM objects in plain Go
-// (syscall callbacks, no C), so that what the injected script cannot see
+// (syscall callbacks; only the handle lookup uses cgo), so that what the injected script cannot see
 // follows the same rule as on macOS (NavigationAction, NewWindowAction):
 //
 //   - NavigationStarting fires for every top-level navigation, HTTP
@@ -38,6 +38,7 @@ const (
 	vtControllerGetCoreWebView2 = 25
 
 	// ICoreWebView2.
+	vtWebViewGetSource                = 4
 	vtWebViewAddNavigationStarting    = 7
 	vtWebViewRemoveNavigationStarting = 8
 	vtWebViewAddNewWindowRequested    = 44
@@ -91,22 +92,26 @@ func (o *comObject) callPtr2(method int, p1, p2 unsafe.Pointer) uintptr {
 
 func (o *comObject) release() { o.call(vtRelease) }
 
-// eventHandler is a COM event handler implemented in Go: a static object
-// (package variable, never moved or freed), so AddRef and Release do not
-// count references.
+// eventHandler is a COM event handler implemented in Go, one per
+// registration: it carries the controller of its window (no process-wide
+// state), lives in the linkHooks that registered it (heap memory, which
+// the Go GC never moves, kept reachable until remove) and does not count
+// references, WebView2 releasing it no later than remove_*.
 type eventHandler struct {
 	vtbl *eventHandlerVtbl
 	iid  *windows.GUID
+	ctl  *Controller
 }
 
 type eventHandlerVtbl struct{ queryInterface, addRef, release, invoke uintptr }
 
+// The vtables are immutable after the first window and shared by all the
+// handlers of a kind (syscall.NewCallback slots are limited and never
+// freed, so they are created once).
 var (
-	handlerOnce        sync.Once
-	navStartingVtbl    eventHandlerVtbl
-	newWindowVtbl      eventHandlerVtbl
-	navStartingHandler = eventHandler{vtbl: &navStartingVtbl, iid: &iidNavigationStartingHandler}
-	newWindowHandler   = eventHandler{vtbl: &newWindowVtbl, iid: &iidNewWindowRequestedHandler}
+	handlerOnce     sync.Once
+	navStartingVtbl eventHandlerVtbl
+	newWindowVtbl   eventHandlerVtbl
 )
 
 // The callbacks run on the UI thread, inside the window's message loop.
@@ -134,55 +139,53 @@ func installHandlerVtables() {
 	})
 }
 
-var (
-	linkMu  sync.Mutex
-	linkCtl *Controller
-)
-
-func linkController() *Controller {
-	linkMu.Lock()
-	defer linkMu.Unlock()
-	return linkCtl
-}
-
-// argsURI reads the Uri of event args (method get_Uri), "" on failure.
-func argsURI(args *comObject, method int) string {
+// getString reads a string property (an LPWSTR out parameter allocated
+// by WebView2), "" on failure.
+func getString(o *comObject, method int) string {
 	var p *uint16
-	if args.callPtr(method, unsafe.Pointer(&p)) != sOK || p == nil {
+	if o.callPtr(method, unsafe.Pointer(&p)) != sOK || p == nil {
 		return ""
 	}
 	defer windows.CoTaskMemFree(unsafe.Pointer(p))
 	return windows.UTF16PtrToString(p)
 }
 
-func onNavigationStarting(_ *eventHandler, _ *comObject, args *comObject) uintptr {
-	c := linkController()
-	if c == nil || args == nil {
+// shownURL is the page the sender webview shows (get_Source: the URL as
+// WebView2 canonicalised it, about:blank before the first load), the
+// reference of the link rule as webView.URL is on macOS.
+func shownURL(sender *comObject) string {
+	if sender == nil {
+		return ""
+	}
+	return getString(sender, vtWebViewGetSource)
+}
+
+func onNavigationStarting(this *eventHandler, sender, args *comObject) uintptr {
+	if this == nil || this.ctl == nil || args == nil {
 		return sOK
 	}
-	target := argsURI(args, vtNavArgsGetURI)
-	if NavigationAction(c.Current(), target) == LinkExternal {
+	target := getString(args, vtNavArgsGetURI)
+	if NavigationAction(shownURL(sender), target) == LinkExternal {
 		args.call(vtNavArgsPutCancel, 1)
-		go c.OpenExternal(target)
+		go this.ctl.OpenExternal(target)
 	}
 	return sOK
 }
 
-func onNewWindowRequested(_ *eventHandler, _ *comObject, args *comObject) uintptr {
-	c := linkController()
-	if c == nil || args == nil {
+func onNewWindowRequested(this *eventHandler, sender, args *comObject) uintptr {
+	if this == nil || this.ctl == nil || args == nil {
 		return sOK
 	}
-	target := argsURI(args, vtNewWindowArgsGetURI)
-	switch NewWindowAction(c.Current(), target) {
+	target := getString(args, vtNewWindowArgsGetURI)
+	switch NewWindowAction(shownURL(sender), target) {
 	case LinkExternal:
 		// Handled without a NewWindow: no window opens (window.open
-		// returns null, as with the injected script).
+		// returns null, as with the injected script and on macOS).
 		args.call(vtNewWindowArgsPutHandled, 1)
-		go c.OpenExternal(target)
+		go this.ctl.OpenExternal(target)
 	case LinkInPlace:
 		args.call(vtNewWindowArgsPutHandled, 1)
-		go c.OpenPage(target)
+		go this.ctl.OpenPage(target)
 	case LinkAllow:
 	}
 	return sOK
@@ -191,6 +194,7 @@ func onNewWindowRequested(_ *eventHandler, _ *comObject, args *comObject) uintpt
 // linkHooks are the handlers registered on one ICoreWebView2.
 type linkHooks struct {
 	webview         *comObject
+	nav, newWin     *eventHandler
 	navToken, nwTok int64
 	navOK, newWinOK bool
 }
@@ -199,7 +203,7 @@ type linkHooks struct {
 // controller (an ICoreWebView2Controller, UI thread) for c; nil when
 // nothing could be registered.
 func installLinkHooks(controller unsafe.Pointer, c *Controller) *linkHooks {
-	if controller == nil {
+	if controller == nil || c == nil {
 		return nil
 	}
 	installHandlerVtables()
@@ -208,16 +212,17 @@ func installLinkHooks(controller unsafe.Pointer, c *Controller) *linkHooks {
 	if ctl.callPtr(vtControllerGetCoreWebView2, unsafe.Pointer(&wv)) != sOK || wv == nil {
 		return nil
 	}
-	h := &linkHooks{webview: wv}
-	h.navOK = wv.callPtr2(vtWebViewAddNavigationStarting, unsafe.Pointer(&navStartingHandler), unsafe.Pointer(&h.navToken)) == sOK
-	h.newWinOK = wv.callPtr2(vtWebViewAddNewWindowRequested, unsafe.Pointer(&newWindowHandler), unsafe.Pointer(&h.nwTok)) == sOK
+	h := &linkHooks{
+		webview: wv,
+		nav:     &eventHandler{vtbl: &navStartingVtbl, iid: &iidNavigationStartingHandler, ctl: c},
+		newWin:  &eventHandler{vtbl: &newWindowVtbl, iid: &iidNewWindowRequestedHandler, ctl: c},
+	}
+	h.navOK = wv.callPtr2(vtWebViewAddNavigationStarting, unsafe.Pointer(h.nav), unsafe.Pointer(&h.navToken)) == sOK
+	h.newWinOK = wv.callPtr2(vtWebViewAddNewWindowRequested, unsafe.Pointer(h.newWin), unsafe.Pointer(&h.nwTok)) == sOK
 	if !h.navOK && !h.newWinOK {
 		wv.release()
 		return nil
 	}
-	linkMu.Lock()
-	linkCtl = c
-	linkMu.Unlock()
 	return h
 }
 
@@ -227,9 +232,6 @@ func (h *linkHooks) remove() {
 	if h == nil {
 		return
 	}
-	linkMu.Lock()
-	linkCtl = nil
-	linkMu.Unlock()
 	if h.navOK {
 		h.webview.call(vtWebViewRemoveNavigationStarting, uintptr(h.navToken))
 	}
