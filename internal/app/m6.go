@@ -49,7 +49,10 @@ func (a *App) wireDevices(aw *audit.Writer) {
 	if a.opts.desktop != nil {
 		rt = a.opts.desktop
 	}
-	a.Meta = meta.NewService(meta.Deps{Version: a.opts.version, Clock: c, Runtime: rt, Drivers: a.registry})
+	a.Meta = meta.NewService(meta.Deps{
+		Version: a.opts.version, Clock: c, Runtime: rt, Drivers: a.registry,
+		PushNotifications: a.cfg.PushRelayConfigured(),
+	})
 	a.FiscalBridge = fiscalbridge.NewService(fiscalbridge.Deps{DB: a.db, Clock: c, Audit: aw, Log: a.log})
 	a.registry.fiscal[fiscalbridge.Code] = &fiscalbridge.Driver{Queue: a.FiscalBridge, EstablishmentFromContext: fiscalbridge.EstablishmentFromContext}
 	a.Devices = device.NewService(device.Deps{

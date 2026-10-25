@@ -6,6 +6,25 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- **Notifiche push facoltative per l'app mobile** (spec 29.2, ADR 0027): tramite il relay di Coste360, che riceve solo
+  il token nativo del telefono e quale avviso generico mostrare (**Nuova prenotazione online**, **Prenotazione da
+  approvare**, **Pagamento non riuscito**), mai dati dei clienti; il token è un dato personale pseudonimo e con le push
+  attive Coste360 è responsabile del trattamento per il relay. Servono la chiave del relay sul server (nuove variabili
+  `ARENILE_PUSH_RELAY_KEY` e `ARENILE_PUSH_RELAY_URL`), l'attivazione del gestore in **Configurazione → Dispositivi**
+  (spenta di default) e quella di ogni utente dall'app. Nuove API `GET`/`PUT /api/admin/v1/establishments/{id}/push-settings`
+  e `GET`/`PUT`/`DELETE /api/device/v1/push`; `/meta` riporta `push_notifications`. Il token è cifrato e viene
+  cancellato con la revoca del dispositivo e, dal job orario `push.retention`, quando il dispositivo è scaduto per
+  inattività o l'utente è disattivato.
+- La coda offline dell'app mobile (check-in, ingresso al varco, rilasci degli abbonati, blocchi, note, incassi) è
+  coperta da `Idempotency-Key` su tutte le operazioni: `checkInEntryTicket` ora la dichiara nel contratto e le
+  descrizioni spiegano la ripetizione (risposta originale con `Idempotent-Replayed: true`, 24 ore, per utente).
+
+### Note di aggiornamento
+- La migrazione 00013 aggiunge le tabelle `push_settings`, `push_registrations` e `push_deliveries` (SQLite e
+  PostgreSQL), applicata all'avvio con `ARENILE_AUTO_MIGRATE=true`. Senza `ARENILE_PUSH_RELAY_KEY` nulla cambia e il
+  server non contatta il relay.
+
 ## [1.0.3] - 2026-10-25
 
 ### Aggiunto

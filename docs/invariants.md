@@ -178,7 +178,7 @@ Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (
 **INV-26 — Isolamento per stabilimento.**
 Nessuna query operativa viene eseguita senza `establishment_id` preso dal contesto autenticato; un
 utente o una chiave API di uno stabilimento non legge né modifica dati di un altro.
-Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Per la vendita giornaliera (ADR 0020) `TestDailySaleHTTP_CrossTenantAndIfMatch` (`internal/http/admin`, tag `integration`: biglietti, codice/QR, stampa, annullamento, assegnazione e varco di A da un'altra organizzazione → 404; postazione di un altro stabilimento nella vendita o nello spostamento → 400). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
+Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Per le notifiche push (ADR 0027) `TestPushService_CrossTenant` (`internal/domain/push`, tag `integration`). Per la vendita giornaliera (ADR 0020) `TestDailySaleHTTP_CrossTenantAndIfMatch` (`internal/http/admin`, tag `integration`: biglietti, codice/QR, stampa, annullamento, assegnazione e varco di A da un'altra organizzazione → 404; postazione di un altro stabilimento nella vendita o nello spostamento → 400). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
 
 **INV-27 — Permessi verificati nel dominio.**
 Ogni operazione di amministrazione verifica il permesso del ruolo (spec 16.1) nel servizio di dominio,
@@ -934,3 +934,42 @@ Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsS
 `TestCheckNow_Scenarios`, `TestCheckNow_DevBuildNoNetwork`, `TestConcurrency_CheckNow`
 (`internal/domain/update`), `TestUpdates_WiringAndNoNetworkWhenDisabled` (`internal/app`),
 `TestChecker_RequestCarriesOnlyTheUserAgent` (`internal/updates`). Stato: implemented.
+
+## App mobile: coda offline e notifiche push (spec 29.2 — M7)
+
+**INV-99 — La coda offline dell'app non applica mai due volte un'operazione.**
+Check-in, ingresso al varco, rilascio del giorno di un abbonamento, blocco di una postazione, nota e incasso su una
+prenotazione esistente dichiarano `Idempotency-Key` nel contratto e passano dal middleware di idempotenza (anche
+l'ingresso al varco, verificato sul percorso). Ripetuti con il token del dispositivo e la stessa
+chiave (entro 24 ore, per lo stesso utente) restituiscono la risposta originale byte per byte con
+`Idempotent-Replayed: true` e nessun nuovo effetto; la stessa chiave con un altro corpo risponde
+`422 idempotency_key_reused`. Le risposte 5xx non sono memorizzate e si possono ritentare con la stessa chiave; una
+risposta memorizzata sotto 500, compresi i rifiuti 4xx, è definitiva per quella chiave, e quando l'utente corregge la
+causa e invia di nuovo la coda usa una chiave nuova. 100 invii paralleli della stessa nota o dello stesso incasso producono un solo effetto e
+solo risposte identiche o `409 idempotency_in_progress`.
+Verificata da: `TestAcceptance_OfflineQueueReplay`, `TestConcurrency_OfflineQueueReplay` (`internal/acceptance`, tag
+`integration`, SQLite e PostgreSQL), `TestOfflineQueueContract_IdempotencyKey` (`internal/http`), oltre a INV-31.
+Stato: implemented.
+
+**INV-100 — Notifiche push solo con triplo consenso e senza dati dei clienti.**
+Una notifica parte solo se l'istanza ha `ARENILE_PUSH_RELAY_KEY` (mai nell'edizione desktop), il gestore ha acceso le
+push e l'avviso nelle impostazioni dello stabilimento, e l'utente ha registrato il token del dispositivo scegliendo
+quell'argomento; consenso, dispositivo (revoca, scadenza per inattività) e ruolo si ricontrollano all'invio. Senza
+chiave non si accoda nulla e non parte alcuna richiesta. Il corpo verso il relay è il solo payload chiuso v1 (token
+nativo, piattaforma, ambiente, chiave del catalogo e lingua), firmato con HMAC; nessun nome, codice, importo o nome
+dello stabilimento; il token (dato personale pseudonimo) è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
+dispositivo; il job `push.retention` cancella anche le registrazioni di un dispositivo revocato o scaduto per
+inattività o di un utente disattivato. Un evento riconsegnato non accoda una seconda notifica, anche se il dispositivo si registra di nuovo in
+mezzo (la registrazione conserva il suo id), e due worker non inviano mai insieme la stessa
+consegna (lease condizionale); la consegna al relay è almeno una volta (risposta persa, arresto durante l'invio) e il
+relay deduplica sull'`id` della consegna.
+Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
+`TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestPushService_SendTimeRecheck`,
+`TestConcurrency_PushDeliveriesSingleSend`, `TestConcurrency_PushSinkRedelivery` (100 consegne parallele dello stesso
+evento: una notifica per registrazione), `TestPushService_ReRegisterKeepsRegistrationID`, `TestPushService_RetentionDeletesStaleRegistrations`,
+`TestPushService_CrashedWorkerLeaseReclaimed` (worker fermo durante l'invio:
+nessun altro invia finché il lease non scade, poi la stessa consegna parte una volta con lo stesso `id`),
+`TestPushService_CrossTenant` (evento, registrazioni, revoca e funzioni del repository di un altro stabilimento)
+(`internal/domain/push`, tag `integration`, SQLite e PostgreSQL), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`
+(`internal/app`), `TestBuildPayload_NoPersonalData`, `TestKey_NeverPrintsSecret` (`internal/pushrelay`),
+`TestBuild_PushNotifications` (`internal/domain/meta`). Stato: implemented.

@@ -104,11 +104,12 @@ func (s *Service) views(ctx context.Context, db bun.IDB, es store.EstablishmentS
 	return out, nil
 }
 
-// Revoke revokes deviceID (idempotent) and deactivates its fiscal bridge
-// registration in the same transaction. Audit "device.revoked". Devices of
-// other users need users.manage; without it they are reported as not found
-// (no existence leak). The token stops working on the next request: every
-// authentication reads revoked_at, there is no cache.
+// Revoke revokes deviceID (idempotent), deactivates its fiscal bridge
+// registration and deletes its push registration in the same transaction.
+// Audit "device.revoked". Devices of other users need users.manage; without
+// it they are reported as not found (no existence leak). The token stops
+// working on the next request: every authentication reads revoked_at, there
+// is no cache.
 func (s *Service) Revoke(ctx context.Context, p *auth.Principal, establishmentID, deviceID string) error {
 	es, manage, err := s.access(ctx, p, establishmentID)
 	if err != nil {
@@ -167,6 +168,11 @@ func (s *Service) revoke(ctx context.Context, p *auth.Principal, es store.Establ
 			if err := s.d.Bridge.DeactivateDevice(ctx, tx, es, deviceID); err != nil {
 				return err
 			}
+		}
+		// A revoked device never receives push notifications again (ADR
+		// 0027): its native token is forgotten with the revocation.
+		if _, err := store.DeletePushRegistrationByDevice(ctx, tx, es, deviceID); err != nil {
+			return err
 		}
 		return s.d.Audit.Record(ctx, tx, audit.Entry{
 			EstablishmentID: es.ID(), Actor: p.Actor(""), Action: "device.revoked",

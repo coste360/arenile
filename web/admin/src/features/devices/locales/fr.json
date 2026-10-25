@@ -74,5 +74,34 @@
     "message": "L'appareil perd immédiatement l'accès. Pour le réutiliser, il faudra l'associer avec un nouveau code.",
     "messageBridge": "L'appareil perd immédiatement l'accès et cesse d'être le pont fiscal : les documents fiscaux restent en attente jusqu'à l'enregistrement d'un autre pont.",
     "done": "{{name}} révoqué"
+  },
+  "push": {
+    "title": "Notifications push sur l'application mobile",
+    "description": "Des alertes sur les téléphones du personnel même quand l'application est fermée. Elles passent par le relais de Coste360, qui ne reçoit qu'un identifiant pseudonyme du téléphone et un texte générique (par exemple « Nouvelle réservation en ligne ») : jamais de noms, de codes ni de montants.",
+    "enabled": {
+      "label": "Envoyer des notifications push",
+      "help": "Désactivées par défaut. Chaque personne les active ensuite dans l'application sur son propre téléphone et ne reçoit que les alertes permises par son rôle."
+    },
+    "events": {
+      "legend": "Alertes à envoyer",
+      "booking_new_online": {
+        "label": "Nouvelle réservation en ligne",
+        "help": "Une réservation depuis la page publique est confirmée. Tous les rôles."
+      },
+      "booking_approval_requested": {
+        "label": "Réservation à approuver",
+        "help": "Une demande attend votre approbation. Propriétaire, gérant et caissier."
+      },
+      "payment_failed": {
+        "label": "Paiement échoué",
+        "help": "Un paiement en ligne n'a pas abouti. Propriétaire et gérant."
+      }
+    },
+    "noRelay": {
+      "title": "Notifications push non configurées sur ce serveur",
+      "description": "La clé du relais de Coste360 est nécessaire (variable ARENILE_PUSH_RELAY_KEY). Sans clé, l'application met à jour les données à l'ouverture. Les notifications push ne sont pas disponibles dans l'application de bureau."
+    },
+    "save": "Enregistrer",
+    "saved": "Paramètres des notifications enregistrés"
   }
 }

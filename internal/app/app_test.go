@@ -87,6 +87,9 @@ func TestSmoke_ServeHealthAndReady(t *testing.T) {
 		"refunds.send",
 		"imports.retention",
 		"updates.check",
+		// Registered also without a relay key: they only read the database
+		// (nothing is queued without the key) and keep the retention.
+		"push.deliver", "push.retention",
 	}
 	if got := a.Jobs().Jobs(); !sameSet(got, wantJobs) {
 		t.Fatalf("registered jobs: got %v, want %v", got, wantJobs)

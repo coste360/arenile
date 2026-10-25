@@ -36,6 +36,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/printing"
+	"github.com/coste360/arenile/internal/domain/push"
 	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
@@ -134,6 +135,8 @@ type Handlers struct {
 	Printing *printing.Service
 	// Update notice (system_update.go, ADR 0025); own block, nil = 501.
 	Updates *update.Service
+	// Push notification settings (push.go, ADR 0027); own block, nil = 501.
+	Push *push.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

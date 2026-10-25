@@ -79,6 +79,9 @@ func TestHTTPIntegration_CrossTenant(t *testing.T) {
 			{http.MethodPost, "/imports/" + someID + "/preview"},
 			{http.MethodPost, "/imports/" + someID + "/apply"},
 			{http.MethodDelete, "/imports/" + someID},
+			// Push settings (ADR 0027).
+			{http.MethodGet, "/push-settings"},
+			{http.MethodPut, "/push-settings"},
 		} {
 			var payload any
 			var headers map[string]string

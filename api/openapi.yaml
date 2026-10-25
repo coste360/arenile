@@ -14,7 +14,8 @@ info:
     Convenzioni (specifica, sezione 17.1):
     - errori in `application/problem+json` (RFC 9457) con `type` stabile (slug);
     - paginazione a cursore (`?cursor=&limit=`);
-    - `Idempotency-Key` accettato sui `POST` che creano risorse o pagamenti;
+    - `Idempotency-Key` accettato sui `POST` che creano risorse o pagamenti e sulle
+      operazioni della coda offline (check-in, rilasci, blocchi, note, incassi; spec 21.2, 29.2);
     - le richieste del pannello autenticate via cookie che modificano dati
       devono inviare l'header `X-CSRF-Token` uguale al cookie `arenile_csrf`;
     - date di calendario `YYYY-MM-DD`, istanti RFC 3339 UTC.
@@ -87,6 +88,8 @@ tags:
     description: Dispositivi abbinati (app mobile e desktop remota), codici di abbinamento e revoca
   - name: device
     description: API dei dispositivi abbinati con token per dispositivo (spec 29.2)
+  - name: push
+    description: Notifiche push facoltative tramite il relay di Coste360 (spec 29.2, ADR 0027)
   - name: fiscal-bridge
     description: Ponte fiscale verso il FiscalDriver locale dell'app desktop in modalità remota (spec 29.1, 14.2)
   - name: desktop
@@ -3806,7 +3809,7 @@ paths:
       summary: "Registra il check-in"
       description: >-
         Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition.
-        Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+        Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -4074,7 +4077,9 @@ paths:
       operationId: addBookingNote
       tags: [bookings]
       summary: "Aggiunge una nota"
-      description: Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+      description: >-
+        Permesso bookings.write. Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2):
+        senza chiave due invii aggiungono due note.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -4731,12 +4736,15 @@ paths:
         wrong_date). Il codice è il token casuale del QR (gate token): il codice della prenotazione, sequenziale, o il
         numero del giorno da soli non fanno entrare (404); li accetta solo un inserimento manuale confermato dallo
         staff (manual = true), registrato nell'audit. Un biglietto la cui prenotazione non è più confermata non entra.
-        404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+        404 se il codice non è un biglietto dello stabilimento. Permesso operations.run. Idempotency-Key consigliata
+        (coda offline dell'app, spec 29.2): la ripetizione con la stessa chiave restituisce l'esito originale
+        (admitted), non already_entered.
       security:
         - cookieAuth: []
         - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
         - $ref: "#/components/parameters/CSRFToken"
       requestBody:
         required: true
@@ -5037,7 +5045,8 @@ paths:
       tags: [payments]
       summary: "Registra un incasso manuale (contanti, carta, bonifico, altro)"
       description: >-
-        Driver manual. Idempotency-Key fortemente consigliata (coda offline, spec 21.2). I contanti
+        Driver manual. Idempotency-Key fortemente consigliata (coda offline del pannello e dell'app, spec 21.2,
+        29.2). I contanti
         richiedono una sessione di cassa aperta (409 cash_session_closed). Aggiorna paid_amount (INV-22).
       security:
         - cookieAuth: []
@@ -5537,7 +5546,8 @@ paths:
       tags: [availability]
       summary: "Blocca postazioni su un intervallo"
       description: >-
-        Allocazioni kind=block (permesso operations.run); 409 spot_unavailable.
+        Allocazioni kind=block (permesso operations.run); 409 spot_unavailable. Idempotency-Key consigliata (coda
+        offline dell'app, spec 29.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -5800,6 +5810,7 @@ paths:
       summary: "Rilascia giorni: la postazione diventa prenotabile"
       description: >-
         Rimuove le allocazioni season di quei giorni ed emette season.day_released (spec 7.7, INV-10).
+        Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -9116,6 +9127,77 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplemented"
 
+  /api/device/v1/push:
+    get:
+      operationId: getDevicePushRegistration
+      tags: [push]
+      summary: Stato delle notifiche push di questo dispositivo
+      description: >-
+        Dice se le push sono disponibili (chiave del relay sull'istanza e push accese dal gestore), se il
+        dispositivo ha registrato il proprio token e quali argomenti il ruolo dell'utente ammette (ADR 0027). Il
+        token non è mai restituito.
+      security:
+        - deviceAuth: []
+      responses:
+        "200":
+          description: Stato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushRegistrationStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: registerDevicePush
+      tags: [push]
+      summary: Registra (o sostituisce) il token push nativo di questo dispositivo
+      description: >-
+        Consenso dell'utente: l'app chiama questa operazione solo dopo che l'utente ha attivato le notifiche e
+        concesso il permesso del sistema. Una registrazione per dispositivo; la piattaforma è quella del
+        dispositivo abbinato (solo `ios` e `android`, altrimenti 400). Il token (APNs o FCM) è cifrato a riposo e
+        non compare mai in log, audit o risposte; lo stesso token registrato da un altro dispositivo dello
+        stabilimento passa a questo. Gli argomenti non ammessi dal ruolo sono rifiutati (400). Senza chiave del
+        relay o con le push spente dal gestore: 409 push_unavailable. Audit `device.push_registered`.
+      security:
+        - deviceAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushRegistrationInput"
+      responses:
+        "200":
+          description: Registrato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushRegistrationStatus"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: unregisterDevicePush
+      tags: [push]
+      summary: Cancella il token push di questo dispositivo (l'utente spegne le notifiche)
+      description: Idempotente. Audit `device.push_unregistered` se una registrazione esisteva.
+      security:
+        - deviceAuth: []
+      responses:
+        "204":
+          description: Cancellato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
   /api/device/v1/fiscal-bridge:
     put:
       operationId: registerFiscalBridge
@@ -10343,6 +10425,82 @@ paths:
           $ref: "#/components/responses/Conflict"
         "412":
           $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/push-settings:
+    get:
+      operationId: getPushSettings
+      tags: [push]
+      summary: "Impostazioni delle notifiche push dello stabilimento"
+      description: >-
+        Spente di default. `relay_configured` dice se l'istanza ha la chiave del relay (senza, le push non partono
+        anche se accese). Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: "Impostazioni"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updatePushSettings
+      tags: [push]
+      summary: "Accende o spegne le notifiche push dello stabilimento"
+      description: >-
+        Consenso del gestore (ADR 0027): senza `enabled` nessuna push parte, qualunque sia la registrazione dei
+        dispositivi. `events` sceglie quali avvisi inviare. Permesso establishment.configure, If-Match
+        obbligatorio. Audit `push_settings.updated`.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSettingsInput"
+      responses:
+        "200":
+          description: "Impostazioni aggiornate"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits:
@@ -12409,7 +12567,16 @@ components:
       description: |
         Chiave di idempotenza scelta dal client (consigliato un UUID). Una
         richiesta ripetuta con la stessa chiave restituisce la risposta
-        originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+        originale (header `Idempotent-Replayed: true`) senza ripetere
+        l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+        mentre la prima è ancora in corso `409 idempotency_in_progress`
+        (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+        token del dispositivo) e per 24 ore: una coda offline più vecchia va
+        ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+        (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+        i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+        definitiva per quella chiave. Quando l'utente corregge la causa e
+        invia di nuovo, il client deve usare una chiave nuova.
       schema:
         type: string
         minLength: 8
@@ -12907,6 +13074,7 @@ components:
         - print_route_missing
         - payment_provider_test_mode
         - email_template_invalid
+        - push_unavailable
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -21655,7 +21823,114 @@ components:
           description: Flusso SSE `GET /api/admin/v1/stream` disponibile.
         push_notifications:
           type: boolean
-          description: Notifiche push tramite relay configurate (M7).
+          description: >-
+            Notifiche push disponibili sull'istanza: chiave del relay configurata (`ARENILE_PUSH_RELAY_KEY`) ed
+            edizione server (sempre falso nell'edizione desktop). Ogni stabilimento le accende a parte
+            (`push-settings`, spente di default); l'app legge lo stato effettivo da `GET /api/device/v1/push`
+            (ADR 0027).
+
+    PushTopic:
+      type: string
+      description: >-
+        Argomento di una notifica push, chiave del catalogo chiuso del relay (ADR 0027). `booking_new_online`:
+        nuova prenotazione online (bookings.read); `booking_approval_requested`: prenotazione da approvare
+        (bookings.write); `payment_failed`: pagamento non riuscito (refunds.issue).
+      enum: [booking_new_online, booking_approval_requested, payment_failed]
+    PushEvents:
+      type: object
+      description: Avvisi che lo stabilimento invia quando le push sono accese.
+      required: [booking_new_online, booking_approval_requested, payment_failed]
+      properties:
+        booking_new_online:
+          type: boolean
+        booking_approval_requested:
+          type: boolean
+        payment_failed:
+          type: boolean
+    PushSettings:
+      type: object
+      required: [enabled, events, relay_configured, version]
+      properties:
+        enabled:
+          type: boolean
+          description: Push accese dal gestore (falso di default).
+        events:
+          $ref: "#/components/schemas/PushEvents"
+        relay_configured:
+          type: boolean
+          description: L'istanza ha la chiave del relay (`ARENILE_PUSH_RELAY_KEY`); senza, nessuna push parte.
+        version:
+          $ref: "#/components/schemas/Version"
+    PushSettingsInput:
+      type: object
+      required: [enabled, events]
+      properties:
+        enabled:
+          type: boolean
+        events:
+          $ref: "#/components/schemas/PushEvents"
+    PushEnvironment:
+      type: string
+      description: "`sandbox` per le build di sviluppo iOS (APNs di sviluppo), `production` altrimenti."
+      enum: [production, sandbox]
+    PushLocale:
+      type: string
+      description: Lingua del testo generico composto dal relay.
+      enum: [it, en, de, fr]
+    PushRegistrationInput:
+      type: object
+      required: [token, locale, topics]
+      properties:
+        token:
+          type: string
+          description: >-
+            Token push nativo dato dal sistema operativo all'app (APNs o FCM), caratteri ASCII stampabili senza
+            spazi. Non è mai restituito.
+          minLength: 16
+          maxLength: 4096
+        environment:
+          $ref: "#/components/schemas/PushEnvironment"
+        locale:
+          $ref: "#/components/schemas/PushLocale"
+        topics:
+          type: array
+          description: Argomenti scelti dall'utente, tra quelli ammessi dal suo ruolo.
+          uniqueItems: true
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/PushTopic"
+    PushRegistrationStatus:
+      type: object
+      required: [available, relay_configured, establishment_enabled, registered, topics, allowed_topics]
+      properties:
+        available:
+          type: boolean
+          description: Push utilizzabili ora (chiave del relay e push accese dal gestore).
+        relay_configured:
+          type: boolean
+        establishment_enabled:
+          type: boolean
+        registered:
+          type: boolean
+          description: Questo dispositivo ha un token registrato.
+        environment:
+          $ref: "#/components/schemas/PushEnvironment"
+        locale:
+          $ref: "#/components/schemas/PushLocale"
+        topics:
+          type: array
+          description: Argomenti registrati (vuoto se non registrato).
+          items:
+            $ref: "#/components/schemas/PushTopic"
+        allowed_topics:
+          type: array
+          description: Argomenti ammessi dal ruolo dell'utente e accesi dal gestore.
+          items:
+            $ref: "#/components/schemas/PushTopic"
+        updated_at:
+          type: string
+          format: date-time
+          description: Ultima registrazione del token.
 
     DevicePlatform:
       type: string

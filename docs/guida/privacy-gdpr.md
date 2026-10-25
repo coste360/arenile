@@ -13,7 +13,8 @@ Questa guida aiuta il gestore dello stabilimento balneare a usare Arenile nel ri
 | **Chi ospita il servizio** (provider del VPS, fornitore di hosting gestito, informatico che amministra il server per conto del gestore) | **Responsabile del trattamento** (art. 28) | Serve un contratto o atto di nomina (DPA). Se installi Arenile su un server tuo e lo gestisci tu, il provider dell'infrastruttura è di norma responsabile per l'hosting. |
 | **Stripe** (se attivi i pagamenti online) | Titolare autonomo o responsabile, secondo i termini di Stripe | Verifica l'accordo sul trattamento dei dati nel tuo account Stripe. |
 | **Provider SMTP** (se invii email) | Responsabile del trattamento | Verifica il DPA del fornitore. |
-| **Coste360 SRL** | Nessun ruolo, nell'installazione self-hosted | Coste360 sviluppa il software ma **non riceve né tratta** i dati delle tue installazioni. La telemetria è disattivata di default (`ARENILE_TELEMETRY=false`). |
+| **Coste360 SRL** | Nessun ruolo, nell'installazione self-hosted con le notifiche push spente | Coste360 sviluppa il software ma **non riceve né tratta** i dati delle tue installazioni. La telemetria è disattivata di default (`ARENILE_TELEMETRY=false`). |
+| **Coste360 SRL**, per il relay delle notifiche push (solo se le attivi) | **Responsabile del trattamento** (art. 28), con **Apple** e **Google** come sub-responsabili | Il relay riceve il token push del telefono dello staff, la lingua e quale avviso generico mostrare, mai dati dei clienti (ADR 0027). Il token è un identificativo persistente del dispositivo: è un dato personale **pseudonimo**, non anonimo. Prima di attivare le push serve un accordo sul trattamento dei dati (DPA) con Coste360. |
 
 Se un fornitore offre Arenile come servizio ospitato, quel fornitore è responsabile del trattamento per tuo conto e deve sottoscrivere con te un accordo ex art. 28.
 

@@ -1088,7 +1088,7 @@ export interface paths {
         put?: never;
         /**
          * Registra il check-in
-         * @description Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition. Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+         * @description Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition. Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2).
          */
         post: operations["checkInBooking"];
         delete?: never;
@@ -1208,7 +1208,7 @@ export interface paths {
         put?: never;
         /**
          * Aggiunge una nota
-         * @description Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+         * @description Permesso bookings.write. Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2): senza chiave due invii aggiungono due note.
          */
         post: operations["addBookingNote"];
         delete?: never;
@@ -1506,7 +1506,7 @@ export interface paths {
         put?: never;
         /**
          * Ingresso al varco: scansione del QR del biglietto
-         * @description Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided, wrong_date). Il codice è il token casuale del QR (gate token): il codice della prenotazione, sequenziale, o il numero del giorno da soli non fanno entrare (404); li accetta solo un inserimento manuale confermato dallo staff (manual = true), registrato nell'audit. Un biglietto la cui prenotazione non è più confermata non entra. 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+         * @description Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided, wrong_date). Il codice è il token casuale del QR (gate token): il codice della prenotazione, sequenziale, o il numero del giorno da soli non fanno entrare (404); li accetta solo un inserimento manuale confermato dallo staff (manual = true), registrato nell'audit. Un biglietto la cui prenotazione non è più confermata non entra. 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run. Idempotency-Key consigliata (coda offline dell'app, spec 29.2): la ripetizione con la stessa chiave restituisce l'esito originale (admitted), non already_entered.
          */
         post: operations["checkInEntryTicket"];
         delete?: never;
@@ -1610,7 +1610,7 @@ export interface paths {
         put?: never;
         /**
          * Registra un incasso manuale (contanti, carta, bonifico, altro)
-         * @description Driver manual. Idempotency-Key fortemente consigliata (coda offline, spec 21.2). I contanti richiedono una sessione di cassa aperta (409 cash_session_closed). Aggiorna paid_amount (INV-22).
+         * @description Driver manual. Idempotency-Key fortemente consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2). I contanti richiedono una sessione di cassa aperta (409 cash_session_closed). Aggiorna paid_amount (INV-22).
          */
         post: operations["recordBookingPayment"];
         delete?: never;
@@ -1767,7 +1767,7 @@ export interface paths {
         put?: never;
         /**
          * Blocca postazioni su un intervallo
-         * @description Allocazioni kind=block (permesso operations.run); 409 spot_unavailable.
+         * @description Allocazioni kind=block (permesso operations.run); 409 spot_unavailable. Idempotency-Key consigliata (coda offline dell'app, spec 29.2).
          */
         post: operations["createSpotBlock"];
         delete?: never;
@@ -1847,7 +1847,7 @@ export interface paths {
         put?: never;
         /**
          * Rilascia giorni: la postazione diventa prenotabile
-         * @description Rimuove le allocazioni season di quei giorni ed emette season.day_released (spec 7.7, INV-10).
+         * @description Rimuove le allocazioni season di quei giorni ed emette season.day_released (spec 7.7, INV-10). Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2).
          */
         post: operations["createSeasonPassReleases"];
         delete?: never;
@@ -3282,6 +3282,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/device/v1/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stato delle notifiche push di questo dispositivo
+         * @description Dice se le push sono disponibili (chiave del relay sull'istanza e push accese dal gestore), se il dispositivo ha registrato il proprio token e quali argomenti il ruolo dell'utente ammette (ADR 0027). Il token non è mai restituito.
+         */
+        get: operations["getDevicePushRegistration"];
+        /**
+         * Registra (o sostituisce) il token push nativo di questo dispositivo
+         * @description Consenso dell'utente: l'app chiama questa operazione solo dopo che l'utente ha attivato le notifiche e concesso il permesso del sistema. Una registrazione per dispositivo; la piattaforma è quella del dispositivo abbinato (solo `ios` e `android`, altrimenti 400). Il token (APNs o FCM) è cifrato a riposo e non compare mai in log, audit o risposte; lo stesso token registrato da un altro dispositivo dello stabilimento passa a questo. Gli argomenti non ammessi dal ruolo sono rifiutati (400). Senza chiave del relay o con le push spente dal gestore: 409 push_unavailable. Audit `device.push_registered`.
+         */
+        put: operations["registerDevicePush"];
+        post?: never;
+        /**
+         * Cancella il token push di questo dispositivo (l'utente spegne le notifiche)
+         * @description Idempotente. Audit `device.push_unregistered` se una registrazione esisteva.
+         */
+        delete: operations["unregisterDevicePush"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/device/v1/fiscal-bridge": {
         parameters: {
             query?: never;
@@ -3736,6 +3764,30 @@ export interface paths {
          * @description Permesso establishment.configure.
          */
         put: operations["updateWaitlistSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/push-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Impostazioni delle notifiche push dello stabilimento
+         * @description Spente di default. `relay_configured` dice se l'istanza ha la chiave del relay (senza, le push non partono anche se accese). Permesso bookings.read.
+         */
+        get: operations["getPushSettings"];
+        /**
+         * Accende o spegne le notifiche push dello stabilimento
+         * @description Consenso del gestore (ADR 0027): senza `enabled` nessuna push parte, qualunque sia la registrazione dei dispositivi. `events` sceglie quali avvisi inviare. Permesso establishment.configure, If-Match obbligatorio. Audit `push_settings.updated`.
+         */
+        put: operations["updatePushSettings"];
         post?: never;
         delete?: never;
         options?: never;
@@ -4538,7 +4590,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing" | "payment_provider_test_mode" | "email_template_invalid";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing" | "payment_provider_test_mode" | "email_template_invalid" | "push_unavailable";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -8704,8 +8756,68 @@ export interface components {
             fiscal_bridge: boolean;
             /** @description Flusso SSE `GET /api/admin/v1/stream` disponibile. */
             realtime: boolean;
-            /** @description Notifiche push tramite relay configurate (M7). */
+            /** @description Notifiche push disponibili sull'istanza: chiave del relay configurata (`ARENILE_PUSH_RELAY_KEY`) ed edizione server (sempre falso nell'edizione desktop). Ogni stabilimento le accende a parte (`push-settings`, spente di default); l'app legge lo stato effettivo da `GET /api/device/v1/push` (ADR 0027). */
             push_notifications: boolean;
+        };
+        /**
+         * @description Argomento di una notifica push, chiave del catalogo chiuso del relay (ADR 0027). `booking_new_online`: nuova prenotazione online (bookings.read); `booking_approval_requested`: prenotazione da approvare (bookings.write); `payment_failed`: pagamento non riuscito (refunds.issue).
+         * @enum {string}
+         */
+        PushTopic: "booking_new_online" | "booking_approval_requested" | "payment_failed";
+        /** @description Avvisi che lo stabilimento invia quando le push sono accese. */
+        PushEvents: {
+            booking_new_online: boolean;
+            booking_approval_requested: boolean;
+            payment_failed: boolean;
+        };
+        PushSettings: {
+            /** @description Push accese dal gestore (falso di default). */
+            enabled: boolean;
+            events: components["schemas"]["PushEvents"];
+            /** @description L'istanza ha la chiave del relay (`ARENILE_PUSH_RELAY_KEY`); senza, nessuna push parte. */
+            relay_configured: boolean;
+            version: components["schemas"]["Version"];
+        };
+        PushSettingsInput: {
+            enabled: boolean;
+            events: components["schemas"]["PushEvents"];
+        };
+        /**
+         * @description `sandbox` per le build di sviluppo iOS (APNs di sviluppo), `production` altrimenti.
+         * @enum {string}
+         */
+        PushEnvironment: "production" | "sandbox";
+        /**
+         * @description Lingua del testo generico composto dal relay.
+         * @enum {string}
+         */
+        PushLocale: "it" | "en" | "de" | "fr";
+        PushRegistrationInput: {
+            /** @description Token push nativo dato dal sistema operativo all'app (APNs o FCM), caratteri ASCII stampabili senza spazi. Non è mai restituito. */
+            token: string;
+            environment?: components["schemas"]["PushEnvironment"];
+            locale: components["schemas"]["PushLocale"];
+            /** @description Argomenti scelti dall'utente, tra quelli ammessi dal suo ruolo. */
+            topics: components["schemas"]["PushTopic"][];
+        };
+        PushRegistrationStatus: {
+            /** @description Push utilizzabili ora (chiave del relay e push accese dal gestore). */
+            available: boolean;
+            relay_configured: boolean;
+            establishment_enabled: boolean;
+            /** @description Questo dispositivo ha un token registrato. */
+            registered: boolean;
+            environment?: components["schemas"]["PushEnvironment"];
+            locale?: components["schemas"]["PushLocale"];
+            /** @description Argomenti registrati (vuoto se non registrato). */
+            topics: components["schemas"]["PushTopic"][];
+            /** @description Argomenti ammessi dal ruolo dell'utente e accesi dal gestore. */
+            allowed_topics: components["schemas"]["PushTopic"][];
+            /**
+             * Format: date-time
+             * @description Ultima registrazione del token.
+             */
+            updated_at?: string;
         };
         /** @enum {string} */
         DevicePlatform: "ios" | "android" | "windows" | "macos" | "linux" | "other";
@@ -10121,7 +10233,16 @@ export interface components {
         /**
          * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
          *     richiesta ripetuta con la stessa chiave restituisce la risposta
-         *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+         *     originale (header `Idempotent-Replayed: true`) senza ripetere
+         *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+         *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+         *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+         *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+         *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+         *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+         *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+         *     definitiva per quella chiave. Quando l'utente corregge la causa e
+         *     invia di nuovo, il client deve usare una chiave nuova.
          */
         IdempotencyKey: string;
         /**
@@ -10407,7 +10528,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10546,7 +10676,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10689,7 +10828,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10836,7 +10984,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10913,7 +11070,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11095,7 +11261,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11275,7 +11450,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11455,7 +11639,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11633,7 +11826,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11813,7 +12015,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11993,7 +12204,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12177,7 +12397,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12359,7 +12588,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12539,7 +12777,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12719,7 +12966,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12899,7 +13155,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13077,7 +13342,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13423,7 +13697,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13466,7 +13749,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13550,7 +13842,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13783,7 +14084,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13988,7 +14298,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -14249,7 +14568,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -14374,7 +14702,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -14722,7 +15059,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
@@ -14852,6 +15198,21 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
                  *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
@@ -15104,7 +15465,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -15171,7 +15541,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15216,7 +15595,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15304,7 +15692,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15348,7 +15745,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15600,7 +16006,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15715,7 +16130,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15858,7 +16282,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15979,7 +16412,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16084,7 +16526,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16480,7 +16931,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /** @description Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403 test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide). */
@@ -16617,7 +17077,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -16807,7 +17276,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -17109,7 +17587,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -18886,6 +19373,76 @@ export interface operations {
             501: components["responses"]["NotImplemented"];
         };
     };
+    getDevicePushRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushRegistrationStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    registerDevicePush: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushRegistrationInput"];
+            };
+        };
+        responses: {
+            /** @description Registrato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushRegistrationStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    unregisterDevicePush: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
     registerFiscalBridge: {
         parameters: {
             query?: never;
@@ -19200,7 +19757,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19322,7 +19888,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19488,7 +20063,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19563,7 +20147,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19653,7 +20246,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19739,7 +20341,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19927,7 +20538,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20071,6 +20691,75 @@ export interface operations {
             501: components["responses"]["NotImplemented"];
         };
     };
+    getPushSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updatePushSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
     getCustomerCredits: {
         parameters: {
             query?: {
@@ -20111,7 +20800,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20184,7 +20882,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20288,7 +20995,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20329,7 +21045,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20418,7 +21143,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20727,7 +21461,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -21193,7 +21936,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -21437,7 +22189,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -21623,7 +22384,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -21795,7 +22565,16 @@ export interface operations {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
                  *     richiesta ripetuta con la stessa chiave restituisce la risposta
-                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 *     originale (header `Idempotent-Replayed: true`) senza ripetere
+                 *     l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+                 *     mentre la prima è ancora in corso `409 idempotency_in_progress`
+                 *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+                 *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**

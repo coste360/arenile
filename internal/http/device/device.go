@@ -16,6 +16,7 @@ import (
 	"log/slog"
 
 	"github.com/coste360/arenile/internal/domain/device"
+	"github.com/coste360/arenile/internal/domain/push"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 )
 
@@ -28,8 +29,12 @@ import (
 //	UnregisterFiscalBridge      -> FiscalBridge.Unregister -> 204                          owner: fiscal bridge builder
 //	PollFiscalBridgeJobs        -> FiscalBridge.Poll       -> api.FiscalBridgeJobBatch     owner: fiscal bridge builder
 //	SubmitFiscalBridgeJobResult -> FiscalBridge.Submit     -> 204                          owner: fiscal bridge builder
+//	GetDevicePushRegistration   -> Push.Status             -> api.PushRegistrationStatus   owner: push (push.go)
+//	RegisterDevicePush          -> Push.Register           -> api.PushRegistrationStatus   owner: push
+//	UnregisterDevicePush        -> Push.Unregister         -> 204                          owner: push
 type Handlers struct {
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
+	Push         *push.Service
 	Log          *slog.Logger
 }

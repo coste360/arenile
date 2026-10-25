@@ -74,5 +74,34 @@
     "message": "The device loses access immediately. To use it again it must be paired with a new code.",
     "messageBridge": "The device loses access immediately and stops acting as fiscal bridge: fiscal documents stay pending until you register another bridge.",
     "done": "{{name}} revoked"
+  },
+  "push": {
+    "title": "Push notifications on the mobile app",
+    "description": "Alerts on staff phones even when the app is closed. They go through the Coste360 relay, which only receives a pseudonymous phone identifier and a generic text (for example “New online booking”): never names, codes or amounts.",
+    "enabled": {
+      "label": "Send push notifications",
+      "help": "Off by default. Each person then turns them on in the app on their own phone and only receives the alerts their role allows."
+    },
+    "events": {
+      "legend": "Alerts to send",
+      "booking_new_online": {
+        "label": "New online booking",
+        "help": "A booking from the public page is confirmed. All roles."
+      },
+      "booking_approval_requested": {
+        "label": "Booking awaiting approval",
+        "help": "A request is waiting for your approval. Owner, manager and cashier."
+      },
+      "payment_failed": {
+        "label": "Payment failed",
+        "help": "An online payment did not go through. Owner and manager."
+      }
+    },
+    "noRelay": {
+      "title": "Push notifications are not configured on this server",
+      "description": "The Coste360 relay key is required (ARENILE_PUSH_RELAY_KEY variable). Without it the app refreshes the data when you open it. Push notifications are not available in the desktop app."
+    },
+    "save": "Save",
+    "saved": "Notification settings saved"
   }
 }

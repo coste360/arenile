@@ -66,6 +66,8 @@ variabile e il formato atteso: meglio non partire che partire configurato male.
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default. |
 | `ARENILE_UPDATE_CHECK` | `true` | Avviso di nuova versione nel pannello: una volta al giorno legge il file pubblico dell'ultima versione dal server di Coste360. La richiesta contiene solo versione, edizione e sistema operativo (e, come ogni richiesta, l'indirizzo IP); non è telemetria. `false` = nessuna chiamata di rete. Vedi [Aggiornamenti](/installazione/aggiornamenti/#avviso-di-nuova-versione). |
 | `ARENILE_UPDATE_URL` | `https://updates.coste360.it/arenile/latest.json` | File letto dal controllo della nuova versione, per esempio un mirror interno. |
+| `ARENILE_PUSH_RELAY_URL` | `https://push.coste360.it/v1/notifications` | Relay delle notifiche push dell'app mobile (ADR 0027), in https, senza credenziali nell'URL. |
+| `ARENILE_PUSH_RELAY_KEY` | vuota | Chiave `<id>.<segreto>` rilasciata da Coste360 per le notifiche push. Vuota: notifiche push non disponibili e nessuna chiamata al relay, che comunque riceve solo un identificativo pseudonimo del telefono e un testo generico. Con le push attive Coste360 è responsabile del trattamento per il relay (vedi la guida privacy). |
 
 ## Primo utente
 

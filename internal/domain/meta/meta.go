@@ -176,6 +176,9 @@ type Deps struct {
 	Clock   clock.Clock
 	Runtime RuntimeProvider
 	Drivers Drivers
+	// PushNotifications: a push relay key is configured (ADR 0027). Build
+	// still reports false on the desktop edition.
+	PushNotifications bool
 }
 
 // Service gathers the input of Build at request time.
@@ -194,7 +197,7 @@ func NewService(d Deps) *Service {
 
 // Get returns the current metadata.
 func (s *Service) Get(_ context.Context) Meta {
-	in := Input{Version: s.d.Version, Runtime: s.d.Runtime.Runtime(), Now: s.d.Clock.Now()}
+	in := Input{Version: s.d.Version, Runtime: s.d.Runtime.Runtime(), Now: s.d.Clock.Now(), PushNotifications: s.d.PushNotifications}
 	if s.d.Drivers != nil {
 		in.PaymentProviders = s.d.Drivers.PaymentProviderCodes()
 		in.FiscalDrivers = s.d.Drivers.FiscalDriverCodes()

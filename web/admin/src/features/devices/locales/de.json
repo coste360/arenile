@@ -74,5 +74,34 @@
     "message": "Das Gerät verliert sofort den Zugang. Um es wieder zu verwenden, muss es mit einem neuen Code gekoppelt werden.",
     "messageBridge": "Das Gerät verliert sofort den Zugang und ist keine Fiskalbrücke mehr: Fiskaldokumente bleiben ausstehend, bis Sie eine andere Brücke registrieren.",
     "done": "{{name}} widerrufen"
+  },
+  "push": {
+    "title": "Push-Benachrichtigungen in der mobilen App",
+    "description": "Hinweise auf den Telefonen des Personals, auch wenn die App geschlossen ist. Sie laufen über das Relay von Coste360, das nur eine pseudonyme Kennung des Telefons und einen allgemeinen Text erhält (zum Beispiel „Neue Online-Buchung“): niemals Namen, Codes oder Beträge.",
+    "enabled": {
+      "label": "Push-Benachrichtigungen senden",
+      "help": "Standardmäßig aus. Jede Person aktiviert sie anschließend in der App auf dem eigenen Telefon und erhält nur die Hinweise, die ihre Rolle erlaubt."
+    },
+    "events": {
+      "legend": "Zu sendende Hinweise",
+      "booking_new_online": {
+        "label": "Neue Online-Buchung",
+        "help": "Eine Buchung über die öffentliche Seite ist bestätigt. Alle Rollen."
+      },
+      "booking_approval_requested": {
+        "label": "Buchung wartet auf Freigabe",
+        "help": "Eine Anfrage wartet auf Ihre Freigabe. Inhaber, Manager und Kassierer."
+      },
+      "payment_failed": {
+        "label": "Zahlung fehlgeschlagen",
+        "help": "Eine Online-Zahlung ist nicht durchgegangen. Inhaber und Manager."
+      }
+    },
+    "noRelay": {
+      "title": "Push-Benachrichtigungen sind auf diesem Server nicht eingerichtet",
+      "description": "Der Relay-Schlüssel von Coste360 ist erforderlich (Variable ARENILE_PUSH_RELAY_KEY). Ohne ihn aktualisiert die App die Daten beim Öffnen. In der Desktop-App sind Push-Benachrichtigungen nicht verfügbar."
+    },
+    "save": "Speichern",
+    "saved": "Benachrichtigungseinstellungen gespeichert"
   }
 }
