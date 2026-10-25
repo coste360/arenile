@@ -18,7 +18,7 @@ import (
 // nativeNotify posts a native notification; nil where there is none. It
 // returns false when the notification must go through the fallback; the
 // fallback it is given runs later when the native path fails
-// asynchronously (authorization denied).
+// asynchronously (posting failed; a denied authorization drops it).
 //
 // The platform hook and the click handler are process-wide because the
 // operating system delivers notification clicks to the process, not to a

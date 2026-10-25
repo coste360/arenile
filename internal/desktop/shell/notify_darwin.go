@@ -26,8 +26,7 @@ func init() {
 }
 
 // postNative posts the notification through notify_darwin.m. The shim
-// runs fallback (through arenileNotifyFallback) when the authorization
-// turns out to be denied; it reports false at once when there is no
+// runs fallback (through arenileNotifyFallback) when posting fails; it reports false at once when there is no
 // bundle, and the caller then runs the fallback itself.
 func postNative(title, message, target string, fallback func()) bool {
 	ct, cm, cu := C.CString(title), C.CString(message), C.CString(target)
@@ -45,7 +44,7 @@ func postNative(title, message, target string, fallback func()) bool {
 }
 
 // arenileNotifyFallback runs the fallback of a notification the native
-// path could not show (authorization denied or failed) and releases it.
+// path could not show (posting failed) and releases it.
 //
 //export arenileNotifyFallback
 func arenileNotifyFallback(h C.uintptr_t) {

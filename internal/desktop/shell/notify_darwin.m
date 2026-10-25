@@ -94,8 +94,10 @@ void arenile_notify_init(void) { (void)center(); }
 // arenile_notify_post returns 0 when there is no app bundle (the caller
 // uses osascript); otherwise 1, and exactly one of arenileNotifyDone and
 // arenileNotifyFallback is called later. The authorization (alert and
-// sound) is asked lazily, the first time a notification is posted;
-// denied, the notification goes through the fallback.
+// sound) is asked lazily, the first time a notification is posted. If the
+// user refuses or later turns notifications off in System Settings, the
+// notification is dropped: going around that choice with osascript would
+// ignore an explicit decision of the user.
 int arenile_notify_post(const char *title, const char *body, const char *target, uintptr_t fallback) {
 	UNUserNotificationCenter *c = center();
 	if (c == nil) {
@@ -121,13 +123,13 @@ int arenile_notify_post(const char *title, const char *body, const char *target,
 				                 if (granted) {
 					                 add(c, content, fallback);
 				                 } else {
-					                 arenileNotifyFallback(fallback);
+					                 arenileNotifyDone(fallback);
 				                 }
 			                 }];
 			break;
 		}
-		default: // denied (or a future status): best effort through osascript
-			arenileNotifyFallback(fallback);
+		default: // denied (or a future status): respect the user's choice
+			arenileNotifyDone(fallback);
 			break;
 		}
 	}];

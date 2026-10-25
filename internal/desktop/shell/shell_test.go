@@ -470,7 +470,7 @@ func TestNotifyWith_FallbackSelection(t *testing.T) {
 		{"no native path (Linux, Windows, dev binary)", nil, 1},
 		{"no app bundle", func(string, string, string, func()) bool { return false }, 1},
 		{"shown natively", func(string, string, string, func()) bool { return true }, 0},
-		{"denied later", func(_, _, _ string, fb func()) bool { fb(); return true }, 1},
+		{"posting failed later", func(_, _, _ string, fb func()) bool { fb(); return true }, 1},
 	}
 	for _, tt := range tests {
 		fallbacks := 0
