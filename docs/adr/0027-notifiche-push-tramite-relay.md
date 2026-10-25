@@ -111,6 +111,8 @@ Alternative scartate:
   FCM); senza chiave del relay niente push (l'app aggiorna i dati all'apertura); il testo è generico per scelta e
   non dice di quale prenotazione si tratta.
 - Verifiche: `TestBuildPayload_NoPersonalData`, `TestRelayClient_SignatureAndOutcomes` (relay finto con
-  `httptest`), `TestPushService_*` e `TestConcurrency_PushDeliveriesSingleSend` (`internal/domain/push`, tag
-  `integration`), `TestHTTPIntegration_PushRegistration` (`internal/http`), `TestBuild_PushNotifications`
-  (`internal/domain/meta`), `TestParse_PushRelay` (`internal/config`); invariante INV-100.
+  `httptest`), `TestSign_MatchesWebhookScheme`, `TestKey_NeverPrintsSecret` (`internal/pushrelay`),
+  `TestPushService_*` e `TestConcurrency_PushDeliveriesSingleSend` (`internal/domain/push`, tag `integration`,
+  SQLite e PostgreSQL), `TestPush_EndToEndThroughFakeRelay` e `TestPush_NoRelayKeyNoNetwork` (`internal/app`),
+  `TestMigration00013_PushNotifications` (`internal/store`), `TestBuild_PushNotifications` (`internal/domain/meta`),
+  `TestParse_PushRelay` (`internal/config`), `PushSettingsCard.test.tsx`; invariante INV-100.

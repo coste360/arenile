@@ -382,6 +382,9 @@ Convenzioni: ogni tabella ha `id` (UUIDv7), `created_at`, `updated_at`. Le tabel
 **notification_templates**: establishment_id, code, locale, subject, body (Markdown con variabili), active. Senza API dalla 1.0: i testi si modificano con `email_template_overrides`.
 **email_template_overrides** (ADR 0022): establishment_id, kind, locale, subject, opening, closing, signature, active, version; unique (establishment_id, kind, locale).
 **message_log**: destinatario, canale, template, stato, errore.
+**push_settings** (ADR 0027): establishment_id (pk), enabled (falso di default), notify_new_online_booking, notify_approval_requested, notify_payment_failed, version.
+**push_registrations** (ADR 0027): establishment_id, device_id (unico), user_id, platform (`ios`, `android`), environment, locale, topics (json), token_ciphertext (cifrato), token_hash; unique (establishment_id, token_hash).
+**push_deliveries** (ADR 0027): establishment_id, registration_id, event_id, message_key (catalogo chiuso), status, attempts, next_attempt_at, locked_until, last_error, sent_at; unique (registration_id, event_id).
 
 ---
 

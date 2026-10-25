@@ -84,3 +84,29 @@ non riconosci.
 Se revochi il dispositivo che fa da **Ponte fiscale**, i documenti fiscali restano in attesa finché non registri
 un altro ponte (abbinando di nuovo l'app desktop della cassa).
 </Aside>
+
+## Notifiche push sull'app mobile
+
+**Chi:** proprietario e gestore. Le notifiche push avvisano lo staff sul telefono anche ad app chiusa: **Nuova
+prenotazione online**, **Prenotazione da approvare**, **Pagamento non riuscito**. Sono **facoltative e spente di
+default**.
+
+Per vincolo di Apple e Google passano da un server centrale: il **relay di Coste360**, che riceve solo un
+identificativo anonimo del telefono, la lingua e quale dei tre avvisi mostrare. Non riceve mai nomi, codici di
+prenotazione, importi né il nome dello stabilimento, e non conserva nulla dopo l'invio.
+
+<Steps>
+
+1. Chi gestisce il server imposta la chiave del relay rilasciata da Coste360 (`ARENILE_PUSH_RELAY_KEY`, vedi
+   [Configurazione](/installazione/configurazione/)). Senza chiave la sezione mostra **Notifiche push non
+   configurate su questo server** e l'app aggiorna i dati quando la apri.
+2. In fondo alla pagina **Dispositivi**, nella sezione **Notifiche push sull'app mobile**, attiva **Invia notifiche
+   push**, scegli gli **Avvisi da inviare** e **Salva**.
+3. Ogni persona attiva poi le notifiche dall'app sul proprio telefono e riceve solo gli avvisi consentiti dal suo
+   ruolo: le prenotazioni da approvare a proprietario, gestore e cassiere, i pagamenti non riusciti a proprietario e
+   gestore.
+
+</Steps>
+
+Spegnendo **Invia notifiche push** gli avvisi si fermano subito, anche quelli già in coda. Un dispositivo revocato non
+riceve più nulla. Nell'app desktop le notifiche push non sono disponibili.

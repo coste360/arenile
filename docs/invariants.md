@@ -934,3 +934,30 @@ Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsS
 `TestCheckNow_Scenarios`, `TestCheckNow_DevBuildNoNetwork`, `TestConcurrency_CheckNow`
 (`internal/domain/update`), `TestUpdates_WiringAndNoNetworkWhenDisabled` (`internal/app`),
 `TestChecker_RequestCarriesOnlyTheUserAgent` (`internal/updates`). Stato: implemented.
+
+## App mobile: coda offline e notifiche push (spec 29.2 — M7)
+
+**INV-99 — La coda offline dell'app non applica mai due volte un'operazione.**
+Check-in, ingresso al varco, rilascio del giorno di un abbonamento, blocco di una postazione, nota e incasso su una
+prenotazione esistente dichiarano `Idempotency-Key` nel contratto. Ripetuti con il token del dispositivo e la stessa
+chiave (entro 24 ore, per lo stesso utente) restituiscono la risposta originale byte per byte con
+`Idempotent-Replayed: true` e nessun nuovo effetto; la stessa chiave con un altro corpo risponde
+`422 idempotency_key_reused`; 100 invii paralleli della stessa nota o dello stesso incasso producono un solo effetto e
+solo risposte identiche o `409 idempotency_in_progress`.
+Verificata da: `TestAcceptance_OfflineQueueReplay`, `TestConcurrency_OfflineQueueReplay` (`internal/acceptance`, tag
+`integration`, SQLite e PostgreSQL), `TestOfflineQueueContract_IdempotencyKey` (`internal/http`), oltre a INV-31.
+Stato: implemented.
+
+**INV-100 — Notifiche push solo con triplo consenso e senza dati personali.**
+Una notifica parte solo se l'istanza ha `ARENILE_PUSH_RELAY_KEY` (mai nell'edizione desktop), il gestore ha acceso le
+push e l'avviso nelle impostazioni dello stabilimento, e l'utente ha registrato il token del dispositivo scegliendo
+quell'argomento; consenso, dispositivo (revoca, scadenza per inattività) e ruolo si ricontrollano all'invio. Senza
+chiave non si accoda nulla e non parte alcuna richiesta. Il corpo verso il relay è il solo payload chiuso v1 (token
+nativo, piattaforma, ambiente, chiave del catalogo e lingua), firmato con HMAC; nessun nome, codice, importo o nome
+dello stabilimento. Il token è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
+dispositivo. Un evento riconsegnato non accoda una seconda notifica e una consegna non parte mai due volte.
+Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
+`TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestConcurrency_PushDeliveriesSingleSend`
+(`internal/domain/push`, tag `integration`), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`
+(`internal/app`), `TestBuildPayload_NoPersonalData`, `TestKey_NeverPrintsSecret` (`internal/pushrelay`),
+`TestBuild_PushNotifications` (`internal/domain/meta`). Stato: implemented.
