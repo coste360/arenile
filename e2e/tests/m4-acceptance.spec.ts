@@ -6,6 +6,7 @@ import {
   type FrameLocator,
   type Page,
 } from "@playwright/test";
+import { bookableDay } from "./demo-dates";
 import {
   DEMO_OWNER_EMAIL,
   DEMO_OWNER_PASSWORD,
@@ -86,16 +87,17 @@ async function bookUntilPay(
     .locator("[data-arenile]")
     .evaluate((el) => el.scrollIntoView({ block: "start" }));
 
-  // 1. Quando: a single day in June of the demo season.
+  // 1. Quando: a single free day of the demo season.
+  const target = bookableDay(day);
   await widget.getByRole("button", { name: /Date del soggiorno/ }).click();
   const grid = widget.getByRole("grid").first();
   await expect(grid).toBeVisible();
   for (let i = 0; i < 6; i++) {
-    if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
+    if (target.month.test((await grid.getAttribute("aria-label")) ?? "")) break;
     await widget.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
-  await expect(grid).toHaveAttribute("aria-label", /giugno/);
-  const dayName = new RegExp(`\\b${day} giugno`);
+  await expect(grid).toHaveAttribute("aria-label", target.month);
+  const dayName = target.name;
   await grid.getByRole("button", { name: dayName }).click();
   await widget
     .getByRole("grid")

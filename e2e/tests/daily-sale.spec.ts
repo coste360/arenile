@@ -6,6 +6,7 @@ import {
   type Page,
 } from "@playwright/test";
 import { login } from "./helpers";
+import { bookableDay } from "./demo-dates";
 
 /**
  * Daily sale and tickets (spec 14.3, ADR 0020) against the real binary:
@@ -515,13 +516,14 @@ test.describe("phone optional on the public page (ADR 0020)", () => {
   }) => {
     test.setTimeout(120_000);
     // Own day: other booking tests take the first free spots of theirs.
-    const dayName = /\b26 giugno/;
+    const target = bookableDay(26);
+    const dayName = target.name;
     await page.goto(`/b/lido-demo`);
     await page.getByRole("button", { name: /Date del soggiorno/ }).click();
     const grid = page.getByRole("grid").first();
     await expect(grid).toBeVisible();
     for (let i = 0; i < 12; i++) {
-      if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
+      if (target.month.test((await grid.getAttribute("aria-label")) ?? "")) break;
       await page.getByRole("button", { name: /mese successivo|Next/i }).click();
     }
     await grid.getByRole("button", { name: dayName }).click();

@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { DEMO_SLUG, demoEstablishment } from "./helpers";
+import { bookableDay } from "./demo-dates";
 
 test("/b/lido-demo shows the establishment name", async ({ page, request }) => {
   const { name } = await demoEstablishment(request);
@@ -9,9 +10,9 @@ test("/b/lido-demo shows the establishment name", async ({ page, request }) => {
   await expect(page).toHaveTitle(new RegExp(name));
   await expect(page.getByRole("button", { name: /Quando/ })).toBeVisible();
 
-  // The active season (seed demo: May to September) is shown and bounds the calendar.
+  // The active season is shown and bounds the calendar.
   await expect(
-    page.getByText(/Stagione \d{4}: dal \d{2}\/05\/\d{4} al \d{2}\/09\/\d{4}/),
+    page.getByText(/Stagione \d{4}: dal \d{2}\/\d{2}\/\d{4} al \d{2}\/\d{2}\/\d{4}/),
   ).toBeVisible();
 
   // "Quando": shadcn date range picker (calendar loaded on open), dd/MM/yyyy, never a native date input.
@@ -21,13 +22,14 @@ test("/b/lido-demo shows the establishment name", async ({ page, request }) => {
   await dates.click();
   const grid = page.getByRole("grid").first();
   await expect(grid).toBeVisible();
-  // Opens on the first bookable month: the 15th of that month is inside the season.
-  await grid
-    .getByRole("button", { name: /^15 / })
-    .or(grid.getByRole("button", { name: /\b15 \p{L}+ \d{4}/u }))
-    .first()
-    .click();
-  await expect(dates).toHaveText(/^15\/0[5-9]\/\d{4} – /);
+  // A day of the season, a month or two ahead.
+  const first = bookableDay(1);
+  for (let i = 0; i < 4; i++) {
+    if (first.month.test((await grid.getAttribute("aria-label")) ?? "")) break;
+    await page.getByRole("button", { name: /mese successivo|Next/i }).click();
+  }
+  await grid.getByRole("button", { name: first.name }).click();
+  await expect(dates).toHaveText(new RegExp(`^${first.display} – `));
 
   // Only the first day is chosen: the next steps stay locked until the range is complete.
   await expect(page.getByRole("button", { name: "Avanti" })).toBeDisabled();
@@ -77,11 +79,12 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   const { name } = await demoEstablishment(request);
   // One day per project: the projects run in parallel against the same
   // instance and would otherwise race for the same first free spot.
-  const day =
+  const target = bookableDay(
     { chromium: 21, mobile: 22, "mobile-safari": 23 }[
       test.info().project.name
-    ] ?? 24;
-  const dayName = new RegExp(`\\b${day} giugno`);
+    ] ?? 24,
+  );
+  const dayName = target.name;
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto(`/b/${DEMO_SLUG}`);
   await expect(page.getByText(name).first()).toBeVisible();
@@ -106,12 +109,12 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   };
   await noSidewaysScroll("1 Quando");
 
-  // 1. Quando: a single day in June.
+  // 1. Quando: a single day.
   await page.getByRole("button", { name: /Date del soggiorno/ }).click();
   const grid = page.getByRole("grid").first();
   await expect(grid).toBeVisible();
   for (let i = 0; i < 6; i++) {
-    if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
+    if (target.month.test((await grid.getAttribute("aria-label")) ?? "")) break;
     await page.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
   await grid.getByRole("button", { name: dayName }).click();
@@ -179,7 +182,7 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   await noSidewaysScroll("4 Chi (terms open)");
   // The summary shows one date for a single day.
   await expect(
-    page.getByText(new RegExp(`^${day}/06/\\d{4}$`)).first(),
+    page.getByText(target.display, { exact: true }).first(),
   ).toBeVisible();
 });
 
