@@ -958,14 +958,15 @@ quell'argomento; consenso, dispositivo (revoca, scadenza per inattività) e ruol
 chiave non si accoda nulla e non parte alcuna richiesta. Il corpo verso il relay è il solo payload chiuso v1 (token
 nativo, piattaforma, ambiente, chiave del catalogo e lingua), firmato con HMAC; nessun nome, codice, importo o nome
 dello stabilimento; il token (dato personale pseudonimo) è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
-dispositivo. Un evento riconsegnato non accoda una seconda notifica alla stessa registrazione (se il
-dispositivo si registra di nuovo in mezzo, la nuova registrazione può riceverla una volta) e due worker non inviano mai insieme la stessa
+dispositivo. Un evento riconsegnato non accoda una seconda notifica, anche se il dispositivo si registra di nuovo in
+mezzo (la registrazione conserva il suo id), e due worker non inviano mai insieme la stessa
 consegna (lease condizionale); la consegna al relay è almeno una volta (risposta persa, arresto durante l'invio) e il
 relay deduplica sull'`id` della consegna.
 Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
 `TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestPushService_SendTimeRecheck`,
 `TestConcurrency_PushDeliveriesSingleSend`, `TestConcurrency_PushSinkRedelivery` (100 consegne parallele dello stesso
-evento: una notifica per registrazione), `TestPushService_CrashedWorkerLeaseReclaimed` (worker fermo durante l'invio:
+evento: una notifica per registrazione), `TestPushService_ReRegisterKeepsRegistrationID`,
+`TestPushService_CrashedWorkerLeaseReclaimed` (worker fermo durante l'invio:
 nessun altro invia finché il lease non scade, poi la stessa consegna parte una volta con lo stesso `id`),
 `TestPushService_CrossTenant` (evento, registrazioni, revoca e funzioni del repository di un altro stabilimento)
 (`internal/domain/push`, tag `integration`, SQLite e PostgreSQL), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`

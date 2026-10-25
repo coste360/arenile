@@ -68,10 +68,13 @@ func GetPushRegistrationByDevice(ctx context.Context, db bun.IDB, es Establishme
 }
 
 // ReplacePushRegistration stores r as the only registration of its device
-// and of its token in es: it deletes the previous registration of the
-// device and any registration of another device with the same token hash
-// (a phone paired again), then inserts r. Run it in a transaction; a
-// concurrent replacement surfaces as ErrConflict.
+// and of its token in es: it deletes any registration of another device
+// with the same token hash (a phone paired again), then updates the
+// registration of the device in place when one exists, keeping its id (set
+// in r.ID) so its queued deliveries survive and the (registration_id,
+// event_id) dedupe of a redelivered event keeps holding; otherwise it
+// inserts r. Run it in a transaction; a concurrent replacement surfaces as
+// ErrConflict.
 func ReplacePushRegistration(ctx context.Context, db bun.IDB, es EstablishmentScope, r *PushRegistration) error {
 	if err := es.mustBeValid(); err != nil {
 		return err
@@ -79,12 +82,24 @@ func ReplacePushRegistration(ctx context.Context, db bun.IDB, es EstablishmentSc
 	r.EstablishmentID = es.ID()
 	if _, err := db.NewDelete().Model((*PushRegistration)(nil)).
 		Where("establishment_id = ?", es.ID()).
-		WhereGroup(" AND ", func(q *bun.DeleteQuery) *bun.DeleteQuery {
-			return q.Where("device_id = ?", r.DeviceID).WhereOr("token_hash = ?", r.TokenHash)
-		}).Exec(ctx); err != nil {
+		Where("token_hash = ?", r.TokenHash).Where("device_id <> ?", r.DeviceID).
+		Exec(ctx); err != nil {
 		return wrapWrite("delete previous push registration", err)
 	}
-	_, err := db.NewInsert().Model(r).Exec(ctx)
+	prev := new(PushRegistration)
+	err := db.NewSelect().Model(prev).Column("id").
+		Where("pr.establishment_id = ?", es.ID()).Where("pr.device_id = ?", r.DeviceID).Limit(1).Scan(ctx)
+	switch {
+	case err == nil:
+		r.ID = prev.ID
+		_, err = db.NewUpdate().Model(r).
+			Column("user_id", "platform", "environment", "locale", "topics", "token_ciphertext", "token_hash", "updated_at").
+			Where("establishment_id = ?", es.ID()).Where("id = ?", r.ID).Exec(ctx)
+		return wrapWrite("update push registration", err)
+	case !isNoRows(err):
+		return wrapRead("get push registration", err)
+	}
+	_, err = db.NewInsert().Model(r).Exec(ctx)
 	return wrapWrite("insert push registration", err)
 }
 

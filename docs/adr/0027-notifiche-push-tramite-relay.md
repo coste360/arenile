@@ -83,8 +83,8 @@ Alternative scartate:
    - *Utente*: l'app registra il proprio token solo dopo che l'utente ha attivato le notifiche nell'app e
      concesso il permesso del sistema, e sceglie gli argomenti tra quelli ammessi dal suo ruolo.
 6. **Registrazione del token nativo** (`/api/device/v1/push`, solo token del dispositivo):
-   `PUT {token, environment, locale, topics}` crea o sostituisce la registrazione del dispositivo (una per
-   dispositivo, piattaforma presa dal dispositivo abbinato, solo `ios` e `android`); risponde
+   `PUT {token, environment, locale, topics}` crea la registrazione del dispositivo o la aggiorna mantenendo il suo
+   id, così la deduplica delle consegne per (registrazione, evento) resta valida (una per dispositivo, piattaforma presa dal dispositivo abbinato, solo `ios` e `android`); risponde
    `409 push_unavailable` se l'istanza non ha la chiave o il gestore non ha acceso le push. `DELETE` la
    cancella (idempotente), `GET` dice se le push sono disponibili, se il dispositivo è registrato e quali
    argomenti il ruolo ammette. Il token è cifrato a riposo con il key ring di `ARENILE_SECRET_KEY` (AES-256-GCM,

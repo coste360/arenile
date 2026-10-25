@@ -393,8 +393,9 @@ func validateRegistration(in *RegisterInput, allowed []string) error {
 }
 
 // Register stores the native token of the device of p (user consent),
-// replacing its previous registration and any registration of the same
-// token by another device of the establishment. Audit
+// updating its previous registration in place (same id, so delivery dedupe
+// holds) and deleting any registration of the same token by another device
+// of the establishment. Audit
 // "device.push_registered" (never the token).
 func (s *Service) Register(ctx context.Context, p *auth.Principal, in RegisterInput) (*Status, error) {
 	es, d, err := s.deviceContext(ctx, s.d.DB, p)
@@ -425,16 +426,13 @@ func (s *Service) Register(ctx context.Context, p *auth.Principal, in RegisterIn
 	register := func() error {
 		return store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 			now := s.now()
-			created := now
-			if prev, err := store.GetPushRegistrationByDevice(ctx, tx, es, d.ID); err == nil {
-				created = prev.CreatedAt
-			} else if !errors.Is(err, store.ErrNotFound) {
-				return fmt.Errorf("push: registration: %w", err)
-			}
+			// A re-registration of the device keeps its registration id
+			// (ReplacePushRegistration updates in place), so a redelivered
+			// event still finds its delivery and queues nothing new.
 			reg := &store.PushRegistration{
 				ID: store.NewID(), DeviceID: d.ID, UserID: d.UserID, Platform: d.Platform, Environment: in.Environment,
 				Locale: in.Locale, Topics: in.Topics, TokenCiphertext: ciphertext, TokenHash: HashToken(in.Token),
-				CreatedAt: created, UpdatedAt: now,
+				CreatedAt: now, UpdatedAt: now,
 			}
 			if err := store.ReplacePushRegistration(ctx, tx, es, reg); err != nil {
 				return err

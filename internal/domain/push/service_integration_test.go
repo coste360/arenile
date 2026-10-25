@@ -765,3 +765,55 @@ func TestPushService_SendTimeRecheck(t *testing.T) {
 		}
 	})
 }
+
+// TestPushService_ReRegisterKeepsRegistrationID: a device registering again
+// (new token, other topics, between two deliveries of the same event)
+// keeps its registration id, so the redelivered event queues nothing new
+// and the queued delivery goes to the new token (INV-100).
+func TestPushService_ReRegisterKeepsRegistrationID(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := newFixture(t, db)
+		f.enable(t, allEvents)
+		app := f.pairedApp(t, f.manager, store.DevicePlatformAndroid)
+		f.register(t, app, "fcm-old-token-0123456789abcdef", store.PushTopicNewOnlineBooking)
+		regID := func() string {
+			t.Helper()
+			var id string
+			if err := db.NewSelect().TableExpr("push_registrations").Column("id").Where("device_id = ?", app.DeviceID).Scan(f.ctx, &id); err != nil {
+				t.Fatal(err)
+			}
+			return id
+		}
+		first := regID()
+		online := bookingEvent(t, f.estA.ID, event.BookingConfirmed, store.ChannelOnline)
+		if err := f.svc.HandleEvent(f.ctx, online); err != nil {
+			t.Fatal(err)
+		}
+		f.clock.Advance(time.Minute)
+		f.register(t, app, "fcm-new-token-0123456789abcdef", store.PushTopicNewOnlineBooking, store.PushTopicPaymentFailed)
+		if got := regID(); got != first {
+			t.Fatalf("registration id changed on re-registration: %s -> %s", first, got)
+		}
+		if err := f.svc.HandleEvent(f.ctx, online); err != nil {
+			t.Fatal(err)
+		}
+		ds := f.deliveries(t)
+		if len(ds) != 1 || ds[0].RegistrationID != first || ds[0].Status != store.PushDeliveryQueued {
+			t.Fatalf("deliveries after re-registration and redelivery %+v", ds)
+		}
+		if n, err := f.svc.DeliverDue(f.ctx); err != nil || n != 1 {
+			t.Fatalf("deliver: %d %v", n, err)
+		}
+		sent := f.relay.notifications()
+		if len(sent) != 1 || sent[0].DevicePushID != "fcm-new-token-0123456789abcdef" {
+			t.Fatalf("relay got %+v", sent)
+		}
+		var created, updated time.Time
+		if err := db.NewSelect().TableExpr("push_registrations").Column("created_at", "updated_at").Where("id = ?", first).Scan(f.ctx, &created, &updated); err != nil {
+			t.Fatal(err)
+		}
+		if !updated.After(created) {
+			t.Fatalf("created_at %v not kept (updated_at %v)", created, updated)
+		}
+	})
+}
