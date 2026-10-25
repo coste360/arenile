@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+void arenile_notify_init(void);
 int arenile_notify_post(const char *title, const char *body, const char *target, uintptr_t fallback);
 
 #endif

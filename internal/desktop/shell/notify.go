@@ -25,25 +25,55 @@ import (
 // window (same reason as the controller of cocoa_darwin.go).
 var nativeNotify func(title, message, target string, fallback func()) bool
 
+// nativeInit prepares the native notifications at start-up (macOS: the
+// notification center delegate); nil where there is nothing to prepare.
+var nativeInit func()
+
 var (
 	clickMu sync.Mutex
 	onClick func(target string)
+	// pendingClick is a click delivered before a handler was set (a
+	// notification clicked in Notification Center that launched the app).
+	pendingClick *string
 )
+
+// InitNotifications installs what native notifications need before the
+// app's event loop starts: on macOS the delegate that receives clicks,
+// also for a notification that is clicked after Arenile quit and so
+// launches it (Apple requires it before the app finishes launching).
+// Call it once, after SetNotificationHandler, from the UI constructor.
+func InitNotifications() {
+	if nativeInit != nil {
+		nativeInit()
+	}
+}
 
 // SetNotificationHandler sets what a click on a native notification does:
 // target is the panel URL given to Notify ("" = just show the app). The
 // UIs set it (cmd/arenile-desktop): show the window at target, or the
-// browser in the tray-only build.
+// browser in the tray-only build. A click received before the handler is
+// delivered to it.
 func SetNotificationHandler(fn func(target string)) {
 	clickMu.Lock()
 	onClick = fn
+	pending := pendingClick
+	if fn != nil {
+		pendingClick = nil
+	}
 	clickMu.Unlock()
+	if fn != nil && pending != nil {
+		go fn(*pending)
+	}
 }
 
-// notificationClicked runs the click handler (native callback).
+// notificationClicked runs the click handler (native callback), or keeps
+// the click for the handler to come.
 func notificationClicked(target string) {
 	clickMu.Lock()
 	fn := onClick
+	if fn == nil {
+		pendingClick = &target
+	}
 	clickMu.Unlock()
 	if fn != nil {
 		go fn(target)

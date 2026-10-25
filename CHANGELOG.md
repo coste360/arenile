@@ -23,9 +23,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 ### Corretto
 - App desktop: **Apri la pagina pubblica** (e ogni altro link che esce dal pannello, anche sullo stesso indirizzo come
   `/b/<slug>`) apriva la pagina dentro la finestra dell'app, senza modo di tornare al pannello. Ora la finestra mostra
-  solo il pannello: link, `window.open`, form e reindirizzamenti verso altri siti o fuori da `/admin` si aprono nel
-  browser predefinito, su macOS e Windows, in modalità locale e remota; i download continuano a salvarsi nella
-  cartella Download (su macOS anche i PDF aperti dal pannello, come il report Z).
+  solo il pannello: link (anche con il clic centrale), `window.open` e navigazioni avviate dalla pagina verso altri
+  siti o fuori da `/admin` si aprono nel browser predefinito, in modalità locale e remota, su macOS e Windows (su
+  macOS anche i reindirizzamenti del server; il pannello non ne fa verso l'esterno). I download continuano a salvarsi
+  nella cartella Download; un documento del server aperto in una nuova finestra viene salvato lì invece di prendere
+  il posto del pannello, e nella finestra dell'app la chiusura Z si stampa dal pulsante (senza **Apri in una nuova
+  scheda**).
 - App desktop su macOS: le notifiche comparivano come "Script Editor" con la sua icona. Ora sono notifiche di Arenile
   (nome e icona dell'app, visibili anche con la finestra in primo piano) e un clic apre la pagina giusta del pannello:
   **Informazioni su Arenile** per una nuova versione, le impostazioni dell'app per i backup, **Rete locale** per gli

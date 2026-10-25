@@ -64,6 +64,18 @@ export function usePanelMode(): PanelMode {
   return panelMode(data);
 }
 
+/**
+ * True inside the desktop app window (local or remote mode: the window
+ * injects `window.arenileDesktop`). There every link that leaves the panel
+ * opens in the default browser, and a server document opened in a new
+ * window is saved as a download instead of being shown.
+ */
+export function inDesktopWindow(
+  global: DesktopBridgeGlobal = globalThis as DesktopBridgeGlobal,
+): boolean {
+  return global.arenileDesktop != null;
+}
+
 /** True on the desktop edition (local or LAN). */
 export function useIsDesktopEdition(): boolean {
   const mode = usePanelMode();

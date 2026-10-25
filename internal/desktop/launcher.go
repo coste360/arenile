@@ -203,16 +203,16 @@ type Launcher struct {
 	// neither a restart of the core (restore) nor of the app repeats it.
 	notifyMu        sync.Mutex
 	notifiedVersion string
-	// manualCheck is set while "Verifica aggiornamenti" runs: its own
+	// manualCheck counts the running "Verifica aggiornamenti": their own
 	// result notification replaces the automatic one.
-	manualCheck atomic.Bool
+	manualCheck atomic.Int32
 }
 
 // notifyUpdate shows the native notification of a new version at most
 // once per version and installation: the last announced version is kept
 // in the data dir; only a newer one is announced again.
 func (l *Launcher) notifyUpdate(latest string) {
-	if l.markUpdateNotified(latest) && l.ui != nil && !l.manualCheck.Load() {
+	if l.markUpdateNotified(latest) && l.ui != nil && l.manualCheck.Load() == 0 {
 		l.notifyPage(T("notify.update", latest), PageAbout)
 	}
 }
@@ -257,9 +257,9 @@ func (l *Launcher) checkUpdatesNow() {
 	if srv == nil || srv.app.Updates == nil {
 		return
 	}
-	l.manualCheck.Store(true)
+	l.manualCheck.Add(1)
 	st := srv.app.Updates.Check(context.Background())
-	l.manualCheck.Store(false)
+	l.manualCheck.Add(-1)
 	msg, page := UpdateCheckMessage(st)
 	if st.UpdateAvailable {
 		l.markUpdateNotified(st.Latest)

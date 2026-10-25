@@ -35,6 +35,7 @@ import {
 import { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { useCurrentSession, useRegisters, useSession, type CashSessionDetail } from './api';
 import { CloseSessionDialog } from './components/CloseSessionDialog';
 import { MovementDialog } from './components/MovementDialog';
@@ -46,6 +47,7 @@ import { ZPdfButton } from './components/ZPdfButton';
 import { ZReport } from './components/ZReport';
 import { printZReport, zReportUrl } from './lib/zreport';
 import { usePrintDocument } from '../printers';
+import { inDesktopWindow } from '../../lib/meta';
 import { useCashContext, type CashContext } from './useCashContext';
 import {
   pickRegister,
@@ -128,7 +130,14 @@ export function CashPage() {
   const printZ = (paper: 'a4' | 'receipt80') => {
     if (!detail) return;
     void printZReport(zReportUrl(ctx.establishmentId, detail.session.id, paper)).catch(() => {
-      window.open(zReportUrl(ctx.establishmentId, detail.session.id, paper), '_blank', 'noopener');
+      // The desktop app window has no tabs: say it failed instead.
+      if (inDesktopWindow()) toast.error(t('zpdf.failed'));
+      else
+        window.open(
+          zReportUrl(ctx.establishmentId, detail.session.id, paper),
+          '_blank',
+          'noopener',
+        );
     });
   };
   const hasMore = ctx.canReport || !!detail || operate;

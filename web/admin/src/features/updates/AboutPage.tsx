@@ -7,9 +7,9 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useInstantFormat } from '../../establishment';
-import { useInstanceMeta } from '../../lib/meta';
+import { inDesktopWindow, useInstanceMeta } from '../../lib/meta';
 import { canSeeUpdates, useCheckSystemUpdate, useSystemUpdate, type SystemUpdate } from './api';
-import { DOWNLOADS_PAGE, inDesktopWindow, upgradeDocsUrl } from './lib';
+import { DOWNLOADS_PAGE, upgradeDocsUrl } from './lib';
 import { UpdateActions } from './UpdateActions';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {

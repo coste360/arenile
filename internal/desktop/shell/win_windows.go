@@ -22,7 +22,7 @@ import (
 // the default browser by the injected script (desktop.LinkScript: clicks,
 // window.open and the Navigation API's navigate event, which WebView2
 // supports), so no WebView2 COM handler is needed here; a same-origin
-// panel URL opened in a new window (Z report PDF) gets WebView2's own
+// panel URL opened in a new window (a server document) gets WebView2's own
 // popup, which the operator closes to return to the panel.
 
 var (

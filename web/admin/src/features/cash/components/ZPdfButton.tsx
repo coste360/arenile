@@ -12,12 +12,15 @@ import { ChevronDownIcon, ExternalLinkIcon, FileDownIcon, ReceiptTextIcon } from
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { inDesktopWindow } from '../../../lib/meta';
 import { printZReport, zReportUrl, type ZPaper } from '../lib/zreport';
 
 /**
  * "PDF chiusura Z": prints the server-rendered Z closing (A4 by default,
  * 80 mm receipt from the menu) through the browser print dialog, where the
- * user picks "Save as PDF"; the menu also opens the document in a new tab.
+ * user picks "Save as PDF"; the menu also opens the document in a new tab,
+ * except in the desktop app window, which has no tabs (a server document
+ * opened there would only be saved as a file).
  */
 export function ZPdfButton({
   establishmentId,
@@ -30,6 +33,7 @@ export function ZPdfButton({
 }) {
   const { t } = useTranslation('cash');
   const [busy, setBusy] = useState(false);
+  const tabs = !inDesktopWindow();
 
   const openTab = (paper: ZPaper) => {
     window.open(zReportUrl(establishmentId, sessionId, paper), '_blank', 'noopener');
@@ -39,9 +43,10 @@ export function ZPdfButton({
     try {
       await printZReport(zReportUrl(establishmentId, sessionId, paper));
     } catch {
-      toast.error(t('zpdf.failed'), {
-        action: { label: t('zpdf.openTab'), onClick: () => openTab(paper) },
-      });
+      toast.error(
+        t('zpdf.failed'),
+        tabs ? { action: { label: t('zpdf.openTab'), onClick: () => openTab(paper) } } : undefined,
+      );
     } finally {
       setBusy(false);
     }
@@ -72,11 +77,15 @@ export function ZPdfButton({
             <ReceiptTextIcon aria-hidden="true" />
             {t('zpdf.receipt')}
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => openTab('a4')}>
-            <ExternalLinkIcon aria-hidden="true" />
-            {t('zpdf.openTab')}
-          </DropdownMenuItem>
+          {tabs && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => openTab('a4')}>
+                <ExternalLinkIcon aria-hidden="true" />
+                {t('zpdf.openTab')}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </ButtonGroup>

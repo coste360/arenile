@@ -2,7 +2,6 @@ package desktop
 
 import (
 	"net/url"
-	"path"
 	"strings"
 )
 
@@ -12,35 +11,90 @@ import (
 // layout; panel pages stay in the window.
 //
 // The panel is the SPA under /admin and the API it calls under /api: the
-// API paths stay in the window because they need the window's session
-// (inline documents such as the Z report PDF opened with window.open,
-// exports downloaded through navigation). Everything else on the same
-// origin (the public booking page /b/<slug>, the embed widget, the
-// documentation) and every other origin leaves the panel.
+// API paths stay in the app because they need the window's session
+// (exports downloaded through navigation, server documents such as the Z
+// report opened with window.open). Everything else on the same origin
+// (the public booking page /b/<slug>, the embed widget, routes added by
+// extensions through ext.HTTPRoutes such as an SSO callback) and every
+// other origin leaves the panel.
 //
-// The same rule is mirrored in LeavesPanelJS (the injected click handler
-// and window.open override) and in the macOS shim (cocoa_darwin.m,
-// createWebView and the navigation delegate): keep the three in sync.
+// The same rule is mirrored in LeavesPanelJS (the injected script); the
+// macOS shim asks ClassifyLink through cgo. Go follows what the browser
+// does with the URL so that both sides agree: dot segments are resolved
+// ("/admin/../b" is "/b", also when written "%2e%2e"), nothing else is
+// decoded or collapsed ("//admin" and "/admin%2Fx" are not panel paths),
+// and default ports are implied ("http://h:80" is "http://h").
 
 // panelPrefixes are the path prefixes that stay in the window: exactly the
 // prefix or the prefix followed by "/".
 var panelPrefixes = []string{"/admin", "/api"}
 
-// IsPanelPath reports whether the URL path p belongs to the panel (pure).
-// "/admin", "/admin/oggi" and "/api/admin/v1/x" do; "/", "/b/lido" and
-// "/administrator" do not. The path is cleaned first ("/admin/../b/x" is
-// "/b/x"), as a browser resolves it.
+// IsPanelPath reports whether the escaped URL path p belongs to the panel
+// (pure). "/admin", "/admin/oggi" and "/api/admin/v1/x" do; "/", "/b/lido",
+// "/administrator", "//admin" and "/admin/../b" do not.
 func IsPanelPath(p string) bool {
-	if p == "" {
-		p = "/"
-	}
-	p = path.Clean("/" + p)
+	p = removeDotSegments(p)
 	for _, pre := range panelPrefixes {
 		if p == pre || strings.HasPrefix(p, pre+"/") {
 			return true
 		}
 	}
 	return false
+}
+
+// isDot and isDotDot recognise the dot segments as the WHATWG URL parser
+// does, percent-encoded included.
+func isDot(seg string) bool { return seg == "." || strings.EqualFold(seg, "%2e") }
+
+func isDotDot(seg string) bool {
+	switch strings.ToLower(seg) {
+	case "..", ".%2e", "%2e.", "%2e%2e":
+		return true
+	}
+	return false
+}
+
+// removeDotSegments resolves "." and ".." in an escaped absolute path
+// (RFC 3986 5.2.4) without touching empty segments or escapes.
+func removeDotSegments(p string) string {
+	if p == "" {
+		return "/"
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	segs := strings.Split(p[1:], "/")
+	out := make([]string, 0, len(segs))
+	for i, seg := range segs {
+		last := i == len(segs)-1
+		switch {
+		case isDot(seg):
+			if last {
+				out = append(out, "")
+			}
+		case isDotDot(seg):
+			if len(out) > 0 {
+				out = out[:len(out)-1]
+			}
+			if last {
+				out = append(out, "")
+			}
+		default:
+			out = append(out, seg)
+		}
+	}
+	return "/" + strings.Join(out, "/")
+}
+
+// origin is scheme://host:port with the default port made explicit and the
+// host lowercased, as the browser compares origins.
+func origin(u *url.URL) string {
+	scheme := strings.ToLower(u.Scheme)
+	port := u.Port()
+	if port == "" {
+		port = map[string]string{"http": "80", "https": "443"}[scheme]
+	}
+	return scheme + "://" + strings.ToLower(u.Hostname()) + ":" + port
 }
 
 // LeavesPanel reports whether target, an absolute URL, leaves the panel
@@ -55,10 +109,33 @@ func LeavesPanel(panelURL, target string) bool {
 	if err1 != nil || err2 != nil || t.Scheme == "" {
 		return false
 	}
-	if !strings.EqualFold(t.Scheme, p.Scheme) || !strings.EqualFold(t.Host, p.Host) {
+	if origin(t) != origin(p) {
 		return true
 	}
-	return !IsPanelPath(t.Path)
+	return !IsPanelPath(t.EscapedPath())
+}
+
+// RebasePanelPage moves the panel page target (an absolute URL whose path
+// is under /admin) onto the origin of base, the panel URL of the running
+// app (pure). Notifications carry absolute URLs, and one clicked after a
+// restart names the old port (the local server listens on a free port).
+// ok is false when target is not a panel page or base has no origin.
+func RebasePanelPage(base, target string) (string, bool) {
+	b, err1 := url.Parse(base)
+	t, err2 := url.Parse(target)
+	if err1 != nil || err2 != nil || b.Host == "" || t.Host == "" || !isWebScheme(b.Scheme) || !isWebScheme(t.Scheme) {
+		return "", false
+	}
+	if !isPagePath(t.EscapedPath()) {
+		return "", false
+	}
+	out := url.URL{Scheme: b.Scheme, Host: b.Host, Path: t.Path, RawPath: t.RawPath, RawQuery: t.RawQuery, Fragment: t.Fragment}
+	return out.String(), true
+}
+
+func isWebScheme(s string) bool {
+	s = strings.ToLower(s)
+	return s == "http" || s == "https"
 }
 
 // LinkKind classifies a URL the window is asked to show (ClassifyLink).
@@ -72,7 +149,7 @@ const (
 	LinkPanelPage
 	// LinkPanelResource is an API URL of the panel origin (/api): it needs
 	// the window's session, so it stays in the app, but as a download, never
-	// as a page that replaces the panel (inline PDF, JSON).
+	// as a page that replaces the panel (a server document, JSON).
 	LinkPanelResource
 	// LinkLeaves leaves the panel: the default browser (with AllowExternal).
 	LinkLeaves
@@ -96,7 +173,7 @@ func ClassifyLink(panelURL, target string) LinkKind {
 	if LeavesPanel(panelURL, target) {
 		return LinkLeaves
 	}
-	if IsPanelPath(t.Path) && !isPagePath(t.Path) {
+	if p := t.EscapedPath(); IsPanelPath(p) && !isPagePath(p) {
 		return LinkPanelResource
 	}
 	return LinkPanelPage
@@ -105,7 +182,7 @@ func ClassifyLink(panelURL, target string) LinkKind {
 // isPagePath reports whether the panel path p is a page of the SPA
 // (/admin) rather than an API URL (/api).
 func isPagePath(p string) bool {
-	p = path.Clean("/" + p)
+	p = removeDotSegments(p)
 	return p == "/admin" || strings.HasPrefix(p, "/admin/")
 }
 
@@ -124,15 +201,21 @@ const LeavesPanelJS = `function (u) {
 
 // LinkScript is the part of the injected scripts that sends the links
 // leaving the panel (LeavesPanelJS) to the default browser through the
-// bound arenileOpenExternal: clicks on <a href> (target=_blank included),
-// window.open and, where the webview has the Navigation API (WebView2 on
-// Windows), every other navigation the page starts (location.href and
-// location.assign, form submissions). <a download> is never intercepted
-// (the window saves the file). On macOS the navigation delegate of the
-// shim applies the same rule natively (cocoa_darwin.m). The binding's Go
-// policy (AllowExternal) is the security boundary, not this script.
+// bound arenileOpenExternal: clicks and middle clicks on <a href>
+// (target=_blank included), window.open and, where the webview has the
+// Navigation API (WebView2 on Windows), every other navigation the page
+// starts (location.href and location.assign, form submissions: a POST
+// reaches the browser as a GET of its URL, no panel form leaves it). <a
+// download> is never intercepted (the window saves the file). Not covered
+// on Windows: HTTP redirects (the navigate event fires for the first URL
+// only; the panel's server redirects only within /admin) and WebView2's
+// own "open in new window" of the context menu. On macOS the navigation
+// delegate of the shim applies the same rule natively to all of them
+// (cocoa_darwin.m). The binding's Go policy (AllowExternal) is the
+// security boundary, not this script.
 const LinkScript = `var leavesPanel = ` + LeavesPanelJS + `;
-  document.addEventListener("click", function (e) {
+  var onLink = function (e) {
+    if (e.type === "auxclick" && e.button !== 1) return;
     var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
     if (!a || a.hasAttribute("download") || typeof window.arenileOpenExternal !== "function") return;
     var u;
@@ -141,7 +224,9 @@ const LinkScript = `var leavesPanel = ` + LeavesPanelJS + `;
       e.preventDefault();
       window.arenileOpenExternal(u.href);
     }
-  }, true);
+  };
+  document.addEventListener("click", onLink, true);
+  document.addEventListener("auxclick", onLink, true);
   var open = window.open;
   window.open = function (u) {
     try {

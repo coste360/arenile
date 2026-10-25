@@ -21,6 +21,20 @@ type headlessUI struct {
 	browser bool
 	once    sync.Once
 	quit    chan struct{}
+
+	mu    sync.Mutex
+	panel string // last panel URL opened (origin of notification clicks)
+}
+
+// openPage opens the panel page of a clicked notification on the origin of
+// the running app (desktop.RebasePanelPage): the browser of this build.
+func (h *headlessUI) openPage(page string) {
+	h.mu.Lock()
+	base := h.panel
+	h.mu.Unlock()
+	if u, ok := desktop.RebasePanelPage(base, page); ok {
+		_ = h.OpenURL(u)
+	}
 }
 
 var (
@@ -45,6 +59,9 @@ func (h *headlessUI) SetMenu([]desktop.MenuItem) {}
 // OpenURL opens the URL and logs it without the fragment: the first-run
 // token travels in the fragment and never reaches a log.
 func (h *headlessUI) OpenURL(url string) error {
+	h.mu.Lock()
+	h.panel = url
+	h.mu.Unlock()
 	h.log.Info("arenile desktop: panel", slog.String("url", stripFragment(url)))
 	if !h.browser {
 		return nil

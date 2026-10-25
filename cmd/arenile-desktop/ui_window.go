@@ -52,13 +52,14 @@ func newUI(log *slog.Logger, o uiOptions) desktop.UI {
 		fb := u.fallback
 		u.mu.Unlock()
 		if fb {
-			if page != "" {
-				_ = u.OpenInBrowser(page)
+			if v, ok := desktop.RebasePanelPage(u.ctrl.Current(), page); ok {
+				_ = u.OpenInBrowser(v)
 			}
 			return
 		}
 		u.ctrl.OnNotificationClick(page)
 	})
+	shell.InitNotifications()
 	return u
 }
 

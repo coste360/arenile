@@ -85,6 +85,12 @@ static void add(UNUserNotificationCenter *c, UNMutableNotificationContent *conte
 
 // ---- C interface ------------------------------------------------------------------
 
+// arenile_notify_init installs the delegate at start-up (before NSApp
+// runs): a click on a notification left in Notification Center after
+// Arenile quit launches the app and is delivered to the delegate only if
+// it exists by then. Nothing happens outside an app bundle.
+void arenile_notify_init(void) { (void)center(); }
+
 // arenile_notify_post returns 0 when there is no app bundle (the caller
 // uses osascript); otherwise 1, and exactly one of arenileNotifyDone and
 // arenileNotifyFallback is called later. The authorization (alert and

@@ -434,12 +434,22 @@ func TestController_AboutUpdatesAndNotificationClick(t *testing.T) {
 	// A notification click: its panel page, otherwise just the window.
 	c.OnNotificationClick("http://127.0.0.1:1/admin/desktop")
 	eq(t, n.take(), "navigate http://127.0.0.1:1/admin/desktop", "show")
+	// The SPA may have moved since: a second click opens the page again.
+	c.OnNotificationClick("http://127.0.0.1:1/admin/desktop")
+	eq(t, n.take(), "navigate http://127.0.0.1:1/admin/desktop", "show")
+	c.OnMenuAction(ActionAbout)
+	c.OnMenuAction(ActionAbout)
+	eq(t, n.take(), "navigate http://127.0.0.1:1/admin/informazioni", "show", "navigate http://127.0.0.1:1/admin/informazioni", "show")
 	c.OnNotificationClick("")
 	eq(t, n.take(), "show")
-	for _, bad := range []string{"https://evil.example/admin/", "http://127.0.0.1:1/b/lido", "file:///etc/passwd", "/admin/x"} {
+	for _, bad := range []string{"https://evil.example/b/x", "http://127.0.0.1:1/b/lido", "http://127.0.0.1:1/api/x", "file:///etc/passwd", "/admin/x"} {
 		c.OnNotificationClick(bad)
 		eq(t, n.take(), "show")
 	}
+	// A notification from before a restart names the old port: the page
+	// opens on the current panel origin.
+	c.OnNotificationClick("http://127.0.0.1:9/admin/informazioni")
+	eq(t, n.take(), "navigate http://127.0.0.1:1/admin/informazioni", "show")
 
 	// Without a launcher check (remote mode) the menu opens the page.
 	r := NewController(Options{GOOS: "darwin", DataDir: t.TempDir(), SettingsPath: "/admin/"})
@@ -476,4 +486,12 @@ func TestNotifyWith_FallbackSelection(t *testing.T) {
 	if v := <-got; v != "http://127.0.0.1:1/admin/informazioni" {
 		t.Fatalf("click target %q", v)
 	}
+	// A click before any handler (the click launched the app) is kept.
+	SetNotificationHandler(nil)
+	notificationClicked("http://127.0.0.1:1/admin/desktop")
+	SetNotificationHandler(func(target string) { got <- target })
+	if v := <-got; v != "http://127.0.0.1:1/admin/desktop" {
+		t.Fatalf("pending click %q", v)
+	}
+	InitNotifications() // no native layer in unit tests: a no-op
 }

@@ -148,7 +148,14 @@ func (c *Controller) Detach() {
 // the window to the front (the operator's page in the SPA is kept); a new
 // one (first run, LAN QR page, settings) navigates. Before the window
 // exists the URL is remembered for Attach.
-func (c *Controller) ShowPanel(target string) {
+func (c *Controller) ShowPanel(target string) { c.show(target, false) }
+
+// OpenPage shows the panel page target and always navigates to it: the
+// operator asked for that page (menu entry, notification click), and the
+// SPA may have moved away from the URL the controller last loaded.
+func (c *Controller) OpenPage(target string) { c.show(target, true) }
+
+func (c *Controller) show(target string, force bool) {
 	c.mu.Lock()
 	n := c.native
 	if n == nil {
@@ -156,7 +163,7 @@ func (c *Controller) ShowPanel(target string) {
 		c.mu.Unlock()
 		return
 	}
-	same := target == c.current
+	same := target == c.current && !force
 	c.current = target
 	c.mu.Unlock()
 	if !same {
@@ -169,16 +176,17 @@ func (c *Controller) ShowPanel(target string) {
 // origin of the panel; nothing before the panel URL is known.
 func (c *Controller) ShowPath(path string) {
 	if o := c.origin(); o != "" {
-		c.ShowPanel(o + path)
+		c.OpenPage(o + path)
 	}
 }
 
 // OnNotificationClick handles a click on a native notification: the panel
-// page it carries (an absolute URL on the panel origin), or just the
-// window. A target on another origin is never navigated to.
+// page it carries (path under /admin, moved onto the current panel origin:
+// a notification from before a restart names the old port), or just the
+// window. Only panel pages are ever navigated to.
 func (c *Controller) OnNotificationClick(target string) {
-	if target != "" && desktop.ClassifyLink(c.Current(), target) == desktop.LinkPanelPage {
-		c.ShowPanel(target)
+	if u, ok := desktop.RebasePanelPage(c.Current(), target); ok {
+		c.OpenPage(u)
 		return
 	}
 	c.OnReopen()
@@ -229,10 +237,10 @@ func (c *Controller) Commands() Commands {
 		check = openAbout
 	}
 	return Commands{
-		Quit:         c.quit,
-		OpenAbout:    openAbout,
-		CheckUpdates: check,
-		OpenSettings: func() { c.ShowPath(c.o.SettingsPath) },
+		Quit:          c.quit,
+		OpenAbout:     openAbout,
+		CheckUpdates:  check,
+		OpenSettings:  func() { c.ShowPath(c.o.SettingsPath) },
 		OpenInBrowser: func() { c.openBrowser(c.Current()) },
 		Reload: func() {
 			if n := c.nativeWindow(); n != nil {

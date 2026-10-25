@@ -25,11 +25,8 @@ func newTrayUI(log *slog.Logger, o uiOptions) desktop.UI {
 	t := &trayUI{headlessUI: h}
 	// A click on a native notification (macOS) opens its panel page in the
 	// browser, where this build shows the panel.
-	shell.SetNotificationHandler(func(page string) {
-		if page != "" {
-			_ = t.OpenURL(page)
-		}
-	})
+	shell.SetNotificationHandler(h.openPage)
+	shell.InitNotifications()
 	return t
 }
 

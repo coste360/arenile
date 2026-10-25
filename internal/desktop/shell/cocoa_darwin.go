@@ -38,7 +38,7 @@ import (
 //     controller says (~/Downloads, unique name), with a notification;
 //   - links and top-level navigations that leave the panel (another origin
 //     or a same-origin page outside /admin: desktop.ClassifyLink) -> default
-//     browser; API URLs opened as pages (Z report PDF) -> downloads;
+//     browser; API URLs opened as pages or new windows -> downloads;
 //   - window.print -> NSPrintOperation of the WKWebView (print panel);
 //   - window frame (get/set, kept on screen) and page zoom.
 //

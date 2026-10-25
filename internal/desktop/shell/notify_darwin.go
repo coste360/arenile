@@ -20,7 +20,10 @@ import (
 // failure (and the caller uses osascript) when the process has no bundle
 // identifier, i.e. a development binary run outside Arenile.app. Local
 // notifications need no entitlement in a non-sandboxed Developer ID app.
-func init() { nativeNotify = postNative }
+func init() {
+	nativeNotify = postNative
+	nativeInit = func() { C.arenile_notify_init() }
+}
 
 // postNative posts the notification through notify_darwin.m. The shim
 // runs fallback (through arenileNotifyFallback) when the authorization

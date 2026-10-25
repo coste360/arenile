@@ -14,9 +14,6 @@ export function upgradeDocsUrl(language: string): string {
 /** All versions and systems (arenile.app): the secondary download link. */
 export const DOWNLOADS_PAGE = 'https://arenile.app/download/';
 
-/** Panel route of "Informazioni su Arenile" (version and updates). */
-export const ABOUT_PATH = '/informazioni';
-
 /** Refresh of the status while the server's first check is pending. */
 export const PENDING_REFETCH_MS = 15_000;
 
@@ -63,13 +60,6 @@ export function platformLabel(
  */
 export function isPackageUrl(url: string | undefined): boolean {
   return !!url && url.replace(/\/+$/, '') !== DOWNLOADS_PAGE.replace(/\/+$/, '');
-}
-
-/** True inside the desktop app window, where web links open in the browser. */
-export function inDesktopWindow(
-  global: { arenileDesktop?: unknown } = globalThis as { arenileDesktop?: unknown },
-): boolean {
-  return global.arenileDesktop != null;
 }
 
 /** The dismissed version, or null (storage may be unavailable). */

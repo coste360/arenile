@@ -131,7 +131,7 @@ static int classifyLink(WKWebView *webView, NSURL *url) {
 // WKUIDelegate: target=_blank and window.open (the injected script
 // already handles most of them; this is the native net). A link that
 // leaves the panel goes to the default browser (policy in Go); a panel
-// page opens in place; an API URL of the panel (Z report PDF) is saved as
+// page opens in place; an API URL of the panel (a server document) is saved as
 // a download instead of replacing the panel with a page the operator
 // cannot leave.
 static WKWebView *createWebView(id self, SEL _cmd, WKWebView *webView, WKWebViewConfiguration *cfg,
