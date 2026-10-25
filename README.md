@@ -552,7 +552,7 @@ Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica]
 - [x] **Versione 1.0.1** *(24 ottobre 2026)*: avviso di nuova versione nel pannello e correzioni.
 - [x] **Versione 1.0.2** *(25 ottobre 2026)*: app desktop per Windows firmata da Coste360 SRL.
 - [x] **Versione 1.0.3** *(25 ottobre 2026)*: pagina Informazioni su Arenile con verifica aggiornamenti, link esterni nel browser, notifiche native su macOS.
-- [x] **Versione 1.0.4** *(25 ottobre 2026)*: ricomincia da zero nella configurazione guidata, demo sull'anno in corso, abbinamento demo e coda offline per l'app mobile, correzioni dal collaudo.
+- [x] **Versione 1.0.4** *(26 ottobre 2026)*: ricomincia da zero nella configurazione guidata, demo sull'anno in corso, abbinamento demo e coda offline per l'app mobile, correzioni dal collaudo.
 - [ ] **M7 — App mobile**: app per lo staff in spiaggia (repository separato) che usa l'abbinamento con QR e i token per dispositivo già presenti nel core.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
 

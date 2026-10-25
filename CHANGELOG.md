@@ -6,7 +6,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-## [1.0.4] - 2026-10-25
+## [1.0.4] - 2026-10-26
 
 ### Aggiunto
 - Configurazione guidata, **Ricomincia da zero** (solo il titolare, scrivendo il nome dello stabilimento):
