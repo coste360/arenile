@@ -74,5 +74,34 @@
     "message": "Il dispositivo perde subito l'accesso. Per usarlo di nuovo andrà abbinato con un nuovo codice.",
     "messageBridge": "Il dispositivo perde subito l'accesso e smette di fare da ponte fiscale: i documenti fiscali restano in attesa finché non registri un altro ponte.",
     "done": "{{name}} revocato"
+  },
+  "push": {
+    "title": "Notifiche push sull'app mobile",
+    "description": "Avvisi sul telefono dello staff anche ad app chiusa. Passano dal relay di Coste360, che riceve solo un identificativo anonimo del telefono e un testo generico (per esempio “Nuova prenotazione online”): mai nomi, codici o importi.",
+    "enabled": {
+      "label": "Invia notifiche push",
+      "help": "Spente di default. Ogni persona le attiva poi dall'app sul proprio telefono e riceve solo gli avvisi consentiti dal suo ruolo."
+    },
+    "events": {
+      "legend": "Avvisi da inviare",
+      "booking_new_online": {
+        "label": "Nuova prenotazione online",
+        "help": "Una prenotazione dalla pagina pubblica è confermata. Tutti i ruoli."
+      },
+      "booking_approval_requested": {
+        "label": "Prenotazione da approvare",
+        "help": "Una richiesta aspetta la tua approvazione. Proprietario, gestore e cassiere."
+      },
+      "payment_failed": {
+        "label": "Pagamento non riuscito",
+        "help": "Un pagamento online non è andato a buon fine. Proprietario e gestore."
+      }
+    },
+    "noRelay": {
+      "title": "Notifiche push non configurate su questo server",
+      "description": "Serve la chiave del relay di Coste360 (variabile ARENILE_PUSH_RELAY_KEY). Senza chiave l'app aggiorna i dati quando la apri. Nell'app desktop le notifiche push non sono disponibili."
+    },
+    "save": "Salva",
+    "saved": "Impostazioni delle notifiche salvate"
   }
 }

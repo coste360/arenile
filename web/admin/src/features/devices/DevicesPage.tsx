@@ -25,22 +25,23 @@ import {
 import { useDevices, useRevokeDevice, type Device } from './api';
 import { byLastActivity } from './lib';
 import { PairDeviceDialog } from './PairDeviceDialog';
+import { PushSettingsCard } from './PushSettingsCard';
 import { usePairingAvailability } from './usePairingAvailability';
 
-/** users.manage on the establishment (owners): sees and revokes every device. */
-function useCanManageUsers(establishmentId: string): boolean {
+/** Whether the caller holds perm on the establishment (role or API key scope). */
+function useHasPermission(establishmentId: string, perm: string): boolean {
   const me = useMe();
   const { establishment } = useCurrentEstablishment();
   if (!me.data || !establishment || establishment.id !== establishmentId) return false;
   if (me.data.principal_type === 'api_key') {
-    return me.data.api_key?.scopes.includes('users.manage') ?? false;
+    return me.data.api_key?.scopes.some((s) => s === perm) ?? false;
   }
   return me.data.memberships.some(
     (m) =>
       (m.establishment_id
         ? m.establishment_id === establishmentId
         : m.organization_id === establishment.organization_id) &&
-      m.permissions.includes('users.manage'),
+      m.permissions.some((p) => p === perm),
   );
 }
 
@@ -50,13 +51,17 @@ function useCanManageUsers(establishmentId: string): boolean {
  * revokes their own devices; owners (users.manage) see everyone's and can
  * pair a device for another member. "Abbina un dispositivo" shows a
  * single-use QR with a countdown. Desktop edition in local mode: pairing
- * needs the LAN mode (explained, button disabled).
+ * needs the LAN mode (explained, button disabled). Owners and managers also
+ * turn the push notifications of the mobile app on or off (ADR 0027).
  */
 export function DevicesPage() {
   const { t } = useTranslation('devices');
   const establishmentId = useRequiredEstablishmentId();
   const me = useMe();
-  const canManageUsers = useCanManageUsers(establishmentId);
+  // users.manage (owners): sees and revokes every device.
+  const canManageUsers = useHasPermission(establishmentId, 'users.manage');
+  // establishment.configure (owners, managers): push notification settings.
+  const canConfigure = useHasPermission(establishmentId, 'establishment.configure');
   const { block } = usePairingAvailability();
   const fmt = useInstantFormat();
   const problemText = useProblemText();
@@ -218,6 +223,7 @@ export function DevicesPage() {
           }
         />
       )}
+      {canConfigure && <PushSettingsCard establishmentId={establishmentId} />}
       <PairDeviceDialog
         open={pairOpen}
         onOpenChange={setPairOpen}
