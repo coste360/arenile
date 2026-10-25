@@ -149,6 +149,10 @@ jobs:
             cp -R "web/$app/dist/." "$dest/"
           done
 
+      - name: Desktop-tag tests
+        if: matrix.label == 'universal'
+        run: make test-desktop
+
       - name: Package (${{ matrix.label }} binary, .app, .dmg, signing and notarization when configured)
         run: make desktop-package-macos
 
@@ -282,6 +286,13 @@ jobs:
           if [ ! -x "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
             choco install innosetup --no-progress -y
           fi
+
+      # Compiles and links the window layer (cgo, WebView2 link handlers)
+      # and runs its pure link policy tests on Windows.
+      - name: Desktop-tag tests (window layer)
+        run: |
+          CGO_ENABLED=1 go vet -tags desktop ./internal/desktop/shell/ ./internal/desktop/remote/
+          CGO_ENABLED=1 go test -tags desktop -run 'NavigationAction|NewWindowAction|WebviewHandle|AllowExternal' ./internal/desktop/shell/
 
       - name: Mark external signing
         if: env.TRUSTED_SIGNING == 'true'
