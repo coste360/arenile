@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-25
+
 ### Aggiunto
 - Pagina **Informazioni su Arenile** (`/admin/informazioni`, dal menu dell'utente, dall'avviso di nuova versione, dal
   menu dell'icona e dal menu **Arenile** dell'app desktop): versione in uso, edizione, stato del controllo degli
@@ -32,7 +34,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - App desktop su macOS: le notifiche comparivano come "Script Editor" con la sua icona. Ora sono notifiche di Arenile
   (nome e icona dell'app, visibili anche con la finestra in primo piano) e un clic apre la pagina giusta del pannello:
   **Informazioni su Arenile** per una nuova versione, le impostazioni dell'app per i backup, **Rete locale** per gli
-  avvisi della rete locale.
+  avvisi della rete locale. Al primo avviso macOS chiede il permesso; se le notifiche di Arenile sono spente nelle
+  Impostazioni di Sistema, l'app non ne mostra.
 - App desktop: la notifica di nuova versione si ripeteva a ogni avvio. Ora ogni versione è notificata una sola volta
   per installazione; una versione più recente viene notificata di nuovo.
 - L'avviso di nuova versione nel pannello compariva solo dopo aver ricaricato la pagina o dopo un'ora: finché il
@@ -878,7 +881,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.2...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.3...main
+[1.0.3]: https://github.com/coste360/arenile/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/coste360/arenile/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/coste360/arenile/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/coste360/arenile/releases/tag/v1.0.0
