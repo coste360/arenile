@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- La coda offline dell'app mobile (check-in, ingresso al varco, rilasci degli abbonati, blocchi, note, incassi) è
+  coperta da `Idempotency-Key` su tutte le operazioni: `checkInEntryTicket` ora la dichiara nel contratto e le
+  descrizioni spiegano la ripetizione (risposta originale con `Idempotent-Replayed: true`, 24 ore, per utente). Una
+  risposta memorizzata sotto 500, compresi i rifiuti 4xx, è definitiva per quella chiave: dopo aver corretto la causa
+  il client invia di nuovo con una chiave nuova (INV-99).
+
 ### Corretto
 - App desktop su Windows: un reindirizzamento del server verso un altro sito (o fuori da `/admin`) e **Apri
   collegamento in una nuova finestra** del menu contestuale aprivano la pagina dentro l'app, senza modo di tornare al
