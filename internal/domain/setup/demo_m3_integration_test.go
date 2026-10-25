@@ -163,7 +163,8 @@ func TestSeedDemoOperations_VolumesVATAndIdempotency(t *testing.T) {
 		// used twice on the same day (drafts hold nothing).
 		var passes, held, drafts, confirmed int
 		used := map[string]map[calendar.Date]bool{}
-		season, _ := store.GetSeasonByYear(ctx, db, es, DefaultSeasonYear(calendar.In(t0, mustLoc(t))))
+		year, _, _ := demoSeason(calendar.In(t0, mustLoc(t)))
+		season, _ := store.GetSeasonByYear(ctx, db, es, year)
 		for _, in := range fk.creates {
 			if in.IsSeasonPass {
 				passes++

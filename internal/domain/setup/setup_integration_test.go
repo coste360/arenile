@@ -680,7 +680,9 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !first.Applied || first.SeasonYear != 2027 || first.SpotsCreated != 124 || first.RulesCreated != 16*3+4+1 {
+		// The fixture clock is in October 2026: the demo season is still 2026,
+		// open every day of the year.
+		if !first.Applied || first.SeasonYear != 2026 || first.SpotsCreated != 124 || first.RulesCreated != 16*3+4+1 {
 			t.Fatalf("first: %+v", first)
 		}
 		second, err := f.svc.SeedDemo(ctx, f.est.ID)
@@ -691,8 +693,8 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 			t.Fatalf("spots after second seed: %d", n)
 		}
 		sn := loadSeasonRow(t, db, first.SeasonID)
-		if sn.Status != SeasonActive {
-			t.Fatalf("season status %s", sn.Status)
+		if sn.Status != SeasonActive || sn.OpensOn.String() != "2026-01-01" || sn.ClosesOn.String() != "2026-12-31" {
+			t.Fatalf("season %s %s – %s", sn.Status, sn.OpensOn, sn.ClosesOn)
 		}
 		for _, c := range []struct {
 			model any
@@ -723,7 +725,7 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 		for _, s := range cat.Spots {
 			ids["spot:"+s.Label] = s.ID
 		}
-		d := calendar.MustParse("2027-08-15")
+		d := calendar.MustParse("2026-08-15")
 		q, err := pricing.Quote(pricing.QuoteInput{
 			Channel: pricing.ChannelDesk, StartsOn: d, EndsOn: d, Slots: calendar.SlotsFull, Formula: pricing.FormulaDay, Today: d,
 			Lines:  []pricing.LineInput{{PackID: ids["pack:base"], SpotID: ids["spot:A7"], Extras: []pricing.ExtraInput{{ExtraID: ids["extra:extra_sunbed"], Quantity: 1}}}},
@@ -732,8 +734,19 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 		if err != nil || q.Total != 4500+600+1000 {
 			t.Fatalf("quote: %d %v", q.Total, err)
 		}
+		// Bookable all year: January and December are low season.
+		for _, day := range []string{"2026-01-15", "2026-12-20"} {
+			d := calendar.MustParse(day)
+			q, err := pricing.Quote(pricing.QuoteInput{
+				Channel: pricing.ChannelDesk, StartsOn: d, EndsOn: d, Slots: calendar.SlotsFull, Formula: pricing.FormulaDay, Today: d,
+				Lines: []pricing.LineInput{{PackID: ids["pack:base"], SpotID: ids["spot:A7"]}},
+			}, cat, rs)
+			if err != nil || q.Total != money.Cents(DemoDayPrices[CategoryRow1][PeriodLow]) {
+				t.Fatalf("%s quote: %d %v", day, q.Total, err)
+			}
+		}
 		// A week in August (fixed price, Saturday to Saturday).
-		w := calendar.MustParse("2027-08-07")
+		w := calendar.MustParse("2026-08-01")
 		q, err = pricing.Quote(pricing.QuoteInput{
 			Channel: pricing.ChannelOnline, StartsOn: w, EndsOn: w.AddDays(6), Slots: calendar.SlotsFull, Formula: pricing.FormulaWeek,
 			Today: w.AddDays(-30), Lines: []pricing.LineInput{{PackID: ids["pack:base"], SpotID: ids["spot:B3"]}},

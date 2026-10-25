@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Modificato
+- `arenile seed demo`: la stagione dimostrativa è sempre quella dell'anno in corso ed è prenotabile tutti i giorni
+  (dall'1 gennaio al 31 dicembre; fuori da maggio-settembre vale la bassa stagione), così vendita rapida, cassa e
+  prenotazioni si provano il giorno stesso. Negli ultimi due mesi dell'anno la stagione si sposta in avanti e copre
+  sempre i 60 giorni successivi. Prima, dopo il 30 settembre, creava solo la stagione dell'anno dopo. La stagione
+  successiva non viene creata: si prova con **Passaggio di stagione**.
+
 ### Corretto
 - Mappe: **Crea e apri l'editor** apriva l'editor con "Risorsa non trovata" (si apriva un indirizzo senza l'id della
   mappa); la mappa era creata e compariva solo tornando all'elenco. Ora l'editor si apre subito sulla nuova mappa.

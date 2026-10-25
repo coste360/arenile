@@ -215,7 +215,12 @@ func (s *Service) demoPrepare(ctx context.Context, establishmentID string, res *
 			return err
 		}
 		w.today = s.today(e)
-		w.season, err = store.GetSeasonByYear(ctx, tx, es, DefaultSeasonYear(w.today))
+		year, _, _ := demoSeason(w.today)
+		w.season, err = store.GetSeasonByYear(ctx, tx, es, year)
+		if errors.Is(err, store.ErrNotFound) {
+			// A demo seeded before the all-year season: its season was the next one.
+			w.season, err = store.GetSeasonByYear(ctx, tx, es, DefaultSeasonYear(w.today))
+		}
 		if err != nil {
 			return fmt.Errorf("demo season (run SeedDemo first): %w", err)
 		}

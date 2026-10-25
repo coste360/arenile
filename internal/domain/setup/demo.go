@@ -110,7 +110,7 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 		if err != nil {
 			return err
 		}
-		year := DefaultSeasonYear(s.today(e))
+		year, opens, closes := demoSeason(s.today(e))
 		qp := &QuickPrices{HalfDayFactor: &demoHalfDayFactor}
 		for _, cat := range []string{CategoryRow1, CategoryRow2, CategoryStandard, CategoryGazebo} {
 			for _, p := range Periods {
@@ -118,7 +118,8 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 			}
 		}
 		ar, err := s.applyTx(ctx, tx, es, audit.SystemActor, ApplyInput{
-			Template: CodeClassicRows, SeasonYear: &year, QuickPrices: qp, seasonStatus: SeasonActive,
+			Template: CodeClassicRows, SeasonYear: &year, OpensOn: &opens, ClosesOn: &closes,
+			QuickPrices: qp, seasonStatus: SeasonActive,
 		})
 		if err != nil {
 			return err
@@ -144,9 +145,29 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 	return res, nil
 }
 
-// demoMaxLeadTimeDays lets the demo be booked online right after `seed
-// demo`, also off season: the seeded season can be the next one, beyond the
-// 120 days of the default policy.
+// demoSeason is the season of the demo: the current year, open every day
+// (1 January - 31 December), so that everything can be tried on the day of
+// `seed demo`. When fewer than demoAheadDays are left in the year, the
+// season moves forward instead (it ends demoAheadDays from today and lasts
+// a year, still opening in the current year): the demo stays bookable for
+// the coming months. The days outside May-September fall in the low season
+// (periodOf). The next season is left to the season rollover, which the
+// demo can then try (it refuses an existing target season).
+func demoSeason(today calendar.Date) (year int, opens, closes calendar.Date) {
+	year = today.Year()
+	opens, closes = calendar.New(year, time.January, 1), calendar.New(year, time.December, 31)
+	if end := today.AddDays(demoAheadDays); end.After(closes) {
+		opens, closes = end.AddDays(-364), end
+	}
+	return year, opens, closes
+}
+
+// demoAheadDays is how far ahead of `seed demo` the demo season always
+// reaches (demo bookings fill the first 30 days).
+const demoAheadDays = 60
+
+// demoMaxLeadTimeDays lets the demo be booked online up to the end of its
+// season right after `seed demo`, beyond the 120 days of the default policy.
 const demoMaxLeadTimeDays = 366
 
 // openDemoBookingWindow widens the maximum lead time of the default policy
