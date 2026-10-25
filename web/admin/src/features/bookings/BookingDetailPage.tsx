@@ -37,7 +37,12 @@ import { useState, type ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useInstantFormat, useRequiredEstablishmentId } from '../../establishment';
+import {
+  useCurrentEstablishment,
+  useInstantFormat,
+  useRequiredEstablishmentId,
+} from '../../establishment';
+import { todayIn } from '../operations/lib/dates';
 import {
   useAddBookingNote,
   useBooking,
@@ -54,7 +59,6 @@ import {
   ACTIVE_STATUSES,
   availableActions,
   STATUS_TONE,
-  todayIso,
   useOperationalPermissions,
   type BookingAction,
 } from './model';
@@ -98,6 +102,7 @@ export function BookingDetailPage() {
   const inventory = useEstablishmentSpots(establishmentId, i18n.language);
   const fmt = useInstantFormat();
   const perms = useOperationalPermissions();
+  const { establishment } = useCurrentEstablishment();
   const transition = useBookingTransition(establishmentId);
   const [dialog, setDialog] = useState<DialogName>(null);
   const [moveLine, setMoveLine] = useState<string | undefined>();
@@ -133,7 +138,7 @@ export function BookingDetailPage() {
   const actions = availableActions(b.status, b.next_statuses, {
     startsOn: b.starts_on,
     endsOn: b.ends_on,
-    today: todayIso(),
+    today: todayIn(establishment?.timezone),
   })
     .filter((a) => {
       if (a === 'check-in' || a === 'no-show') return perms.canOperate;

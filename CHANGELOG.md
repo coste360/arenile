@@ -34,6 +34,9 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   successiva non viene creata: si prova con **Passaggio di stagione**.
 
 ### Corretto
+- Scheda della postazione e dettaglio della prenotazione: **Check-in** e le azioni del giorno usavano la data del
+  browser invece di quella dello stabilimento. Con un dispositivo su un altro fuso orario, intorno alla mezzanotte
+  il check-in di oggi non compariva. Ora "oggi" è sempre il giorno dello stabilimento, come nella mappa e in **Oggi**.
 - Mappe: **Crea e apri l'editor** apriva l'editor con "Risorsa non trovata" (si apriva un indirizzo senza l'id della
   mappa); la mappa era creata e compariva solo tornando all'elenco. Ora l'editor si apre subito sulla nuova mappa.
 - Editor della mappa: nel **Generatore di file** un nome di zona lungo copriva il campo **Tipo** e il campo
