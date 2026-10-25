@@ -168,3 +168,15 @@ func (t *trayUI) menuAction(id string) {
 
 // Quit implements desktop.UI.
 func (t *trayUI) Quit() { t.headlessUI.Quit() }
+
+// openPage opens the panel page of a clicked notification on the origin of
+// the running app (desktop.RebasePanelPage): the browser of this build (only the tray build has
+// notification clicks).
+func (h *headlessUI) openPage(page string) {
+	h.mu.Lock()
+	base := h.panel
+	h.mu.Unlock()
+	if u, ok := desktop.RebasePanelPage(base, page); ok {
+		_ = h.OpenURL(u)
+	}
+}
