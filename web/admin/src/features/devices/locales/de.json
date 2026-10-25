@@ -77,7 +77,7 @@
   },
   "push": {
     "title": "Push-Benachrichtigungen in der mobilen App",
-    "description": "Hinweise auf den Telefonen des Personals, auch wenn die App geschlossen ist. Sie laufen über das Relay von Coste360, das nur eine anonyme Kennung des Telefons und einen allgemeinen Text erhält (zum Beispiel „Neue Online-Buchung“): niemals Namen, Codes oder Beträge.",
+    "description": "Hinweise auf den Telefonen des Personals, auch wenn die App geschlossen ist. Sie laufen über das Relay von Coste360, das nur eine pseudonyme Kennung des Telefons und einen allgemeinen Text erhält (zum Beispiel „Neue Online-Buchung“): niemals Namen, Codes oder Beträge.",
     "enabled": {
       "label": "Push-Benachrichtigungen senden",
       "help": "Standardmäßig aus. Jede Person aktiviert sie anschließend in der App auf dem eigenen Telefon und erhält nur die Hinweise, die ihre Rolle erlaubt."

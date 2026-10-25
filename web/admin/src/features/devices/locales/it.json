@@ -77,7 +77,7 @@
   },
   "push": {
     "title": "Notifiche push sull'app mobile",
-    "description": "Avvisi sul telefono dello staff anche ad app chiusa. Passano dal relay di Coste360, che riceve solo un identificativo anonimo del telefono e un testo generico (per esempio “Nuova prenotazione online”): mai nomi, codici o importi.",
+    "description": "Avvisi sul telefono dello staff anche ad app chiusa. Passano dal relay di Coste360, che riceve solo un identificativo pseudonimo del telefono e un testo generico (per esempio “Nuova prenotazione online”): mai nomi, codici o importi.",
     "enabled": {
       "label": "Invia notifiche push",
       "help": "Spente di default. Ogni persona le attiva poi dall'app sul proprio telefono e riceve solo gli avvisi consentiti dal suo ruolo."

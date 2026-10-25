@@ -9,7 +9,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 ### Aggiunto
 - **Notifiche push facoltative per l'app mobile** (spec 29.2, ADR 0027): tramite il relay di Coste360, che riceve solo
   il token nativo del telefono e quale avviso generico mostrare (**Nuova prenotazione online**, **Prenotazione da
-  approvare**, **Pagamento non riuscito**), mai dati personali. Servono la chiave del relay sul server (nuove variabili
+  approvare**, **Pagamento non riuscito**), mai dati dei clienti; il token è un dato personale pseudonimo e con le push
+  attive Coste360 è responsabile del trattamento per il relay. Servono la chiave del relay sul server (nuove variabili
   `ARENILE_PUSH_RELAY_KEY` e `ARENILE_PUSH_RELAY_URL`), l'attivazione del gestore in **Configurazione → Dispositivi**
   (spenta di default) e quella di ogni utente dall'app. Nuove API `GET`/`PUT /api/admin/v1/establishments/{id}/push-settings`
   e `GET`/`PUT`/`DELETE /api/device/v1/push`; `/meta` riporta `push_notifications`. Il token è cifrato e viene

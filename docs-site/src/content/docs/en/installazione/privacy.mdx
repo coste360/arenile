@@ -24,7 +24,8 @@ data protection code.
 | **Whoever hosts the service** (VPS provider, IT person who runs the server for the operator) | **Processor** (art. 28) | A data processing agreement (DPA) is needed. |
 | **Stripe** (if you enable online payments) | Per Stripe's terms | Check the data processing agreement in your Stripe account. |
 | **SMTP provider** (if you send emails) | Processor | Check the provider's DPA. |
-| **Coste360 SRL** | No role in a self-managed installation | Develops the software but **neither receives nor processes** the data of your installations. No telemetry by default. |
+| **Coste360 SRL** | No role in a self-managed installation with push notifications off | Develops the software but **neither receives nor processes** the data of your installations. No telemetry by default. |
+| **Coste360 SRL**, for the push notification relay (only if you turn it on) | **Data processor** (art. 28), with Apple and Google as sub-processors | The relay receives the push token of the staff phone, the language and which generic alert to show, never customer data. The token is a persistent device identifier, so it is **pseudonymous** personal data, not anonymous. A data processing agreement (DPA) with Coste360 is needed. |
 
 ## What data Arenile processes
 

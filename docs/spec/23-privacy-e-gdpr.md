@@ -10,8 +10,11 @@
 - Log applicativi senza dati personali in chiaro (email e telefoni mascherati).
 - Notifiche push dell'app mobile (facoltative, ADR 0027): il relay di Coste360 riceve solo il token nativo del
   telefono, la piattaforma e una chiave di un catalogo chiuso con la lingua; mai nomi, codici, importi o il nome dello
-  stabilimento. Il token è cifrato a riposo nell'istanza e cancellato alla revoca del dispositivo.
-- Documentazione per il gestore con un modello di informativa da adattare e l'indicazione dei ruoli (titolare: gestore; responsabile: chi ospita il servizio).
+  stabilimento. Il token è un identificativo persistente del dispositivo, quindi un dato personale pseudonimo (non
+  anonimo): con le push attive Coste360 è responsabile del trattamento (art. 28) per il relay, con Apple e Google come
+  sub-responsabili, e serve un accordo sul trattamento dei dati con Coste360; con le push spente Coste360 non ha alcun
+  ruolo. Il token è cifrato a riposo nell'istanza e cancellato alla revoca del dispositivo.
+- Documentazione per il gestore con un modello di informativa da adattare e l'indicazione dei ruoli (titolare: gestore; responsabile: chi ospita il servizio e, per il relay delle push, Coste360).
 
 ---
 

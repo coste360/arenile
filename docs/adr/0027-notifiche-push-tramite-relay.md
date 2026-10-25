@@ -13,7 +13,7 @@ online, di una prenotazione da approvare o di un pagamento non riuscito anche ad
 l'unico canale è il servizio push della piattaforma (APNs, FCM), e solo chi pubblica l'app, cioè Coste360, ha le
 credenziali per usarlo. Ogni istanza Arenile è invece di un gestore diverso e non può avere quelle credenziali.
 
-Vincoli: l'app parla solo con l'istanza (ADR 0005 dell'app); nessun dato personale (nomi, email, telefoni,
+Vincoli: l'app parla solo con l'istanza (ADR 0005 dell'app); nessun dato dei clienti o del lido (nomi, email, telefoni,
 codici di prenotazione, importi, nome dello stabilimento) deve arrivare a Coste360; le push sono facoltative e
 spente di default; un relay irraggiungibile non deve mai rallentare o far fallire un'operazione del lido;
 l'edizione desktop senza internet resta senza push.
@@ -50,7 +50,8 @@ Alternative scartate:
 
    `id` è l'identificativo della consegna (UUIDv7, deduplica sul relay); `device_push_id` è il token che il
    sistema operativo ha dato all'app: un identificativo opaco generato da Apple o Google, privo di significato
-   per Coste360 e non collegabile a una persona senza i dati dell'istanza; `platform` è `ios` o `android`;
+   per Coste360 e non collegabile a una persona senza i dati dell'istanza, ma persistente: è quindi un dato personale
+   pseudonimo, non anonimo; `platform` è `ios` o `android`;
    `environment` è `production` o `sandbox` (build di sviluppo iOS); `message` contiene solo una **chiave di un
    catalogo chiuso** e la lingua (`it`, `en`, `de`, `fr`). Il relay compone il testo dal proprio catalogo, con
    titolo fisso "Arenile":
@@ -104,12 +105,14 @@ Alternative scartate:
 
 ## Conseguenze
 
-- Positive: push senza dati personali per costruzione; il relay è sostituibile (`ARENILE_PUSH_RELAY_URL`, per
-  esempio un relay proprio di chi ricompila l'app con le proprie credenziali); l'istanza resta l'unico posto dove
-  sta il collegamento tra telefono e utente; spegnere le push dal pannello le ferma subito.
+- Positive: push senza dati dei clienti né contenuti per costruzione (l'unico dato personale è il token
+  pseudonimo); il relay è sostituibile (`ARENILE_PUSH_RELAY_URL`, per esempio un relay proprio di chi ricompila
+  l'app con le proprie credenziali); l'istanza resta l'unico posto dove sta il collegamento tra telefono e utente;
+  spegnere le push dal pannello le ferma subito.
 - Negative: Coste360 vede l'IP dell'istanza, l'id della chiave e i token nativi in transito (necessari ad APNs e
-  FCM); senza chiave del relay niente push (l'app aggiorna i dati all'apertura); il testo è generico per scelta e
-  non dice di quale prenotazione si tratta.
+  FCM): con le push attive Coste360 è responsabile del trattamento (art. 28 GDPR) per conto del gestore, con Apple e
+  Google come sub-responsabili, e serve un accordo sul trattamento dei dati; senza chiave del relay niente push
+  (l'app aggiorna i dati all'apertura); il testo è generico per scelta e non dice di quale prenotazione si tratta.
 - Verifiche: `TestBuildPayload_NoPersonalData`, `TestRelayClient_SignatureAndOutcomes` (relay finto con
   `httptest`), `TestSign_MatchesWebhookScheme`, `TestKey_NeverPrintsSecret` (`internal/pushrelay`),
   `TestPushService_*` e `TestConcurrency_PushDeliveriesSingleSend` (`internal/domain/push`, tag `integration`,

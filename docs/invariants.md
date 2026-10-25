@@ -949,13 +949,13 @@ Verificata da: `TestAcceptance_OfflineQueueReplay`, `TestConcurrency_OfflineQueu
 `integration`, SQLite e PostgreSQL), `TestOfflineQueueContract_IdempotencyKey` (`internal/http`), oltre a INV-31.
 Stato: implemented.
 
-**INV-100 — Notifiche push solo con triplo consenso e senza dati personali.**
+**INV-100 — Notifiche push solo con triplo consenso e senza dati dei clienti.**
 Una notifica parte solo se l'istanza ha `ARENILE_PUSH_RELAY_KEY` (mai nell'edizione desktop), il gestore ha acceso le
 push e l'avviso nelle impostazioni dello stabilimento, e l'utente ha registrato il token del dispositivo scegliendo
 quell'argomento; consenso, dispositivo (revoca, scadenza per inattività) e ruolo si ricontrollano all'invio. Senza
 chiave non si accoda nulla e non parte alcuna richiesta. Il corpo verso il relay è il solo payload chiuso v1 (token
 nativo, piattaforma, ambiente, chiave del catalogo e lingua), firmato con HMAC; nessun nome, codice, importo o nome
-dello stabilimento. Il token è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
+dello stabilimento; il token (dato personale pseudonimo) è cifrato a riposo, mai in log, audit o risposte, e sparisce con la revoca del
 dispositivo. Un evento riconsegnato non accoda una seconda notifica alla stessa registrazione (se il
 dispositivo si registra di nuovo in mezzo, la nuova registrazione può riceverla una volta) e due worker non inviano mai insieme la stessa
 consegna (lease condizionale); la consegna al relay è almeno una volta (risposta persa, arresto durante l'invio) e il

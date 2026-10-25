@@ -77,7 +77,7 @@
   },
   "push": {
     "title": "Notifications push sur l'application mobile",
-    "description": "Des alertes sur les téléphones du personnel même quand l'application est fermée. Elles passent par le relais de Coste360, qui ne reçoit qu'un identifiant anonyme du téléphone et un texte générique (par exemple « Nouvelle réservation en ligne ») : jamais de noms, de codes ni de montants.",
+    "description": "Des alertes sur les téléphones du personnel même quand l'application est fermée. Elles passent par le relais de Coste360, qui ne reçoit qu'un identifiant pseudonyme du téléphone et un texte générique (par exemple « Nouvelle réservation en ligne ») : jamais de noms, de codes ni de montants.",
     "enabled": {
       "label": "Envoyer des notifications push",
       "help": "Désactivées par défaut. Chaque personne les active ensuite dans l'application sur son propre téléphone et ne reçoit que les alertes permises par son rôle."
