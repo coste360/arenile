@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/crypto"
+	"github.com/coste360/arenile/internal/pushrelay"
 	"github.com/coste360/arenile/internal/updates"
 )
 
@@ -64,6 +65,12 @@ const (
 	// the public file it reads (default updates.DefaultURL). Not telemetry.
 	EnvUpdateCheck = "ARENILE_UPDATE_CHECK"
 	EnvUpdateURL   = "ARENILE_UPDATE_URL"
+	// EnvPushRelayURL and EnvPushRelayKey (ADR 0027): the Coste360 push
+	// relay of the mobile app (default pushrelay.DefaultURL) and the
+	// instance key "<id>.<secret>" it issued. Without a key push
+	// notifications are unavailable and no request is ever made.
+	EnvPushRelayURL = "ARENILE_PUSH_RELAY_URL"
+	EnvPushRelayKey = "ARENILE_PUSH_RELAY_KEY" //nolint:gosec // G101: environment variable name, not a credential
 	// EnvInstall is set by the official Docker image ("docker"); unset
 	// means a binary installation. It only picks the update instructions.
 	EnvInstall = "ARENILE_INSTALL"
@@ -134,6 +141,10 @@ type Config struct {
 	// UpdateCheck and UpdateURL drive the update notice (ADR 0025).
 	UpdateCheck bool
 	UpdateURL   string
+	// PushRelayURL and PushRelayKey configure the push relay (ADR 0027);
+	// the key prints without its secret.
+	PushRelayURL string
+	PushRelayKey pushrelay.Key
 	// Install is InstallDocker or InstallBinary (default).
 	Install string
 	// Edition is EditionServer (default) or EditionDesktop: the desktop
@@ -229,6 +240,15 @@ func Parse(lookup Lookup) (Config, error) {
 	cfg.UpdateURL = get(EnvUpdateURL, updates.DefaultURL)
 	if u, uerr := url.Parse(cfg.UpdateURL); uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
 		errs = append(errs, fmt.Errorf("%s: must be an absolute http(s) URL", EnvUpdateURL))
+	}
+	cfg.PushRelayURL = get(EnvPushRelayURL, pushrelay.DefaultURL)
+	if u, uerr := url.Parse(cfg.PushRelayURL); uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		errs = append(errs, fmt.Errorf("%s: must be an absolute http(s) URL", EnvPushRelayURL))
+	} else if u.Scheme != "https" && !isLoopbackHost(u.Hostname()) && !cfg.Dev {
+		errs = append(errs, fmt.Errorf("%s: must use https unless the host is loopback", EnvPushRelayURL))
+	}
+	if cfg.PushRelayKey, err = pushrelay.ParseKey(get(EnvPushRelayKey, "")); err != nil {
+		errs = append(errs, fmt.Errorf("%s: %w", EnvPushRelayKey, err))
 	}
 	switch cfg.Install = strings.ToLower(get(EnvInstall, InstallBinary)); cfg.Install {
 	case InstallBinary, InstallDocker:
@@ -380,6 +400,13 @@ func (c Config) ValidateServe() error {
 		return fmt.Errorf("%w: %w", ErrInvalid, errors.Join(errs...))
 	}
 	return nil
+}
+
+// PushRelayConfigured reports whether push notifications can be offered:
+// a relay key is set and this is the server edition (the desktop edition
+// works without internet and never sends push notifications, ADR 0027).
+func (c Config) PushRelayConfigured() bool {
+	return c.PushRelayKey.Configured() && c.PushRelayURL != "" && !c.Desktop()
 }
 
 // UsesPostgres reports whether DATABASE_URL selects PostgreSQL.
