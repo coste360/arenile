@@ -73,6 +73,27 @@ func TestAcceptance_SetupReset(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		// 0b. A receipt issued by a real registratore telematico blocks
+		// "everything" (fiscal records are kept); the demo ones ("none") do not.
+		var paid store.Payment
+		if err := e.db.NewSelect().Model(&paid).Where("establishment_id = ?", e.estID).
+			Where("test = ?", false).Limit(1).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		receipt := &store.FiscalDocument{
+			ID: store.NewID(), EstablishmentID: e.estID, PaymentID: paid.ID, Driver: "rt_bridge", Status: "issued",
+			BusinessDate: paid.BusinessDate, Payload: store.JSON(`{}`), CreatedAt: now, UpdatedAt: now,
+		}
+		if _, err := e.db.NewInsert().Model(receipt).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if r := reset(api.SetupResetRequestScopeEverything, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
+			t.Fatalf("reset with a real receipt: %d %s", r.Status, r.Body)
+		}
+		if _, err := e.db.NewDelete().Model(receipt).WherePK().Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+
 		// 1. Operational data: configuration only is refused; a wrong name too.
 		if st := status(); !st.HasOperations || !st.HasSeason {
 			t.Fatalf("status before: %+v", st)

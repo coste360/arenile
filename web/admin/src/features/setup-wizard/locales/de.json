@@ -133,7 +133,7 @@
     "everything": {
       "action": "Betrieb zurücksetzen",
       "title": "Betrieb zurücksetzen?",
-      "deletes": "Löscht die gesamte Konfiguration sowie Buchungen, Saisonabos, Kunden, Zahlungen, Kassensitzungen, Tickets, Steuerbelege, Guthaben, Warteliste und Verlängerungen und schaltet die öffentliche Seite bis zur neuen Einrichtung ab. Nur möglich, solange keine Online-Zahlung oder Erstattung läuft.",
+      "deletes": "Löscht die gesamte Konfiguration sowie Buchungen, Saisonabos, Kunden, Zahlungen, Kassensitzungen, Tickets, Steuerbelege, Guthaben, Warteliste und Verlängerungen und schaltet die öffentliche Seite bis zur neuen Einrichtung ab. Nur möglich, solange keine Online-Zahlung oder Erstattung läuft und kein Beleg von einer elektronischen Registrierkasse ausgestellt wurde, denn diese müssen aufbewahrt werden.",
       "ack": "Mir ist klar, dass Buchungen, Kunden und Zahlungen endgültig gelöscht werden.",
       "confirm": "Betrieb zurücksetzen",
       "done": "Betrieb zurückgesetzt: Sie können mit dem ersten Schritt neu beginnen."

@@ -133,7 +133,7 @@
     "everything": {
       "action": "Reset the establishment",
       "title": "Reset the establishment?",
-      "deletes": "Deletes the whole configuration as well as bookings, season passes, customers, payments, cash sessions, tickets, fiscal documents, credits, waiting list and renewals and turns the public page off until the setup is done again. Only possible while no online payment or refund is in progress.",
+      "deletes": "Deletes the whole configuration as well as bookings, season passes, customers, payments, cash sessions, tickets, fiscal documents, credits, waiting list and renewals and turns the public page off until the setup is done again. Only possible while no online payment or refund is in progress and no receipt has been issued by a registratore telematico, since those must be kept.",
       "ack": "I understand that bookings, customers and payments are deleted for good.",
       "confirm": "Reset the establishment",
       "done": "Establishment reset: you can start again from the first step."

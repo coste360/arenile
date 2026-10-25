@@ -133,7 +133,7 @@
     "everything": {
       "action": "Azzera lo stabilimento",
       "title": "Azzerare lo stabilimento?",
-      "deletes": "Cancella tutta la configurazione e anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti, documenti fiscali, crediti, lista d'attesa e rinnovi e spegne la pagina pubblica fino alla nuova configurazione. Si può fare solo quando non ci sono pagamenti online o rimborsi in corso.",
+      "deletes": "Cancella tutta la configurazione e anche prenotazioni, abbonamenti, clienti, incassi, sessioni di cassa, biglietti, documenti fiscali, crediti, lista d'attesa e rinnovi e spegne la pagina pubblica fino alla nuova configurazione. Si può fare solo quando non ci sono pagamenti online o rimborsi in corso né scontrini emessi da un registratore telematico, che vanno conservati.",
       "ack": "Ho capito che prenotazioni, clienti e incassi vengono cancellati per sempre.",
       "confirm": "Azzera lo stabilimento",
       "done": "Stabilimento azzerato: puoi ricominciare dal primo passo."

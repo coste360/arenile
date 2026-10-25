@@ -37,6 +37,11 @@ var ErrHasOperations = errors.New("setup: establishment has operational data")
 // would lose money owed to the customer (INV-51, INV-75).
 var ErrPaymentsInFlight = errors.New("setup: online payments or refunds in progress")
 
+// ErrHasFiscalRecords refuses ResetEverything when the establishment has
+// receipts issued by a real registratore telematico (409 conflict): fiscal
+// records must be kept, a reset would delete them.
+var ErrHasFiscalRecords = errors.New("setup: establishment has issued fiscal documents")
+
 // ResetInput is a reset request: the scope and the establishment name typed
 // by the owner to confirm.
 type ResetInput struct {
@@ -58,7 +63,8 @@ type ResetResult struct {
 // users.manage and payments.configure besides establishment.configure, and
 // API keys and devices are refused. The name must match the establishment's
 // (trimmed, case-insensitive). ResetConfiguration with operational data is
-// a conflict: the caller must choose ResetEverything.
+// a conflict: the caller must choose ResetEverything. ResetEverything is a
+// conflict while payments are in flight or real fiscal documents exist.
 func (s *Service) Reset(ctx context.Context, p *auth.Principal, establishmentID string, in ResetInput) (*ResetResult, error) {
 	es, err := s.authorize(ctx, p, establishmentID, auth.PermEstablishmentConfigure)
 	if err != nil {
@@ -86,6 +92,13 @@ func (s *Service) Reset(ctx context.Context, p *auth.Principal, establishmentID 
 			}
 			if moving {
 				return ErrPaymentsInFlight
+			}
+			fiscal, err := store.HasFiscalRecords(ctx, tx, es)
+			if err != nil {
+				return err
+			}
+			if fiscal {
+				return ErrHasFiscalRecords
 			}
 		}
 		if in.Scope == ResetConfiguration {

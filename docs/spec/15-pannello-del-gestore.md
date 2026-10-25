@@ -30,7 +30,9 @@ Ogni passo è saltabile e modificabile in seguito.
   ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti, lista d'attesa, rinnovi,
   crediti);
 - *Azzera lo stabilimento* cancella anche i dati operativi e i clienti, con una seconda conferma; è rifiutato
-  finché un pagamento online o un rimborso è ancora in corso presso il provider.
+  finché un pagamento online o un rimborso è ancora in corso presso il provider o quando ci sono scontrini emessi
+  da un registratore telematico (driver fiscale diverso da `none`, pagamenti non di prova): i documenti fiscali vanno
+  conservati e per ripartire serve un nuovo stabilimento.
 
 Entrambi spengono la pagina pubblica fino alla nuova configurazione. La numerazione dei biglietti del giorno prosegue.
 

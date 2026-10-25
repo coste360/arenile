@@ -960,7 +960,9 @@ Verificata da: `TestAcceptance_SetupReset`, `TestAcceptance_SetupResetInvariants
 `TestResetEstablishment_EveryTableClassified` (`internal/store`), `TestReset_OnlyTheOwnerAsAPerson`
 (`internal/domain/setup`), tutti con tag `integration`, SQLite e PostgreSQL. `everything` è rifiutato (`409`) finché
 un pagamento online è `created`/`pending` o un rimborso è `pending`/`processing`/`failed` (`store.HasPaymentsInFlight`:
-INV-51 e INV-75 non perdono denaro); l'azzeramento scrive `config.map_changed` e `config.pricing_changed` (reason
+INV-51 e INV-75 non perdono denaro) e finché ci sono scontrini emessi da un registratore telematico
+(`store.HasFiscalRecords`: stato `issued`, driver diverso da `none`, pagamento non di prova; i documenti fiscali si
+conservano); l'azzeramento scrive `config.map_changed` e `config.pricing_changed` (reason
 `setup_reset`) nella stessa transazione (INV-39), spegne `booking_enabled` e, con `everything`, toglie le stampe non
 ancora fatte e le notifiche su prenotazioni, pagamenti e clienti. Stato: partial (risposte salvate di
 `Idempotency-Key`, per utente e per 24 ore, che puntano a righe cancellate: INV-31).

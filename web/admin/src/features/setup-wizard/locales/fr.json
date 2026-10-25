@@ -133,7 +133,7 @@
     "everything": {
       "action": "Réinitialiser l'établissement",
       "title": "Réinitialiser l'établissement ?",
-      "deletes": "Supprime toute la configuration ainsi que les réservations, abonnements, clients, encaissements, sessions de caisse, billets, documents fiscaux, crédits, liste d'attente et renouvellements et désactive la page publique jusqu'à la nouvelle configuration. Possible uniquement s'il n'y a aucun paiement en ligne ou remboursement en cours.",
+      "deletes": "Supprime toute la configuration ainsi que les réservations, abonnements, clients, encaissements, sessions de caisse, billets, documents fiscaux, crédits, liste d'attente et renouvellements et désactive la page publique jusqu'à la nouvelle configuration. Possible uniquement s'il n'y a aucun paiement en ligne ou remboursement en cours ni aucun reçu émis par une caisse enregistreuse télématique, qui doit être conservé.",
       "ack": "Je comprends que les réservations, les clients et les encaissements sont supprimés définitivement.",
       "confirm": "Réinitialiser l'établissement",
       "done": "Établissement réinitialisé : vous pouvez recommencer à la première étape."

@@ -406,6 +406,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, Conflict, Detail(dup.Error()), ExistingCustomerID(dup.ExistingID))
 	case errors.Is(err, setup.ErrPaymentsInFlight):
 		Write(w, r, Conflict, Detail("Ci sono pagamenti online o rimborsi ancora in corso: attendi che si concludano, poi riprova."))
+	case errors.Is(err, setup.ErrHasFiscalRecords):
+		Write(w, r, Conflict, Detail("Lo stabilimento ha scontrini emessi dal registratore telematico: i documenti fiscali vanno conservati, quindi non si può azzerare. Per ripartire crea un nuovo stabilimento."))
 	case errors.Is(err, setup.ErrHasOperations):
 		Write(w, r, Conflict, Detail("Lo stabilimento ha prenotazioni, incassi o altri dati operativi: per ricominciare va azzerato tutto."))
 	case errors.Is(err, configerr.ErrConflict):

@@ -133,6 +133,25 @@ func HasPaymentsInFlight(ctx context.Context, db bun.IDB, es EstablishmentScope)
 	return false, nil
 }
 
+// HasFiscalRecords reports whether the establishment has fiscal documents
+// issued by a real fiscal driver (a registratore telematico through the
+// fiscal bridge): status issued, a driver other than "none" (builtin.
+// NoneFiscal, which performs no I/O) and a payment not in test mode. They
+// are records the law requires to keep, so a reset must not delete them.
+func HasFiscalRecords(ctx context.Context, db bun.IDB, es EstablishmentScope) (bool, error) {
+	if err := es.mustBeValid(); err != nil {
+		return false, err
+	}
+	ok, err := db.NewSelect().TableExpr("fiscal_documents AS fd").
+		Join("JOIN payments AS p ON p.id = fd.payment_id").
+		Where("fd.establishment_id = ?", es.ID()).Where("fd.status = ?", "issued").
+		Where("fd.driver <> ?", "none").Where("p.test = ?", false).Exists(ctx)
+	if err != nil {
+		return false, fmt.Errorf("store: has fiscal records: %w", err)
+	}
+	return ok, nil
+}
+
 // ResetEstablishment deletes the configuration of the establishment and,
 // with operations, its operational data first. It returns the deleted rows
 // per table (tables with none are omitted). Run it in a transaction: a
