@@ -365,7 +365,21 @@ func (w *recordingWindow) Open(ctx context.Context, o WindowOptions) error {
 	return nil
 }
 
+// headlessUI makes the remote mode behave as in the build without the
+// native window for the rest of the test, also under the "desktop" tag:
+// with no Window or Pairing in Options, Run would otherwise open the real
+// webview window or pairing form, which must run on the main thread (a
+// test goroutine is not: the process dies with SIGTRAP on macOS). The
+// tests that need a window inject one through Options.
+func headlessUI(t *testing.T) {
+	t.Helper()
+	w, p := nativeWindow, nativePairing
+	nativeWindow, nativePairing = nil, nil
+	t.Cleanup(func() { nativeWindow, nativePairing = w, p })
+}
+
 func TestMode_PairRunAndRevoke(t *testing.T) {
+	headlessUI(t)
 	f := newFakeInstance(t)
 	dir := t.TempDir()
 	if err := SetMode(dir, desktop.ModeRemote); err != nil {
