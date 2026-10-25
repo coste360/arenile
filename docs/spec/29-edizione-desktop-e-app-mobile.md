@@ -82,13 +82,12 @@ Al primo avvio, e in seguito dalle impostazioni, il gestore sceglie tra **Locale
 
 **Privacy first**
 - L'app parla solo con l'istanza del gestore: nessun dato passa da Coste360, nessuna telemetria, nessun SDK di analisi o pubblicità.
-- Notifiche push: per vincolo tecnico di Apple e Google passano da un server centrale. Sono **facoltative**: l'istanza può usare un relay push di Coste360 che riceve solo un identificativo opaco del dispositivo e un testo generico ("Nuova prenotazione"), oppure nessuna push (l'app aggiorna i dati all'apertura).
+- Notifiche push: **non fanno parte di questa edizione**. L'app aggiorna i dati all'apertura e l'istanza non contatta alcun server centrale. Un'eventuale futura edizione a pagamento potrà offrirle.
 
 **Funzioni (prima versione)**
 - Vista operativa della mappa del giorno con colori per stato (sezione 11.3) e ricerca.
 - Check-in con scansione del QR della prenotazione, incasso rapido in contanti, rilascio giorno degli abbonati, note.
-- Funzionamento offline con le stesse regole del pannello (sezione 21.2): consultazione in cache, check-in, note e incassi in contanti messi in coda con chiavi di idempotenza; creazione e spostamento di prenotazioni solo online.
-- Notifiche al gestore (sezione 19) se le push sono attive.
+- Funzionamento offline con le stesse regole del pannello (sezione 21.2): consultazione in cache, check-in, note e incassi in contanti messi in coda con chiavi di idempotenza; creazione e spostamento di prenotazioni solo online. Anche i rilasci degli abbonati, i blocchi delle postazioni e gli ingressi al varco accettano `Idempotency-Key`: una ripetizione con la stessa chiave, entro 24 ore e per lo stesso utente, restituisce la risposta originale senza ripetere l'effetto.
 
 **Contratto e compatibilità**
 - Repository separato (`coste360/arenile-mobile`, Expo + React Native + TypeScript): ciclo di rilascio legato agli store, toolchain diversa.

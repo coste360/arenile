@@ -14,7 +14,8 @@ info:
     Convenzioni (specifica, sezione 17.1):
     - errori in `application/problem+json` (RFC 9457) con `type` stabile (slug);
     - paginazione a cursore (`?cursor=&limit=`);
-    - `Idempotency-Key` accettato sui `POST` che creano risorse o pagamenti;
+    - `Idempotency-Key` accettato sui `POST` che creano risorse o pagamenti e sulle
+      operazioni della coda offline (check-in, rilasci, blocchi, note, incassi; spec 21.2, 29.2);
     - le richieste del pannello autenticate via cookie che modificano dati
       devono inviare l'header `X-CSRF-Token` uguale al cookie `arenile_csrf`;
     - date di calendario `YYYY-MM-DD`, istanti RFC 3339 UTC.
@@ -3806,7 +3807,7 @@ paths:
       summary: "Registra il check-in"
       description: >-
         Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition.
-        Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+        Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -4074,7 +4075,9 @@ paths:
       operationId: addBookingNote
       tags: [bookings]
       summary: "Aggiunge una nota"
-      description: Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+      description: >-
+        Permesso bookings.write. Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2):
+        senza chiave due invii aggiungono due note.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -4731,12 +4734,15 @@ paths:
         wrong_date). Il codice è il token casuale del QR (gate token): il codice della prenotazione, sequenziale, o il
         numero del giorno da soli non fanno entrare (404); li accetta solo un inserimento manuale confermato dallo
         staff (manual = true), registrato nell'audit. Un biglietto la cui prenotazione non è più confermata non entra.
-        404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+        404 se il codice non è un biglietto dello stabilimento. Permesso operations.run. Idempotency-Key consigliata
+        (coda offline dell'app, spec 29.2): la ripetizione con la stessa chiave restituisce l'esito originale
+        (admitted), non already_entered.
       security:
         - cookieAuth: []
         - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
         - $ref: "#/components/parameters/CSRFToken"
       requestBody:
         required: true
@@ -5037,7 +5043,8 @@ paths:
       tags: [payments]
       summary: "Registra un incasso manuale (contanti, carta, bonifico, altro)"
       description: >-
-        Driver manual. Idempotency-Key fortemente consigliata (coda offline, spec 21.2). I contanti
+        Driver manual. Idempotency-Key fortemente consigliata (coda offline del pannello e dell'app, spec 21.2,
+        29.2). I contanti
         richiedono una sessione di cassa aperta (409 cash_session_closed). Aggiorna paid_amount (INV-22).
       security:
         - cookieAuth: []
@@ -5537,7 +5544,8 @@ paths:
       tags: [availability]
       summary: "Blocca postazioni su un intervallo"
       description: >-
-        Allocazioni kind=block (permesso operations.run); 409 spot_unavailable.
+        Allocazioni kind=block (permesso operations.run); 409 spot_unavailable. Idempotency-Key consigliata (coda
+        offline dell'app, spec 29.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -5800,6 +5808,7 @@ paths:
       summary: "Rilascia giorni: la postazione diventa prenotabile"
       description: >-
         Rimuove le allocazioni season di quei giorni ed emette season.day_released (spec 7.7, INV-10).
+        Idempotency-Key consigliata (coda offline del pannello e dell'app, spec 21.2, 29.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -12409,7 +12418,16 @@ components:
       description: |
         Chiave di idempotenza scelta dal client (consigliato un UUID). Una
         richiesta ripetuta con la stessa chiave restituisce la risposta
-        originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+        originale (header `Idempotent-Replayed: true`) senza ripetere
+        l'effetto; con un corpo diverso risponde `422 idempotency_key_reused`,
+        mentre la prima è ancora in corso `409 idempotency_in_progress`
+        (da ritentare). La chiave vale per l'utente (sessione, chiave API o
+        token del dispositivo) e per 24 ore: una coda offline più vecchia va
+        ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+        (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+        i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+        definitiva per quella chiave. Quando l'utente corregge la causa e
+        invia di nuovo, il client deve usare una chiave nuova.
       schema:
         type: string
         minLength: 8
@@ -21655,7 +21673,7 @@ components:
           description: Flusso SSE `GET /api/admin/v1/stream` disponibile.
         push_notifications:
           type: boolean
-          description: Notifiche push tramite relay configurate (M7).
+          description: Notifiche push non disponibili in questa edizione (spec 29.2), sempre false.
 
     DevicePlatform:
       type: string
