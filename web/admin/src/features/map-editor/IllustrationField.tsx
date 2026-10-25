@@ -54,7 +54,7 @@ export function IllustrationField({
           id={id}
           variant="outline"
           disabled={disabled}
-          className="h-auto w-full justify-start gap-3 px-2 py-1.5"
+          className="h-auto w-full min-w-0 justify-start gap-3 px-2 py-1.5"
         >
           <span className="flex size-10 items-center justify-center rounded-md bg-muted">
             {asset && value !== undefined ? (
@@ -62,9 +62,11 @@ export function IllustrationField({
             ) : null}
           </span>
           <span className="flex min-w-0 flex-1 flex-col items-start text-left">
-            <span className="truncate text-sm">{name}</span>
+            <span className="max-w-full truncate text-sm">{name}</span>
             {value === '' && asset && (
-              <span className="text-xs text-muted-foreground">{t('panel.defaultOfKind')}</span>
+              <span className="max-w-full truncate text-xs text-muted-foreground">
+                {t('panel.defaultOfKind')}
+              </span>
             )}
           </span>
           <ChevronsUpDownIcon aria-hidden="true" className="opacity-50" />

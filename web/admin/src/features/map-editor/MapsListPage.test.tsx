@@ -60,9 +60,9 @@ describe('MapsListPage', () => {
       routes('manager', {
         [`POST ${API}/maps`]: async (req) => {
           body = (await req.json()) as Record<string, unknown>;
-          return json(201, created, { ETag: '"1"' });
+          // The contract answers with the full document, not a bare Map.
+          return json(201, { map: created, spots: [], decorations: [] }, { ETag: '"1"' });
         },
-        [`GET ${API}/maps/m3`]: () => json(200, { map: created, spots: [], decorations: [] }),
       }),
     );
     await screen.findByRole('table', { name: 'Mappe' });
@@ -82,6 +82,12 @@ describe('MapsListPage', () => {
     });
     const req = callsTo(fetchMock, 'POST', `${API}/maps`)[0] as Request;
     expect(req.headers.get('Idempotency-Key')).toBeTruthy();
+    // The editor opens on the created document without fetching it again.
+    expect(
+      await screen.findByRole('heading', { name: 'Editor della mappa: Sud' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Risorsa non trovata.')).not.toBeInTheDocument();
+    expect(callsTo(fetchMock, 'GET', `${API}/maps/m3`)).toHaveLength(0);
   });
 
   it('validates the map settings before creating', async () => {

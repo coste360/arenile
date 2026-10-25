@@ -6,6 +6,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Corretto
+- Mappe: **Crea e apri l'editor** apriva l'editor con "Risorsa non trovata" (si apriva un indirizzo senza l'id della
+  mappa); la mappa era creata e compariva solo tornando all'elenco. Ora l'editor si apre subito sulla nuova mappa.
+- Editor della mappa: nel **Generatore di file** un nome di zona lungo copriva il campo **Tipo** e il campo
+  **Illustrazione** usciva dalla finestra. Ora i valori lunghi sono troncati con i puntini.
+
 ## [1.0.3] - 2026-10-25
 
 ### Aggiunto

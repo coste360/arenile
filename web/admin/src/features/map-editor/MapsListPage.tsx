@@ -28,6 +28,7 @@ import { useEditor } from '../configuration/api/useCrud';
 import type { FormAlertState } from '../configuration/lib/formErrors';
 import { problemToFormState } from '../configuration/lib/formErrors';
 import { localize } from '../configuration/lib/i18nText';
+import { useCreateMap } from './api';
 import { MapSettingsForm } from './dialogs';
 import type { ApiMap, SeaSide } from './model/types';
 import { ConfigPage } from '../configuration/components/ConfigPage';
@@ -44,7 +45,7 @@ export function MapsListPage() {
   const ctx = useConfigContext();
   const navigate = useNavigate();
   const list = maps.useList(ctx.establishmentId);
-  const create = maps.useCreate(ctx.establishmentId);
+  const create = useCreateMap(ctx.establishmentId);
   const remove = maps.useRemove(ctx.establishmentId);
   const editor = useEditor<ApiMap>();
   const [alert, setAlert] = useState<FormAlertState | null>(null);
@@ -223,7 +224,7 @@ export function MapsListPage() {
               editor.close();
               await navigate({
                 to: '/e/$establishmentId/maps/$mapId',
-                params: { establishmentId: ctx.establishmentId, mapId: created.id },
+                params: { establishmentId: ctx.establishmentId, mapId: created.map.id },
               });
             } catch (err) {
               setAlert(problemToFormState(err, () => undefined, { formKeys: [] }));
