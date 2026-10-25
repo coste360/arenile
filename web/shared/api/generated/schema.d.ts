@@ -10238,7 +10238,11 @@ export interface components {
          *     mentre la prima è ancora in corso `409 idempotency_in_progress`
          *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
          *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-         *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+         *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+         *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+         *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+         *     definitiva per quella chiave. Quando l'utente corregge la causa e
+         *     invia di nuovo, il client deve usare una chiave nuova.
          */
         IdempotencyKey: string;
         /**
@@ -10529,7 +10533,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10673,7 +10681,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10821,7 +10833,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -10973,7 +10989,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11055,7 +11075,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11242,7 +11266,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11427,7 +11455,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11612,7 +11644,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11795,7 +11831,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -11980,7 +12020,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12165,7 +12209,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12354,7 +12402,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12541,7 +12593,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12726,7 +12782,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -12911,7 +12971,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13096,7 +13160,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13279,7 +13347,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13630,7 +13702,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13678,7 +13754,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -13767,7 +13847,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -14005,7 +14089,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -14215,7 +14303,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -14481,7 +14573,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -14611,7 +14707,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -14964,7 +15064,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
@@ -15102,7 +15206,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15362,7 +15470,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -15434,7 +15546,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15484,7 +15600,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15577,7 +15697,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15626,7 +15750,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -15883,7 +16011,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16003,7 +16135,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16151,7 +16287,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16277,7 +16417,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16387,7 +16531,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -16788,7 +16936,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /** @description Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403 test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide). */
@@ -16930,7 +17082,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -17125,7 +17281,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -17432,7 +17592,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19598,7 +19762,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19725,7 +19893,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19896,7 +20068,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -19976,7 +20152,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20071,7 +20251,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20162,7 +20346,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20355,7 +20543,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20613,7 +20805,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -20691,7 +20887,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20800,7 +21000,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20846,7 +21050,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -20940,7 +21148,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
@@ -21254,7 +21466,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -21725,7 +21941,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -21974,7 +22194,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -22165,7 +22389,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
@@ -22342,7 +22570,11 @@ export interface operations {
                  *     mentre la prima è ancora in corso `409 idempotency_in_progress`
                  *     (da ritentare). La chiave vale per l'utente (sessione, chiave API o
                  *     token del dispositivo) e per 24 ore: una coda offline più vecchia va
-                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+                 *     ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+                 *     (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+                 *     i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+                 *     definitiva per quella chiave. Quando l'utente corregge la causa e
+                 *     invia di nuovo, il client deve usare una chiave nuova.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
