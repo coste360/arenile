@@ -296,7 +296,10 @@
       "placeholder": "Datum wählen",
       "rangePlaceholder": "Zeitraum wählen",
       "clear": "Löschen",
-      "open": "Kalender öffnen"
+      "open": "Kalender öffnen",
+      "from": "Von",
+      "to": "Bis",
+      "format": "TT/MM/JJJJ"
     },
     "table": {
       "filter": "Filtern…",

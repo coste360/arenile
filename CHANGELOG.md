@@ -11,6 +11,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   mappa); la mappa era creata e compariva solo tornando all'elenco. Ora l'editor si apre subito sulla nuova mappa.
 - Editor della mappa: nel **Generatore di file** un nome di zona lungo copriva il campo **Tipo** e il campo
   **Illustrazione** usciva dalla finestra. Ora i valori lunghi sono troncati con i puntini.
+- Calendari delle date: cambiando mese il calendario cambiava altezza e si spostava sopra o sotto il campo. Ora
+  mostra sempre sei settimane e resta fermo.
+- Scelta di un periodo (stagioni, periodi tariffari, chiusure, prenotazioni, report e gli altri campi con due
+  date): con un periodo già impostato il primo clic spostava la data finale. Ora il primo clic sceglie sempre
+  l'inizio e il secondo la fine; in alto ci sono i campi **Dal** e **Al** per scrivere le date a mano
+  (gg/mm/aaaa).
 
 ## [1.0.3] - 2026-10-25
 

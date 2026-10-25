@@ -296,7 +296,10 @@
       "placeholder": "Pick a date",
       "rangePlaceholder": "Pick a date range",
       "clear": "Clear",
-      "open": "Open calendar"
+      "open": "Open calendar",
+      "from": "From",
+      "to": "To",
+      "format": "dd/mm/yyyy"
     },
     "table": {
       "filter": "Filter…",

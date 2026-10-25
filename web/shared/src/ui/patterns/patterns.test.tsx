@@ -9,6 +9,8 @@ import {
   DataTable,
   DataTableColumnHeader,
   DatePicker,
+  DateRangePicker,
+  type IsoDateRange,
   I18nTextInput,
   MoneyInput,
   NARROW_QUERY,
@@ -558,5 +560,66 @@ describe('ThemeProvider', () => {
     expect(document.documentElement).toHaveClass('dark');
     document.documentElement.classList.remove('dark');
     window.localStorage.clear();
+  });
+});
+
+describe('DateRangePicker', () => {
+  function Harness({
+    initial,
+    onChange,
+  }: {
+    initial?: IsoDateRange;
+    onChange: (v?: IsoDateRange) => void;
+  }) {
+    const [v, setV] = useState<IsoDateRange | undefined>(initial);
+    return (
+      <DateRangePicker
+        aria-label="Periodo"
+        value={v}
+        min="2026-01-01"
+        max="2026-12-31"
+        onChange={(next) => {
+          setV(next);
+          onChange(next);
+        }}
+      />
+    );
+  }
+
+  it('starts a new range on the first click and ends it on the second', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithI18n(
+      <Harness initial={{ from: '2026-01-01', to: '2026-05-31' }} onChange={onChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^Periodo: / }));
+    await user.click(await screen.findByRole('button', { name: /10 gennaio 2026/i }));
+    expect(onChange).toHaveBeenLastCalledWith({ from: '2026-01-10' });
+    await user.click(screen.getByRole('button', { name: /20 febbraio 2026/i }));
+    expect(onChange).toHaveBeenLastCalledWith({ from: '2026-01-10', to: '2026-02-20' });
+  });
+
+  it('accepts typed dates and rejects invalid or out-of-bounds ones', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithI18n(
+      <Harness initial={{ from: '2026-01-01', to: '2026-01-31' }} onChange={onChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^Periodo: / }));
+    const from = await screen.findByLabelText('Dal');
+    const to = screen.getByLabelText('Al');
+    expect(from).toHaveValue('01/01/2026');
+    await user.clear(to);
+    await user.type(to, '15/8/2026{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith({ from: '2026-01-01', to: '2026-08-15' });
+    expect(to).toHaveValue('15/08/2026');
+    onChange.mockClear();
+    await user.clear(from);
+    await user.type(from, '31/02/2026{Enter}');
+    expect(from).toHaveAttribute('aria-invalid', 'true');
+    await user.clear(from);
+    await user.type(from, '01/01/2027{Enter}');
+    expect(from).toHaveAttribute('aria-invalid', 'true');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
