@@ -599,6 +599,19 @@ describe('DateRangePicker', () => {
     expect(onChange).toHaveBeenLastCalledWith({ from: '2026-01-10', to: '2026-02-20' });
   });
 
+  it('after a typed start, the next click on the calendar picks the end', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithI18n(<Harness onChange={onChange} />);
+    await user.click(screen.getByRole('button', { name: /^Periodo: / }));
+    const from = await screen.findByLabelText('Dal');
+    // The typed fields do not take the focus when the calendar opens.
+    expect(from).not.toHaveFocus();
+    await user.type(from, '05/01/2026');
+    await user.click(screen.getByRole('button', { name: /20 gennaio 2026/i }));
+    expect(onChange).toHaveBeenLastCalledWith({ from: '2026-01-05', to: '2026-01-20' });
+  });
+
   it('accepts typed dates and rejects invalid or out-of-bounds ones', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

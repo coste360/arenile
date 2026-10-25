@@ -89,9 +89,11 @@ function withinBounds(iso: string, min?: string, max?: string): boolean {
 }
 
 /**
- * Typed end of the range (dd/mm/yyyy): applied on Enter or blur when it is a
- * valid day within the bounds; otherwise the field is marked invalid and the
- * range is left unchanged.
+ * Typed end of the range (dd/mm/yyyy): applied as soon as it is a complete
+ * valid day within the bounds (so nothing is left to apply when the user
+ * then clicks the calendar: a commit on that blur would re-render the grid
+ * under the click), and on Enter or blur; an invalid date marks the field
+ * and leaves the range unchanged.
  */
 function TypedDate({
   label,
@@ -134,7 +136,11 @@ function TypedDate({
         placeholder={t('ui.date.format')}
         aria-invalid={invalid || undefined}
         className="tabular-nums"
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          const iso = parseTypedDate(e.target.value);
+          if (iso && onCommit(iso)) setInvalid(false);
+        }}
         onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -167,6 +173,16 @@ export function RangeCalendar({
   // range and the second one ends it (react-day-picker would otherwise move
   // the nearest end of the range already set).
   const [awaitingEnd, setAwaitingEnd] = useState(false);
+  // Moves the calendar to a typed date only when it is not on screen: a
+  // re-render of the grid between the blur that commits the field and the
+  // click on a day would swallow that click.
+  const showMonthOf = (iso: string) => {
+    const d = isoToDate(iso);
+    if (!d || !month) return setMonth(d);
+    const first = month.getFullYear() * 12 + month.getMonth();
+    const target = d.getFullYear() * 12 + d.getMonth();
+    if (target < first || target >= first + (numberOfMonths ?? 1)) setMonth(d);
+  };
   const pick = (day: Date) => {
     const iso = dateToIso(day);
     if (!awaitingEnd || !from) {
@@ -185,10 +201,11 @@ export function RangeCalendar({
           value={from}
           onCommit={(iso) => {
             if (!withinBounds(iso, min, max)) return false;
-            setAwaitingEnd(false);
+            // The next click on the calendar picks the end of the range.
+            setAwaitingEnd(true);
             // A start after the end clears the end, to be picked again.
             onSelect({ from: iso, to: to && to >= iso ? to : undefined });
-            setMonth(isoToDate(iso));
+            showMonthOf(iso);
             return true;
           }}
         />
