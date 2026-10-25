@@ -13,6 +13,7 @@ import {
   DEMO_SLUG,
   stripePort,
 } from "./helpers";
+import { addDays, demoToday } from "./demo-dates";
 
 /**
  * M5 part B end to end (spec 7.7, 9, 10.4, 10.5, 13.4, 20, 28): season
@@ -271,7 +272,7 @@ test("waitlist: a cancellation frees the spot, the offer email leads to checkout
   const maps = (await admin.ok("GET", "/maps")).items as { id: string }[];
   const spots = (await admin.ok("GET", `/maps/${maps[0].id}`)).spots as { id: string; label: string }[];
   const spot = spots.find((s) => s.label === "F7") ?? spots[60];
-  const day = `${sourceYear}-07-14`;
+  const day = addDays(demoToday(), 40); // ahead of today, inside the demo season
   const occupant = await admin.ok("POST", "/customers", { first_name: "Piero", last_name: "Occupato" });
   const booked = await admin.ok("POST", "/bookings", {
     customer_id: occupant.id,
@@ -349,7 +350,7 @@ test("customer credit granted and used on a desk booking", async ({ page }) => {
   const spots = (await admin.ok("GET", `/maps/${maps[0].id}`)).spots as { id: string; label: string }[];
   const spot = spots.find((s) => s.label === "F8") ?? spots[61];
   const cust = await admin.ok("POST", "/customers", { first_name: "Carla", last_name: "Credito" });
-  const day = `${sourceYear}-07-21`;
+  const day = addDays(demoToday(), 42);
   const created = await admin.ok("POST", "/bookings", {
     customer_id: cust.id,
     starts_on: day,
