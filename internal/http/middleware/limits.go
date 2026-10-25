@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/netip"
 	"strings"
 	"time"
 
@@ -19,6 +20,42 @@ import (
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
+
+// RateLimitByIPPrefix limits requests per client network: the IPv4 address,
+// or the /64 of an IPv6 one (a single client can rotate through a whole
+// /64), plus a global budget shared by every client. Used by the
+// unauthenticated demo pairing (ADR 0027).
+func RateLimitByIPPrefix(perClient, global *auth.RateLimiter) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			key := IPPrefixKey(reqctx.From(r.Context()).ClientIP)
+			for _, l := range []struct {
+				lim *auth.RateLimiter
+				key string
+			}{{perClient, key}, {global, "*"}} {
+				if ok, retry := l.lim.Allow(l.key); !ok {
+					problem.Write(w, r, problem.RateLimited, problem.RetryAfter(retry))
+					return
+				}
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// IPPrefixKey is the rate limit key of a client IP: the address for IPv4
+// (and anything unparsable, as is), the /64 network for IPv6.
+func IPPrefixKey(ip string) string {
+	a, err := netip.ParseAddr(ip)
+	if err != nil || a.Is4() || a.Is4In6() {
+		return ip
+	}
+	p, err := a.Prefix(64)
+	if err != nil {
+		return ip
+	}
+	return p.String()
+}
 
 // PublicRateLimit limits public API calls per client IP with the two budgets
 // of spec 17.2: creations are the requests that create something new from

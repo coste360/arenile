@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -75,7 +76,14 @@ type issue struct {
 	target    PairingTarget
 	actor     audit.Actor
 	action    string
+	// roles, when set, are the only roles the user may hold on the
+	// establishment (every applicable membership): the demo pairing never
+	// hands out an owner or manager device.
+	roles []auth.Role
 }
+
+// errRoleNotAllowed: the user holds a role outside issue.roles.
+var errRoleNotAllowed = errors.New("device: role not allowed for this code")
 
 // issueCode stores a new single-use code for in.userID on es (who must be an
 // active member) and audits it as in.action, in one transaction, then
@@ -90,6 +98,13 @@ func (s *Service) issueCode(ctx context.Context, es store.EstablishmentScope, in
 		}
 		if !activeMember(grants, in.userID) {
 			return configerr.Invalid("user_id", "l'utente non è attivo o non ha un ruolo in questo stabilimento")
+		}
+		if in.roles != nil {
+			for _, g := range grants {
+				if g.UserID == in.userID && !slices.Contains(in.roles, auth.Role(g.Role)) {
+					return errRoleNotAllowed
+				}
+			}
 		}
 		est, err := store.GetEstablishment(ctx, tx, es)
 		if err != nil {
@@ -143,18 +158,30 @@ func (s *Service) issueCode(ctx context.Context, es store.EstablishmentScope, in
 	return out, nil
 }
 
+// DemoPairingRoles are the roles a demo user may hold: the server refuses
+// to hand an anonymous caller an owner or manager device (users, payments,
+// refunds, configuration), whatever the instance is configured with.
+var DemoPairingRoles = []auth.Role{auth.RoleCashier, auth.RoleBeachStaff, auth.RoleViewer}
+
+// DemoPairingEnabled reports whether the instance is configured for the
+// demo pairing (the server mounts its rate limits only then, so a normal
+// instance always answers 404).
+func (s *Service) DemoPairingEnabled() bool {
+	return s.d.Demo != nil && s.d.Demo.UserEmail != "" && s.d.Demo.EstablishmentSlug != ""
+}
+
 // CreateDemoPairingCode mints a pairing code for the demo user of the demo
 // establishment (Deps.Demo, ARENILE_DEMO_PAIRING_*), with no signed-in
 // caller: the "Prova la demo" button of the mobile app pairs with it. The
-// device gets the role of that user, so the demo instance gives it a
-// limited one. Audit "device.demo_pairing_code_created" with the caller's
-// IP. ErrDemoPairingDisabled when the instance has no demo pairing (the
-// endpoint answers 404). The caller limits the requests per IP.
+// device gets the role of that user, which must be one of DemoPairingRoles.
+// Audit "device.demo_pairing_code_created" with the caller's IP.
+// ErrDemoPairingDisabled when the instance has no demo pairing (the endpoint
+// answers 404). The caller limits the requests (DemoPairingEnabled).
 func (s *Service) CreateDemoPairingCode(ctx context.Context, ip string) (*PairingCode, error) {
-	demo := s.d.Demo
-	if demo == nil || demo.UserEmail == "" || demo.EstablishmentSlug == "" {
+	if !s.DemoPairingEnabled() {
 		return nil, ErrDemoPairingDisabled
 	}
+	demo := s.d.Demo
 	if s.d.Instance == nil {
 		return nil, ErrLANModeRequired
 	}
@@ -188,10 +215,14 @@ func (s *Service) CreateDemoPairingCode(ctx context.Context, ip string) (*Pairin
 	}
 	out, err := s.issueCode(ctx, es, issue{
 		userID: user.ID, kind: store.DeviceKindMobile, ttl: DefaultPairingTTL, target: target,
+		roles: DemoPairingRoles,
 		actor: audit.Actor{Type: audit.ActorSystem, IP: ip}, action: "device.demo_pairing_code_created",
 	})
 	if errors.Is(err, configerr.ErrValidation) {
 		return misconfigured("membership", err) // the demo user has no active role there
+	}
+	if errors.Is(err, errRoleNotAllowed) {
+		return misconfigured("role", err) // owner or manager: never handed out anonymously
 	}
 	return out, err
 }

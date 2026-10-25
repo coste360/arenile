@@ -29,7 +29,10 @@ Ogni passo è saltabile e modificabile in seguito.
   prezzi, codici sconto, convenzioni, policy e biglietti d'ingresso; è possibile solo finché lo stabilimento non
   ha dati operativi (prenotazioni, abbonamenti, incassi, sessioni di cassa, biglietti, lista d'attesa, rinnovi,
   crediti);
-- *Azzera lo stabilimento* cancella anche i dati operativi e i clienti, con una seconda conferma.
+- *Azzera lo stabilimento* cancella anche i dati operativi e i clienti, con una seconda conferma; è rifiutato
+  finché un pagamento online o un rimborso è ancora in corso presso il provider.
+
+Entrambi spengono la pagina pubblica fino alla nuova configurazione. La numerazione dei biglietti del giorno prosegue.
 
 Restano sempre profilo dello stabilimento, utenti, pagamenti online, email, dispositivi, casse, stampanti e
 registro attività (`POST /api/admin/v1/establishments/{id}/setup/reset`).

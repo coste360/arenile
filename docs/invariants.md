@@ -394,10 +394,16 @@ l'utente è disattivato o non ha più un ruolo nello stabilimento, né dopo 90 g
 (`device.IdleExpiry`, contati da `last_used_at` o dall'abbinamento). Un dispositivo o una chiave API non creano codici
 di abbinamento, chiavi API né webhook (`TestAuthorize_RefusesKeysAndDevices` in `internal/domain/apikey` e
 `internal/domain/webhook`); con il token non serve il CSRF (niente cookie), con il cookie sì.
+Eccezione (ADR 0027): su un'istanza dimostrativa (`ARENILE_DEMO_PAIRING_USER` e `_ESTABLISHMENT`, mai sul desktop)
+`POST /api/device/v1/demo-pairing` crea senza autenticazione un codice per l'utente dimostrativo configurato, solo se
+il suo ruolo è cassiere, staff di spiaggia o sola lettura (`device.DemoPairingRoles`), con un limite per rete del
+client e uno globale e l'audit di sistema `device.demo_pairing_code_created`; lo stabilimento viene dalla
+configurazione, non dal contesto di autenticazione. Senza configurazione, o con un titolare o un gestore, risponde
+sempre `404`.
 Verificata da: `TestDeviceService_RevokeIsImmediate`, `TestDeviceService_PermissionsByRole`, `TestIdleExpired_Scenarios`,
 `TestDeviceService_PairAndAuthenticate` (scadenza per inattività),
 `TestDeviceService_CrossTenant` (`internal/domain/device`, tag `integration`), `TestAuthenticate_BearerAndCookie`,
-`TestAuthenticate_DeviceOnly` (`internal/http/middleware`), `TestHTTPIntegration_DevicePairing` (`internal/http`,
+`TestAuthenticate_DeviceOnly` (`internal/http/middleware`), `TestHTTPIntegration_DevicePairing`, `TestHTTPIntegration_DemoPairing` (`internal/http`,
 tag `integration`). Stato: implemented.
 
 **INV-57 — Modalità rete locale solo dalla rete locale.**
@@ -934,3 +940,27 @@ Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsS
 `TestCheckNow_Scenarios`, `TestCheckNow_DevBuildNoNetwork`, `TestConcurrency_CheckNow`
 (`internal/domain/update`), `TestUpdates_WiringAndNoNetworkWhenDisabled` (`internal/app`),
 `TestChecker_RequestCarriesOnlyTheUserAgent` (`internal/updates`). Stato: implemented.
+
+## Ricomincia da zero (spec 15.2)
+
+**INV-100 — Azzeramento dello stabilimento: tutto o niente, solo il suo, senza resti.**
+`POST /api/admin/v1/establishments/{id}/setup/reset` (solo il titolare come persona, nome dello stabilimento per
+conferma) cancella in una sola transazione, sempre con `establishment_id` dello stabilimento, la configurazione e, con
+`everything`, i dati operativi, in ordine di chiave esterna: un errore a metà lascia tutto com'era. La sola
+configurazione si azzera solo senza dati operativi (`409`, `store.HasOperations`). Ogni tabella con `establishment_id`
+è azzerata o tenuta di proposito (profilo, team, impostazioni online, email e pagamenti, dispositivi, casse,
+stampanti, contatori dei biglietti del giorno, outbox, registro attività) e l'ordine rispetta ogni chiave esterna restrittiva; dopo un azzeramento
+`everything` non resta nessuna allocazione, contatore dei pool, hold, pagamento o cliente, quindi INV-01, INV-02,
+INV-03, INV-20 e INV-22 valgono anche dopo, gli eventi già scritti e i job non ricreano righe, gli altri
+stabilimenti non cambiano e la demo ricaricata rispetta le stesse invarianti di una demo nuova. Eccezione
+dichiarata a INV-17/INV-18: le prenotazioni sono cancellate, non portate in un altro stato, quindi non c'è audit né
+evento `booking.*` per prenotazione; resta un solo audit `setup.reset` con i conteggi per tabella (INV-30: il
+registro attività non si tocca).
+Verificata da: `TestAcceptance_SetupReset`, `TestAcceptance_SetupResetInvariants` (`internal/acceptance`),
+`TestResetEstablishment_EveryTableClassified` (`internal/store`), `TestReset_OnlyTheOwnerAsAPerson`
+(`internal/domain/setup`), tutti con tag `integration`, SQLite e PostgreSQL. `everything` è rifiutato (`409`) finché
+un pagamento online è `created`/`pending` o un rimborso è `pending`/`processing`/`failed` (`store.HasPaymentsInFlight`:
+INV-51 e INV-75 non perdono denaro); l'azzeramento scrive `config.map_changed` e `config.pricing_changed` (reason
+`setup_reset`) nella stessa transazione (INV-39), spegne `booking_enabled` e, con `everything`, toglie le stampe non
+ancora fatte e le notifiche su prenotazioni, pagamenti e clienti. Stato: partial (risposte salvate di
+`Idempotency-Key`, per utente e per 24 ore, che puntano a righe cancellate: INV-31).

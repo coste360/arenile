@@ -175,7 +175,10 @@ const (
 	metaPath       = "/api/admin/v1/meta"
 	pairPath       = "/api/device/v1/pair"
 	demoPairPath   = "/api/device/v1/demo-pairing"
-	firstRunPath   = "/api/desktop/v1/first-run"
+	// demoPairingsGlobalPerHour caps the demo pairing codes of all clients
+	// together (ADR 0027).
+	demoPairingsGlobalPerHour = 300
+	firstRunPath              = "/api/desktop/v1/first-run"
 )
 
 // New builds the root handler.
@@ -204,7 +207,15 @@ func New(d Deps) http.Handler {
 	if demoPairings <= 0 {
 		demoPairings = 5
 	}
-	demoPairLimit := auth.NewRateLimiter(d.Clock, demoPairings, time.Hour)
+	// Only a demo instance limits demo pairing: elsewhere the route always
+	// answers 404, never a 429 that would reveal it.
+	demoPairLimit := func(next http.Handler) http.Handler { return next }
+	if d.Devices != nil && d.Devices.DemoPairingEnabled() {
+		demoPairLimit = middleware.RateLimitByIPPrefix(
+			auth.NewRateLimiter(d.Clock, demoPairings, time.Hour),
+			auth.NewRateLimiter(d.Clock, demoPairingsGlobalPerHour, time.Hour),
+		)
+	}
 	sessionTTL := 7 * 24 * time.Hour
 	if d.Auth != nil {
 		sessionTTL = d.Auth.SessionTTL()
@@ -242,7 +253,7 @@ func New(d Deps) http.Handler {
 				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
 				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
 			)),
-			middleware.OnPrefix(demoPairPath, middleware.PublicRateLimit(demoPairLimit, demoPairLimit)),
+			middleware.OnPrefix(demoPairPath, demoPairLimit),
 			middleware.Authenticate(devicedomain.DeviceOnly{Devices: deviceAuthenticator(d)}, d.Log),
 			middleware.RequireAuth([]string{pairPath, demoPairPath}, ""),
 		),

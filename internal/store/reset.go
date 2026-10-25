@@ -2,7 +2,9 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/uptrace/bun"
 )
@@ -15,7 +17,9 @@ import (
 
 // operationTables are the operational data of an establishment, in delete
 // order: what references bookings, payments and cash sessions first, then
-// bookings, holds and cash sessions, customers last.
+// bookings, holds and cash sessions, customers last. The daily ticket
+// counters stay: the numbering of the day goes on and never repeats a paper
+// ticket already handed out (INV-81).
 var operationTables = []string{
 	"waitlist_offers",
 	"waitlist_entries",
@@ -25,7 +29,6 @@ var operationTables = []string{
 	"fiscal_bridge_jobs",
 	"fiscal_documents",
 	"tickets",
-	"daily_ticket_counters",
 	"payment_intents",
 	"checkout_sessions",
 	"customer_credits",
@@ -102,11 +105,39 @@ func HasOperations(ctx context.Context, db bun.IDB, es EstablishmentScope) (bool
 	return false, nil
 }
 
+// HasPaymentsInFlight reports whether money is moving at the payment
+// provider for the establishment: an online payment not yet final
+// (created, pending) or a refund not yet done (pending, processing, failed
+// and to retry). Deleting them would lose a payment or a refund the
+// customer is owed (INV-51, INV-75).
+func HasPaymentsInFlight(ctx context.Context, db bun.IDB, es EstablishmentScope) (bool, error) {
+	if err := es.mustBeValid(); err != nil {
+		return false, err
+	}
+	for _, c := range []struct {
+		table    string
+		statuses []string
+	}{
+		{"payment_intents", []string{"created", "pending"}},
+		{"refund_requests", []string{"pending", "processing", "failed"}},
+	} {
+		ok, err := db.NewSelect().TableExpr(c.table).Where("establishment_id = ?", es.ID()).
+			Where("status IN (?)", bun.In(c.statuses)).Exists(ctx)
+		if err != nil {
+			return false, fmt.Errorf("store: payments in flight (%s): %w", c.table, err)
+		}
+		if ok {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // ResetEstablishment deletes the configuration of the establishment and,
 // with operations, its operational data first. It returns the deleted rows
 // per table (tables with none are omitted). Run it in a transaction: a
 // failure halfway must leave everything in place.
-func ResetEstablishment(ctx context.Context, tx bun.Tx, es EstablishmentScope, operations bool) (map[string]int64, error) {
+func ResetEstablishment(ctx context.Context, tx bun.Tx, es EstablishmentScope, operations bool, now time.Time) (map[string]int64, error) {
 	if err := es.mustBeValid(); err != nil {
 		return nil, err
 	}
@@ -115,14 +146,40 @@ func ResetEstablishment(ctx context.Context, tx bun.Tx, es EstablishmentScope, o
 		tables = append(append([]string{}, operationTables...), configurationTables...)
 	}
 	deleted := map[string]int64{}
+	count := func(t string, res sql.Result) {
+		if n, err := res.RowsAffected(); err == nil && n > 0 {
+			deleted[t] += n
+		}
+	}
 	for _, t := range tables {
 		res, err := tx.NewDelete().TableExpr(t).Where("establishment_id = ?", es.ID()).Exec(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("store: reset establishment (%s): %w", t, err)
 		}
-		if n, err := res.RowsAffected(); err == nil && n > 0 {
-			deleted[t] += n
+		count(t, res)
+	}
+	if operations {
+		// Kept tables with rows about the deleted data: the print jobs not
+		// printed yet (their payload names the holder) and the panel
+		// notifications pointing at a booking, payment or customer.
+		res, err := tx.NewDelete().TableExpr("print_jobs").Where("establishment_id = ?", es.ID()).
+			Where("status IN (?)", bun.In([]string{"queued", "failed"})).Exec(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("store: reset establishment (print_jobs): %w", err)
 		}
+		count("print_jobs", res)
+		res, err = tx.NewDelete().TableExpr("admin_notifications").Where("establishment_id = ?", es.ID()).
+			Where("resource_type IS NOT NULL").Exec(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("store: reset establishment (admin_notifications): %w", err)
+		}
+		count("admin_notifications", res)
+	}
+	// Without a season or a map nothing can be booked: the public page goes
+	// off until the setup is done again.
+	if _, err := tx.NewUpdate().TableExpr("establishments").Set("booking_enabled = ?", false).
+		Set("version = version + 1").Set("updated_at = ?", now).Where("id = ?", es.ID()).Where("booking_enabled = ?", true).Exec(ctx); err != nil {
+		return nil, fmt.Errorf("store: reset establishment (booking off): %w", err)
 	}
 	return deleted, nil
 }

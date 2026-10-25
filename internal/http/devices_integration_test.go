@@ -147,21 +147,37 @@ func withDemoDevices(t *testing.T, e *env, demo *device.DemoPairing) {
 }
 
 // TestHTTPIntegration_DemoPairing covers POST /api/device/v1/demo-pairing
-// (spec 29.2): 404 on a normal instance and on a wrong demo configuration;
-// on a demo instance a code nobody typed, which the app exchanges for a
-// token with the demo user's role; limited per IP.
+// (spec 29.2, ADR 0027): always 404 on a normal instance and on a wrong demo
+// configuration, an owner or manager included; on a demo instance a code
+// nobody typed, which the app exchanges for a token with the demo user's
+// (limited) role; limited per IP.
 func TestHTTPIntegration_DemoPairing(t *testing.T) {
 	const path = "/api/device/v1/demo-pairing"
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := newEnv(t, db)
+		// The demo user: a cashier of Lido A.
+		ctx := context.Background()
+		now := e.clock.Now()
+		cashier := &store.User{ID: store.NewID(), Email: "demo@lido-a.it", PasswordHash: "x", Name: "Demo", Locale: "it", Active: true, CreatedAt: now, UpdatedAt: now}
+		if err := store.InsertUser(ctx, db, cashier); err != nil {
+			t.Fatal(err)
+		}
+		estA := e.estA.ID
+		if err := store.InsertMembership(ctx, db, &store.Membership{
+			ID: store.NewID(), UserID: cashier.ID, OrganizationID: e.estA.OrganizationID, EstablishmentID: &estA,
+			Role: "cashier", CreatedAt: now, UpdatedAt: now,
+		}); err != nil {
+			t.Fatal(err)
+		}
 		for _, tc := range []struct {
 			name string
 			demo *device.DemoPairing
 		}{
 			{"not a demo instance", nil},
+			{"an owner is never handed out", &device.DemoPairing{UserEmail: "owner@lido-a.it", EstablishmentSlug: "lido-a"}},
 			{"unknown establishment", &device.DemoPairing{UserEmail: "owner@lido-a.it", EstablishmentSlug: "nope"}},
 			{"unknown user", &device.DemoPairing{UserEmail: "nobody@lido-a.it", EstablishmentSlug: "lido-a"}},
-			{"user without a role there", &device.DemoPairing{UserEmail: "owner@lido-a.it", EstablishmentSlug: "lido-b"}},
+			{"user without a role there", &device.DemoPairing{UserEmail: "demo@lido-a.it", EstablishmentSlug: "lido-b"}},
 		} {
 			withDemoDevices(t, e, tc.demo)
 			resp, body := e.client().do(http.MethodPost, path, nil, nil)
@@ -170,7 +186,15 @@ func TestHTTPIntegration_DemoPairing(t *testing.T) {
 			}
 		}
 
-		withDemoDevices(t, e, &device.DemoPairing{UserEmail: "owner@lido-a.it", EstablishmentSlug: "lido-a"})
+		// A normal instance answers 404 every time, never 429.
+		withDemoDevices(t, e, nil)
+		for range 4 {
+			if resp, body := e.client().do(http.MethodPost, path, nil, nil); resp.StatusCode != 404 {
+				t.Fatalf("normal instance: %d %v", resp.StatusCode, body)
+			}
+		}
+
+		withDemoDevices(t, e, &device.DemoPairing{UserEmail: "demo@lido-a.it", EstablishmentSlug: "lido-a"})
 		app := e.client()
 		resp, body := app.do(http.MethodPost, path, nil, nil)
 		if resp.StatusCode != 201 || resp.Header.Get("Cache-Control") != "no-store" ||
@@ -179,7 +203,7 @@ func TestHTTPIntegration_DemoPairing(t *testing.T) {
 		}
 		pair := map[string]any{"code": body["code"], "name": "iPhone", "platform": "ios", "kind": "mobile"}
 		resp, body = app.do(http.MethodPost, "/api/device/v1/pair", pair, nil)
-		if resp.StatusCode != 201 || body["device"].(map[string]any)["role"] != "owner" || body["establishment_id"] != e.estA.ID {
+		if resp.StatusCode != 201 || body["device"].(map[string]any)["role"] != "cashier" || body["establishment_id"] != e.estA.ID {
 			t.Fatalf("pair with the demo code: %d %v", resp.StatusCode, body)
 		}
 

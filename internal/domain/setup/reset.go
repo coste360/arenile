@@ -11,6 +11,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -30,6 +31,11 @@ const (
 // ErrHasOperations refuses ResetConfiguration on an establishment with
 // operational data (409 conflict).
 var ErrHasOperations = errors.New("setup: establishment has operational data")
+
+// ErrPaymentsInFlight refuses ResetEverything while an online payment or a
+// refund is still in progress at the provider (409 conflict): deleting it
+// would lose money owed to the customer (INV-51, INV-75).
+var ErrPaymentsInFlight = errors.New("setup: online payments or refunds in progress")
 
 // ResetInput is a reset request: the scope and the establishment name typed
 // by the owner to confirm.
@@ -73,6 +79,15 @@ func (s *Service) Reset(ctx context.Context, p *auth.Principal, establishmentID 
 		if !strings.EqualFold(strings.TrimSpace(in.ConfirmName), strings.TrimSpace(e.Name)) {
 			return configerr.Invalid("confirm_name", "Scrivi il nome dello stabilimento esattamente come appare.")
 		}
+		if in.Scope == ResetEverything {
+			moving, err := store.HasPaymentsInFlight(ctx, tx, es)
+			if err != nil {
+				return err
+			}
+			if moving {
+				return ErrPaymentsInFlight
+			}
+		}
 		if in.Scope == ResetConfiguration {
 			busy, err := store.HasOperations(ctx, tx, es)
 			if err != nil {
@@ -82,11 +97,21 @@ func (s *Service) Reset(ctx context.Context, p *auth.Principal, establishmentID 
 				return ErrHasOperations
 			}
 		}
-		res.Deleted, err = store.ResetEstablishment(ctx, tx, es, in.Scope == ResetEverything)
+		res.Deleted, err = store.ResetEstablishment(ctx, tx, es, in.Scope == ResetEverything, s.d.Clock.Now())
 		if err != nil {
 			return err
 		}
-		diff := map[string]any{"scope": string(in.Scope)}
+		// The map and the price list are gone: one config event of each kind
+		// (ADR 0008, INV-39) for the panels and the webhook subscribers.
+		change := event.ConfigChange{
+			Entity: event.EntitySetup, EntityID: es.ID(), Change: event.ChangeDeleted, Reason: "setup_reset",
+		}
+		for _, typ := range []string{event.ConfigMapChanged, event.ConfigPricingChanged} {
+			if _, err := s.d.Outbox.Write(ctx, tx, typ, es.ID(), 1, change); err != nil {
+				return err
+			}
+		}
+		diff := map[string]any{"scope": string(in.Scope), "booking_enabled": false}
 		for t, n := range res.Deleted {
 			diff[t] = n
 		}

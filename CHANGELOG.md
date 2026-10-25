@@ -10,14 +10,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - Configurazione guidata, **Ricomincia da zero** (solo il titolare, scrivendo il nome dello stabilimento):
   **Ricomincia la configurazione** cancella stagioni, mappe, zone, catalogo, prezzi e policy e riparte dal primo
   passo, finché non ci sono prenotazioni o incassi; **Azzera lo stabilimento** cancella anche prenotazioni,
-  abbonamenti, clienti, incassi, cassa e biglietti, con una seconda conferma. Restano profilo, utenti, pagamenti
-  online, email, dispositivi, casse, stampanti e registro attività. Nuovo `POST …/setup/reset` e
+  abbonamenti, clienti, incassi, cassa e biglietti, con una seconda conferma, ma non mentre un pagamento online o
+  un rimborso è in corso. Entrambi spengono la pagina pubblica. Restano profilo, utenti, pagamenti online, email,
+  dispositivi, casse, stampanti, numerazione dei biglietti del giorno e registro attività. Nuovo `POST …/setup/reset` e
   `has_operations` nello stato della configurazione.
 - Istanze dimostrative: `POST /api/device/v1/demo-pairing` restituisce un codice di abbinamento per l'utente
-  dimostrativo, senza login e con un limite di 5 richieste all'ora per IP. Serve al pulsante **Prova la demo**
+  dimostrativo (solo con ruolo di cassiere, staff di spiaggia o sola lettura), senza login, con un limite di 5
+  richieste all'ora per rete del client e 300 in totale. Serve al pulsante **Prova la demo**
   dell'app mobile, che così si prova senza avere un server. Si attiva con `ARENILE_DEMO_PAIRING_USER` e
-  `ARENILE_DEMO_PAIRING_ESTABLISHMENT`; sulle istanze normali risponde `404`. Il dispositivo ha il ruolo
-  dell'utente dimostrativo.
+  `ARENILE_DEMO_PAIRING_ESTABLISHMENT`; sulle istanze normali risponde sempre `404`.
 
 ### Modificato
 - `arenile seed demo`: la stagione dimostrativa è sempre quella dell'anno in corso ed è prenotabile tutti i giorni

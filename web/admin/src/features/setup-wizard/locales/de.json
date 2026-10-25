@@ -126,14 +126,14 @@
       "action": "Konfiguration neu beginnen",
       "blocked": "Es gibt Buchungen, Zahlungen oder andere Betriebsdaten: Um neu zu beginnen, setzen Sie den Betrieb zurück.",
       "title": "Konfiguration neu beginnen?",
-      "deletes": "Löscht Saisons und Tarifzeiträume, Schließtage, Pläne und Plätze, Zonen und Pools, Katalog, Preise, Rabattcodes, Vereinbarungen, Regeln und Eintrittskarten.",
+      "deletes": "Löscht Saisons und Tarifzeiträume, Schließtage, Pläne und Plätze, Zonen und Pools, Katalog, Preise, Rabattcodes, Vereinbarungen, Regeln und Eintrittskarten und schaltet die öffentliche Seite bis zur neuen Einrichtung ab.",
       "confirm": "Konfiguration löschen",
       "done": "Konfiguration gelöscht: Sie können mit dem ersten Schritt neu beginnen."
     },
     "everything": {
       "action": "Betrieb zurücksetzen",
       "title": "Betrieb zurücksetzen?",
-      "deletes": "Löscht die gesamte Konfiguration sowie Buchungen, Saisonabos, Kunden, Zahlungen, Kassensitzungen, Tickets, Steuerbelege, Guthaben, Warteliste und Verlängerungen.",
+      "deletes": "Löscht die gesamte Konfiguration sowie Buchungen, Saisonabos, Kunden, Zahlungen, Kassensitzungen, Tickets, Steuerbelege, Guthaben, Warteliste und Verlängerungen und schaltet die öffentliche Seite bis zur neuen Einrichtung ab. Nur möglich, solange keine Online-Zahlung oder Erstattung läuft.",
       "ack": "Mir ist klar, dass Buchungen, Kunden und Zahlungen endgültig gelöscht werden.",
       "confirm": "Betrieb zurücksetzen",
       "done": "Betrieb zurückgesetzt: Sie können mit dem ersten Schritt neu beginnen."

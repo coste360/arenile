@@ -56,6 +56,23 @@ func TestAcceptance_SetupReset(t *testing.T) {
 			return int64(n)
 		}
 
+		// 0. An online payment still pending at the provider blocks "everything".
+		now := e.clock.Now()
+		intent := &store.PaymentIntent{
+			ID: store.NewID(), EstablishmentID: e.estID, Provider: "stripe", Mode: "live", Kind: "payment",
+			ExternalID: "cs_reset_" + store.NewID(), Status: "pending", Amount: 1000, Currency: "EUR", Attempt: 1,
+			RawEventIDs: []string{}, CreatedAt: now, UpdatedAt: now,
+		}
+		if _, err := e.db.NewInsert().Model(intent).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if r := reset(api.SetupResetRequestScopeEverything, est.Name); r.Status != http.StatusConflict || r.Problem.Type != "conflict" {
+			t.Fatalf("reset with a payment in flight: %d %s", r.Status, r.Body)
+		}
+		if _, err := e.db.NewUpdate().Model(intent).Set("status = ?", "expired").WherePK().Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+
 		// 1. Operational data: configuration only is refused; a wrong name too.
 		if st := status(); !st.HasOperations || !st.HasSeason {
 			t.Fatalf("status before: %+v", st)
@@ -96,6 +113,17 @@ func TestAcceptance_SetupReset(t *testing.T) {
 		}
 		if n, err := e.db.NewSelect().TableExpr("memberships").Where("user_id = ?", owner.ID).Count(ctx); err != nil || n == 0 {
 			t.Fatalf("team deleted: %d %v", n, err)
+		}
+		// The public page goes off and the map and price list changes are announced (INV-39).
+		if after, err := store.GetEstablishment(ctx, e.db, e.es); err != nil || after.BookingEnabled {
+			t.Fatalf("booking still enabled: %v", err)
+		}
+		for _, typ := range []string{"config.map_changed", "config.pricing_changed"} {
+			n, err := e.db.NewSelect().TableExpr("outbox_events").Where("establishment_id = ?", e.estID).
+				Where("type = ?", typ).Where("CAST(payload AS TEXT) LIKE ?", "%setup_reset%").Count(ctx)
+			if err != nil || n != 1 {
+				t.Fatalf("%s events: %d %v", typ, n, err)
+			}
 		}
 		audited, err := e.db.NewSelect().TableExpr("audit_log").Where("establishment_id = ?", e.estID).Where("action = ?", "setup.reset").Count(ctx)
 		if err != nil || audited != 1 {
