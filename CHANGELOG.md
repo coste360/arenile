@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-10-25
+
 ### Aggiunto
 - Configurazione guidata, **Ricomincia da zero** (solo il titolare, scrivendo il nome dello stabilimento):
   **Ricomincia la configurazione** cancella stagioni, mappe, zone, catalogo, prezzi e policy e riparte dal primo
@@ -935,7 +937,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.3...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.4...main
+[1.0.4]: https://github.com/coste360/arenile/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/coste360/arenile/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/coste360/arenile/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/coste360/arenile/compare/v1.0.0...v1.0.1
