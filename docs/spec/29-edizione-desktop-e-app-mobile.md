@@ -87,7 +87,7 @@ Al primo avvio, e in seguito dalle impostazioni, il gestore sceglie tra **Locale
 **Funzioni (prima versione)**
 - Vista operativa della mappa del giorno con colori per stato (sezione 11.3) e ricerca.
 - Check-in con scansione del QR della prenotazione, incasso rapido in contanti, rilascio giorno degli abbonati, note.
-- Funzionamento offline con le stesse regole del pannello (sezione 21.2): consultazione in cache, check-in, note e incassi in contanti messi in coda con chiavi di idempotenza; creazione e spostamento di prenotazioni solo online.
+- Funzionamento offline con le stesse regole del pannello (sezione 21.2): consultazione in cache, check-in, note e incassi in contanti messi in coda con chiavi di idempotenza; creazione e spostamento di prenotazioni solo online. Anche i rilasci degli abbonati, i blocchi delle postazioni e gli ingressi al varco accettano `Idempotency-Key`: una ripetizione con la stessa chiave, entro 24 ore e per lo stesso utente, restituisce la risposta originale senza ripetere l'effetto.
 - Notifiche al gestore (sezione 19) se le push sono attive.
 
 **Contratto e compatibilità**
