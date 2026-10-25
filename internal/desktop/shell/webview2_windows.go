@@ -3,6 +3,7 @@
 package shell
 
 import (
+	"runtime"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -94,9 +95,12 @@ func (o *comObject) release() { o.call(vtRelease) }
 
 // eventHandler is a COM event handler implemented in Go, one per
 // registration: it carries the controller of its window (no process-wide
-// state), lives in the linkHooks that registered it (heap memory, which
-// the Go GC never moves, kept reachable until remove) and does not count
-// references, WebView2 releasing it no later than remove_*.
+// state), lives in the linkHooks that registered it and does not count
+// references, WebView2 releasing it no later than remove_*. WebView2 keeps
+// its address, so linkHooks pins it (runtime.Pinner) from add_* until
+// after remove_*: the object cannot be moved or freed while registered,
+// whatever the garbage collector does. The vtables and IIDs it points to
+// are package variables, outside the Go heap.
 type eventHandler struct {
 	vtbl *eventHandlerVtbl
 	iid  *windows.GUID
@@ -197,6 +201,9 @@ type linkHooks struct {
 	nav, newWin     *eventHandler
 	navToken, nwTok int64
 	navOK, newWinOK bool
+	// pin holds nav, newWin and their Controller (so the pinned handlers
+	// contain no unpinned Go pointer) while they are registered.
+	pin runtime.Pinner
 }
 
 // installLinkHooks registers the handlers on the ICoreWebView2 of
@@ -217,9 +224,13 @@ func installLinkHooks(controller unsafe.Pointer, c *Controller) *linkHooks {
 		nav:     &eventHandler{vtbl: &navStartingVtbl, iid: &iidNavigationStartingHandler, ctl: c},
 		newWin:  &eventHandler{vtbl: &newWindowVtbl, iid: &iidNewWindowRequestedHandler, ctl: c},
 	}
+	h.pin.Pin(h.nav)
+	h.pin.Pin(h.newWin)
+	h.pin.Pin(c)
 	h.navOK = wv.callPtr2(vtWebViewAddNavigationStarting, unsafe.Pointer(h.nav), unsafe.Pointer(&h.navToken)) == sOK
 	h.newWinOK = wv.callPtr2(vtWebViewAddNewWindowRequested, unsafe.Pointer(h.newWin), unsafe.Pointer(&h.nwTok)) == sOK
 	if !h.navOK && !h.newWinOK {
+		h.pin.Unpin()
 		wv.release()
 		return nil
 	}
@@ -232,11 +243,16 @@ func (h *linkHooks) remove() {
 	if h == nil {
 		return
 	}
+	// EventRegistrationToken is a struct of one int64 passed by value: one
+	// register-sized argument on amd64 and arm64, the only Windows targets
+	// built (.github/workflows/desktop.yml). On 386 it would take two
+	// stack slots and this uintptr would truncate it.
 	if h.navOK {
 		h.webview.call(vtWebViewRemoveNavigationStarting, uintptr(h.navToken))
 	}
 	if h.newWinOK {
 		h.webview.call(vtWebViewRemoveNewWindowRequested, uintptr(h.nwTok))
 	}
+	h.pin.Unpin()
 	h.webview.release()
 }
