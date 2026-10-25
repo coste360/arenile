@@ -17,6 +17,10 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   date): con un periodo già impostato il primo clic spostava la data finale. Ora il primo clic sceglie sempre
   l'inizio e il secondo la fine; in alto ci sono i campi **Dal** e **Al** per scrivere le date a mano
   (gg/mm/aaaa).
+- Prezzo mancante (vendita rapida, prenotazioni, simulatore): il messaggio mostrava il testo tecnico interno
+  ("pricingconfig: simulate: pricing: no price for pack…"). Ora dice in italiano cosa manca, per esempio
+  "Nessun prezzo per il pack "base" nella categoria di prezzo "row5" il 25/10/2026, giornata intera: aggiungi una
+  regola base o un prezzo fisso in Prezzi."
 
 ## [1.0.3] - 2026-10-25
 

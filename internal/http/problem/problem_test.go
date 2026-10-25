@@ -159,3 +159,41 @@ func TestError_ConfigExtensions(t *testing.T) {
 		})
 	}
 }
+
+func TestError_NoPriceDetail(t *testing.T) {
+	day := calendar.MustParse("2026-10-25")
+	tests := []struct {
+		name string
+		err  error
+		want string // "" = no detail member
+	}{
+		{
+			"pack, wrapped by the service",
+			fmt.Errorf("pricingconfig: simulate: %w", &pricing.NoPriceError{Target: pricing.TargetPack, ItemCode: "base", PriceCategory: "row5", Date: day, Slots: calendar.SlotsFull}),
+			`Nessun prezzo per il pack "base" nella categoria di prezzo "row5" il 25/10/2026, giornata intera: aggiungi una regola base o un prezzo fisso in Prezzi.`,
+		},
+		{
+			"extra in the morning, no category",
+			&pricing.NoPriceError{Target: pricing.TargetExtra, ItemCode: "lettino", Date: day, Slots: calendar.SlotsAM},
+			`Nessun prezzo per l'extra "lettino" il 25/10/2026, mattina: aggiungi una regola base o un prezzo fisso in Prezzi.`,
+		},
+		{"bare sentinel", fmt.Errorf("x: %w", pricing.ErrNoPrice), ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/api/admin/v1/x", nil)
+			w := httptest.NewRecorder()
+			Error(w, r, nil, tt.err)
+			var body struct {
+				Type   string `json:"type"`
+				Detail string `json:"detail"`
+			}
+			if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+				t.Fatal(err)
+			}
+			if w.Code != http.StatusUnprocessableEntity || body.Type != "no_price" || body.Detail != tt.want {
+				t.Fatalf("got %d %q %q, want 422 no_price %q", w.Code, body.Type, body.Detail, tt.want)
+			}
+		})
+	}
+}
