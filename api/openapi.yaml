@@ -12423,7 +12423,11 @@ components:
         mentre la prima è ancora in corso `409 idempotency_in_progress`
         (da ritentare). La chiave vale per l'utente (sessione, chiave API o
         token del dispositivo) e per 24 ore: una coda offline più vecchia va
-        ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate.
+        ricontrollata prima dell'invio. Le risposte 5xx non sono memorizzate
+        (si può ritentare con la stessa chiave); ogni altra risposta, compresi
+        i rifiuti 4xx (validazione, conflitto, permesso), è memorizzata ed è
+        definitiva per quella chiave. Quando l'utente corregge la causa e
+        invia di nuovo, il client deve usare una chiave nuova.
       schema:
         type: string
         minLength: 8
