@@ -5,6 +5,7 @@ import {
   baseRoutes,
   callsTo,
   EST_ID,
+  establishment,
   json,
   list,
   renderApp,
@@ -444,5 +445,28 @@ describe('BookingDetailPage', () => {
     expect(screen.queryByRole('button', { name: 'Cancella prenotazione' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Registra incasso' })).toBeNull();
     expect(screen.queryByLabelText('Aggiungi una nota')).toBeNull();
+  });
+});
+
+describe('BookingDetailPage in the establishment time zone', () => {
+  // 12:00 UTC on 13 July is already 14 July, the first day of the stay, at
+  // an establishment in UTC+14 (browsers below UTC+12 are still on 13 July).
+  beforeAll(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-07-13T12:00:00Z'));
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
+  it('offers the check-in on the establishment day, not the browser day', async () => {
+    const detail = bookingDetail();
+    renderApp(`/e/${EST_ID}/prenotazioni/${detail.id}`, {
+      ...baseRoutes('cashier', establishment({ timezone: 'Pacific/Kiritimati' })),
+      ...inventoryRoutes(),
+      [`GET ${estPath(`/bookings/${detail.id}`)}`]: () => json(200, detail),
+    });
+    expect(await screen.findByRole('heading', { name: /AR-7K3Q9/, level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Check-in' })).toBeInTheDocument();
   });
 });

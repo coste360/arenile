@@ -291,7 +291,7 @@ describe('OperationalMapPage', () => {
 
 describe('OperationalMapPage in the establishment time zone', () => {
   // 12:00 UTC on 13 July is already 14 July at the establishment (UTC+14),
-  // whatever the browser's zone: the map of 14 July is today and offers the
+  // while browsers below UTC+12 are still on 13 July: the map of 14 July is today and offers the
   // check-in.
   beforeAll(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -309,6 +309,6 @@ describe('OperationalMapPage in the establishment time zone', () => {
     });
     await user.click(await screen.findByRole('button', { name: /Postazione A2/ }));
     const sheet = await screen.findByRole('dialog');
-    expect(within(sheet).getByRole('button', { name: 'Check-in' })).toBeInTheDocument();
+    expect(await within(sheet).findByRole('button', { name: 'Check-in' })).toBeInTheDocument();
   });
 });
