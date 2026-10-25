@@ -677,3 +677,91 @@ func TestConcurrency_PushDeliveriesSingleSend(t *testing.T) {
 		}
 	})
 }
+
+// TestPushService_SendTimeRecheck: what changed between queueing and
+// sending is honoured (ADR 0027 point 7, INV-100): a role that lost the
+// topic's permission, a device idle past its expiry and a revoked device
+// receive nothing, and the relay is never contacted for them.
+func TestPushService_SendTimeRecheck(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := newFixture(t, db)
+		f.enable(t, allEvents)
+		app := f.pairedApp(t, f.manager, store.DevicePlatformAndroid)
+		f.register(t, app, "fcm-manager-0123456789abcdef", store.PushTopicNewOnlineBooking, store.PushTopicPaymentFailed)
+		paymentFailed := func() ext.Event {
+			data, _ := json.Marshal(event.PaymentChange{PaymentID: store.NewID(), Provider: "stripe", Amount: 4500, Status: "failed"})
+			return ext.Event{ID: store.NewID(), Type: event.PaymentFailed, EstablishmentID: f.estA.ID, Data: data}
+		}
+		last := func() store.PushDelivery {
+			t.Helper()
+			ds := f.deliveries(t)
+			if len(ds) == 0 {
+				t.Fatal("no deliveries")
+			}
+			return ds[len(ds)-1]
+		}
+		notEligible := func(what string) {
+			t.Helper()
+			if _, err := f.svc.DeliverDue(f.ctx); err != nil {
+				t.Fatal(err)
+			}
+			d := last()
+			if d.Status != store.PushDeliveryExpired || d.Attempts != 0 || d.LastError == nil || *d.LastError != "recipient not eligible" {
+				t.Fatalf("%s: %+v", what, d)
+			}
+			if n := len(f.relay.notifications()); n != 0 {
+				t.Fatalf("%s: relay contacted %d times", what, n)
+			}
+		}
+
+		// Role downgraded after queueing: a cashier has no refunds.issue.
+		if err := f.svc.HandleEvent(f.ctx, paymentFailed()); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := db.NewUpdate().TableExpr("memberships").Set("role = ?", string(auth.RoleCashier)).
+			Where("user_id = ?", f.manager.UserID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		notEligible("role downgraded")
+		if _, err := db.NewUpdate().TableExpr("memberships").Set("role = ?", string(auth.RoleManager)).
+			Where("user_id = ?", f.manager.UserID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+
+		// Device idle past its expiry after queueing.
+		if err := f.svc.HandleEvent(f.ctx, bookingEvent(t, f.estA.ID, event.BookingConfirmed, store.ChannelOnline)); err != nil {
+			t.Fatal(err)
+		}
+		old := f.clock.Now().Add(-device.IdleExpiry - time.Hour)
+		if _, err := db.NewUpdate().TableExpr("devices").Set("created_at = ?", old).Set("last_used_at = ?", old).
+			Where("id = ?", app.DeviceID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		notEligible("device idle")
+		now := f.clock.Now()
+		if _, err := db.NewUpdate().TableExpr("devices").Set("last_used_at = ?", now).Where("id = ?", app.DeviceID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+
+		// Device revoked after queueing: the registration and its queued
+		// deliveries go with the revocation.
+		if err := f.svc.HandleEvent(f.ctx, bookingEvent(t, f.estA.ID, event.BookingConfirmed, store.ChannelOnline)); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.devices.Revoke(f.ctx, f.manager, f.estA.ID, app.DeviceID); err != nil {
+			t.Fatal(err)
+		}
+		if n := count(t, db, "push_registrations", "device_id = ?", app.DeviceID); n != 0 {
+			t.Fatalf("registration kept after revocation: %d", n)
+		}
+		if n := count(t, db, "push_deliveries", "status = ?", store.PushDeliveryQueued); n != 0 {
+			t.Fatalf("queued deliveries kept after revocation: %d", n)
+		}
+		if _, err := f.svc.DeliverDue(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if n := len(f.relay.notifications()); n != 0 {
+			t.Fatalf("relay contacted %d times for a revoked device", n)
+		}
+	})
+}

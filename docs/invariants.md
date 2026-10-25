@@ -960,7 +960,8 @@ dispositivo. Un evento riconsegnato non accoda una seconda notifica e due worker
 consegna (lease condizionale); la consegna al relay è almeno una volta (risposta persa, arresto durante l'invio) e il
 relay deduplica sull'`id` della consegna.
 Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
-`TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestConcurrency_PushDeliveriesSingleSend`
+`TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestPushService_SendTimeRecheck`,
+`TestConcurrency_PushDeliveriesSingleSend`
 (`internal/domain/push`, tag `integration`), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`
 (`internal/app`), `TestBuildPayload_NoPersonalData`, `TestKey_NeverPrintsSecret` (`internal/pushrelay`),
 `TestBuild_PushNotifications` (`internal/domain/meta`). Stato: implemented.
