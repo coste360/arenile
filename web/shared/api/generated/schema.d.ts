@@ -8704,7 +8704,7 @@ export interface components {
             fiscal_bridge: boolean;
             /** @description Flusso SSE `GET /api/admin/v1/stream` disponibile. */
             realtime: boolean;
-            /** @description Notifiche push tramite relay configurate (M7). */
+            /** @description Notifiche push non disponibili in questa edizione (spec 29.2), sempre false. */
             push_notifications: boolean;
         };
         /** @enum {string} */

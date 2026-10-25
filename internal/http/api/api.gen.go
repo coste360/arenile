@@ -6870,7 +6870,7 @@ type MetaCapabilities struct {
 	OnlinePayments   bool     `json:"online_payments"`
 	PaymentProviders []string `json:"payment_providers"`
 
-	// PushNotifications Notifiche push tramite relay configurate (M7).
+	// PushNotifications Notifiche push non disponibili in questa edizione (spec 29.2), sempre false.
 	PushNotifications bool `json:"push_notifications"`
 
 	// Realtime Flusso SSE `GET /api/admin/v1/stream` disponibile.
