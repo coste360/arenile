@@ -178,7 +178,7 @@ Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (
 **INV-26 — Isolamento per stabilimento.**
 Nessuna query operativa viene eseguita senza `establishment_id` preso dal contesto autenticato; un
 utente o una chiave API di uno stabilimento non legge né modifica dati di un altro.
-Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Per la vendita giornaliera (ADR 0020) `TestDailySaleHTTP_CrossTenantAndIfMatch` (`internal/http/admin`, tag `integration`: biglietti, codice/QR, stampa, annullamento, assegnazione e varco di A da un'altra organizzazione → 404; postazione di un altro stabilimento nella vendita o nello spostamento → 400). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
+Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Per le notifiche push (ADR 0027) `TestPushService_CrossTenant` (`internal/domain/push`, tag `integration`). Per la vendita giornaliera (ADR 0020) `TestDailySaleHTTP_CrossTenantAndIfMatch` (`internal/http/admin`, tag `integration`: biglietti, codice/QR, stampa, annullamento, assegnazione e varco di A da un'altra organizzazione → 404; postazione di un altro stabilimento nella vendita o nello spostamento → 400). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
 
 **INV-27 — Permessi verificati nel dominio.**
 Ogni operazione di amministrazione verifica il permesso del ruolo (spec 16.1) nel servizio di dominio,
@@ -961,7 +961,10 @@ consegna (lease condizionale); la consegna al relay è almeno una volta (rispost
 relay deduplica sull'`id` della consegna.
 Verificata da: `TestPushService_RegisterConsentAndValidation`, `TestPushService_RelayNotConfigured`,
 `TestPushService_SinkAndDeliver`, `TestPushService_DeliveryOutcomes`, `TestPushService_SendTimeRecheck`,
-`TestConcurrency_PushDeliveriesSingleSend`
-(`internal/domain/push`, tag `integration`), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`
+`TestConcurrency_PushDeliveriesSingleSend`, `TestConcurrency_PushSinkRedelivery` (100 consegne parallele dello stesso
+evento: una notifica per registrazione), `TestPushService_CrashedWorkerLeaseReclaimed` (worker fermo durante l'invio:
+nessun altro invia finché il lease non scade, poi la stessa consegna parte una volta con lo stesso `id`),
+`TestPushService_CrossTenant` (evento, registrazioni, revoca e funzioni del repository di un altro stabilimento)
+(`internal/domain/push`, tag `integration`, SQLite e PostgreSQL), `TestPush_EndToEndThroughFakeRelay`, `TestPush_NoRelayKeyNoNetwork`
 (`internal/app`), `TestBuildPayload_NoPersonalData`, `TestKey_NeverPrintsSecret` (`internal/pushrelay`),
 `TestBuild_PushNotifications` (`internal/domain/meta`). Stato: implemented.
