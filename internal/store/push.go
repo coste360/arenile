@@ -11,8 +11,9 @@ import (
 // Repository of the push notifications (owner: internal/domain/push,
 // migration 00013, ADR 0027). Operational functions take an
 // EstablishmentScope; the deliverer's queue functions (DuePushDeliveries,
-// ClaimPushDelivery, Finish*, DeleteClosedPushDeliveries) are system
-// operations of the job runner that act on one row by id.
+// ClaimPushDelivery, Finish*, DeleteClosedPushDeliveries) and the retention
+// of registrations (ListPushRecipientStates, DeleteStalePushRegistration)
+// are system operations of the job runner that act on one row by id.
 
 // ---- settings ---------------------------------------------------------------------
 
@@ -162,6 +163,50 @@ func GetPushRecipient(ctx context.Context, db bun.IDB, es EstablishmentScope, re
 	r := new(PushRecipient)
 	err := pushRecipientQuery(db, es).Where("pr.id = ?", registrationID).Limit(1).Scan(ctx, r)
 	return r, wrapRead("get push recipient", err)
+}
+
+// PushRecipientState is a registration (never its token) with the state of
+// its device and user, across establishments (retention).
+type PushRecipientState struct {
+	ID               string     `bun:"id"`
+	UpdatedAt        time.Time  `bun:"updated_at"`
+	DeviceRevokedAt  *time.Time `bun:"device_revoked_at"`
+	DeviceLastUsedAt *time.Time `bun:"device_last_used_at"`
+	DeviceCreatedAt  time.Time  `bun:"device_created_at"`
+	UserActive       bool       `bun:"user_active"`
+}
+
+// ListPushRecipientStates returns every registration of every
+// establishment with the state of its device and user, so the retention job
+// can apply the device and user rules of the domain (system operation of
+// the job runner; no token is read).
+func ListPushRecipientStates(ctx context.Context, db bun.IDB) ([]PushRecipientState, error) {
+	var out []PushRecipientState
+	err := db.NewSelect().Model((*PushRegistration)(nil)).
+		ColumnExpr("pr.id, pr.updated_at").
+		ColumnExpr("dev.revoked_at AS device_revoked_at, dev.last_used_at AS device_last_used_at, dev.created_at AS device_created_at").
+		ColumnExpr("u.active AS user_active").
+		Join("JOIN devices AS dev ON dev.id = pr.device_id AND dev.establishment_id = pr.establishment_id").
+		Join("JOIN users AS u ON u.id = pr.user_id").
+		OrderExpr("pr.id ASC").Scan(ctx, &out)
+	if err != nil && !isNoRows(err) {
+		return nil, fmt.Errorf("store: list push recipient states: %w", err)
+	}
+	return out, nil
+}
+
+// DeleteStalePushRegistration deletes a registration by id (its deliveries
+// cascade) only if it was not updated since updatedAt, so a registration
+// renewed after the retention job read it survives; it reports whether it
+// deleted (system operation of the job runner).
+func DeleteStalePushRegistration(ctx context.Context, db bun.IDB, id string, updatedAt time.Time) (bool, error) {
+	res, err := db.NewDelete().Model((*PushRegistration)(nil)).
+		Where("id = ?", id).Where("updated_at = ?", updatedAt).Exec(ctx)
+	if err != nil {
+		return false, wrapWrite("delete stale push registration", err)
+	}
+	n, _ := res.RowsAffected()
+	return n == 1, nil
 }
 
 // ---- deliveries ---------------------------------------------------------------------

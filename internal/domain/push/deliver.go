@@ -178,17 +178,50 @@ func (s *Service) deliver(ctx context.Context, due store.DuePushDelivery) (bool,
 	return true, nil
 }
 
-// Cleanup deletes the deliveries closed for longer than Retention.
+// Cleanup deletes the deliveries closed for longer than Retention and the
+// registrations that can never receive a notification again (data
+// minimisation, spec 23): device revoked or expired for inactivity
+// (IdleExpired), user deactivated. Their encrypted token is not kept.
 func (s *Service) Cleanup(ctx context.Context) error {
 	if s.d.DB == nil {
 		return nil
 	}
-	n, err := store.DeleteClosedPushDeliveries(ctx, s.d.DB, s.now().Add(-Retention))
+	now := s.now()
+	n, err := store.DeleteClosedPushDeliveries(ctx, s.d.DB, now.Add(-Retention))
 	if err != nil {
 		return fmt.Errorf("push: retention: %w", err)
 	}
 	if n > 0 {
 		s.d.Log.InfoContext(ctx, "push: closed deliveries deleted", slog.Int64("count", n))
 	}
+	states, err := store.ListPushRecipientStates(ctx, s.d.DB)
+	if err != nil {
+		return fmt.Errorf("push: retention: %w", err)
+	}
+	var deleted int64
+	for _, r := range states {
+		if !s.stale(r, now) {
+			continue
+		}
+		ok, err := store.DeleteStalePushRegistration(ctx, s.d.DB, r.ID, r.UpdatedAt)
+		if err != nil {
+			return fmt.Errorf("push: retention: %w", err)
+		}
+		if ok {
+			deleted++
+		}
+	}
+	if deleted > 0 {
+		s.d.Log.InfoContext(ctx, "push: stale registrations deleted", slog.Int64("count", deleted))
+	}
 	return nil
+}
+
+// stale reports whether a registration can never be used again: device
+// revoked or idle past its expiry, or user deactivated.
+func (s *Service) stale(r store.PushRecipientState, now time.Time) bool {
+	if r.DeviceRevokedAt != nil || !r.UserActive {
+		return true
+	}
+	return s.d.IdleExpired != nil && s.d.IdleExpired(&store.Device{CreatedAt: r.DeviceCreatedAt, LastUsedAt: r.DeviceLastUsedAt}, now)
 }

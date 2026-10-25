@@ -817,3 +817,69 @@ func TestPushService_ReRegisterKeepsRegistrationID(t *testing.T) {
 		}
 	})
 }
+
+// TestPushService_RetentionDeletesStaleRegistrations: the push.retention
+// job deletes the registrations (encrypted token and queued deliveries)
+// whose device is revoked or expired for inactivity or whose user is
+// deactivated, in every establishment, and keeps the usable ones
+// (data minimisation, spec 23, INV-100).
+func TestPushService_RetentionDeletesStaleRegistrations(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := newFixture(t, db)
+		f.enable(t, allEvents)
+		active := f.pairedApp(t, f.manager, store.DevicePlatformAndroid)
+		revoked := f.pairedApp(t, f.manager, store.DevicePlatformIOS)
+		idle := f.pairedApp(t, f.cashier, store.DevicePlatformAndroid)
+		other := f.member(t, "bagnino@lido-a.it", f.owner.Grants[0].OrganizationID, &f.estA.ID, auth.RoleManager)
+		deactivated := f.pairedApp(t, other, store.DevicePlatformIOS)
+		f.register(t, active, "fcm-active-0123456789abcdef", store.PushTopicNewOnlineBooking)
+		f.register(t, revoked, "apns-revoked-0123456789abcdef", store.PushTopicNewOnlineBooking)
+		f.register(t, idle, "fcm-idle-0123456789abcdef", store.PushTopicNewOnlineBooking)
+		f.register(t, deactivated, "apns-deactivated-0123456789abcdef", store.PushTopicNewOnlineBooking)
+		if err := f.svc.HandleEvent(f.ctx, bookingEvent(t, f.estA.ID, event.BookingConfirmed, store.ChannelOnline)); err != nil {
+			t.Fatal(err)
+		}
+		if n := len(f.deliveries(t)); n != 4 {
+			t.Fatalf("deliveries %d, want 4", n)
+		}
+
+		// Nothing is stale yet.
+		if err := f.svc.Cleanup(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if n := count(t, db, "push_registrations", "1 = 1"); n != 4 {
+			t.Fatalf("registrations after a clean run %d", n)
+		}
+
+		// A revocation recorded without the push cleanup (data written
+		// before ADR 0027, a restore), an idle device, a deactivated user.
+		now := f.clock.Now()
+		if _, err := db.NewUpdate().TableExpr("devices").Set("revoked_at = ?", now).Where("id = ?", revoked.DeviceID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		old := now.Add(-device.IdleExpiry - time.Hour)
+		if _, err := db.NewUpdate().TableExpr("devices").Set("created_at = ?", old).Set("last_used_at = ?", old).
+			Where("id = ?", idle.DeviceID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := db.NewUpdate().TableExpr("users").Set("active = ?", false).Where("id = ?", other.UserID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.svc.Cleanup(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if n := count(t, db, "push_registrations", "1 = 1"); n != 1 {
+			t.Fatalf("registrations after retention %d, want 1", n)
+		}
+		if n := count(t, db, "push_registrations", "device_id = ?", active.DeviceID); n != 1 {
+			t.Fatal("the usable registration was deleted")
+		}
+		ds := f.deliveries(t)
+		if len(ds) != 1 {
+			t.Fatalf("deliveries of stale registrations kept: %d", len(ds))
+		}
+		if st, err := f.svc.Status(f.ctx, active); err != nil || !st.Registered {
+			t.Fatalf("active device status %+v %v", st, err)
+		}
+	})
+}

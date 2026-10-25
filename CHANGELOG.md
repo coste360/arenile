@@ -14,7 +14,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   `ARENILE_PUSH_RELAY_KEY` e `ARENILE_PUSH_RELAY_URL`), l'attivazione del gestore in **Configurazione → Dispositivi**
   (spenta di default) e quella di ogni utente dall'app. Nuove API `GET`/`PUT /api/admin/v1/establishments/{id}/push-settings`
   e `GET`/`PUT`/`DELETE /api/device/v1/push`; `/meta` riporta `push_notifications`. Il token è cifrato e viene
-  cancellato con la revoca del dispositivo.
+  cancellato con la revoca del dispositivo e, dal job orario `push.retention`, quando il dispositivo è scaduto per
+  inattività o l'utente è disattivato.
 - La coda offline dell'app mobile (check-in, ingresso al varco, rilasci degli abbonati, blocchi, note, incassi) è
   coperta da `Idempotency-Key` su tutte le operazioni: `checkInEntryTicket` ora la dichiara nel contratto e le
   descrizioni spiegano la ripetizione (risposta originale con `Idempotent-Replayed: true`, 24 ore, per utente).

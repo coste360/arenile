@@ -100,7 +100,9 @@ Alternative scartate:
 8. **Dall'outbox al relay.** Un sink dell'outbox (`internal/domain/push`) decide i destinatari e accoda una riga
    in `push_deliveries` per (registrazione, evento), unica, quindi un evento riconsegnato non accoda due volte.
    Un job in processo (`push.deliver`, ogni 15 secondi e subito dopo un accodamento) invia le righe dovute con un
-   lease condizionale, così due istanze non inviano la stessa riga; le righe chiuse si cancellano dopo 7 giorni.
+   lease condizionale, così due istanze non inviano la stessa riga; le righe chiuse si cancellano dopo 7 giorni. Lo
+   stesso job orario di conservazione (`push.retention`) cancella le registrazioni che non possono più ricevere nulla
+   (dispositivo revocato o scaduto per inattività, utente disattivato), con il loro token cifrato.
    Nessuna chiamata di rete avviene durante una richiesta del pannello o dentro una transazione.
 
 ## Conseguenze
