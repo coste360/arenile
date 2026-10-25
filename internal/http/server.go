@@ -127,6 +127,9 @@ type Deps struct {
 	DesktopUsers desktophttp.UsersCounter
 	// PairingsPerMinute overrides the per-IP limit of POST /api/device/v1/pair (default 10).
 	PairingsPerMinute int
+	// DemoPairingsPerHour overrides the per-IP limit of POST
+	// /api/device/v1/demo-pairing (default 5).
+	DemoPairingsPerHour int
 
 	// M5B services (season rollover, renewals, waitlist, customer credits);
 	// nil ones answer 501 until implemented.
@@ -171,6 +174,7 @@ const (
 	authPathPrefix = "/api/admin/v1/auth/"
 	metaPath       = "/api/admin/v1/meta"
 	pairPath       = "/api/device/v1/pair"
+	demoPairPath   = "/api/device/v1/demo-pairing"
 	firstRunPath   = "/api/desktop/v1/first-run"
 )
 
@@ -196,6 +200,11 @@ func New(d Deps) http.Handler {
 	if pairings <= 0 {
 		pairings = 10
 	}
+	demoPairings := d.DemoPairingsPerHour
+	if demoPairings <= 0 {
+		demoPairings = 5
+	}
+	demoPairLimit := auth.NewRateLimiter(d.Clock, demoPairings, time.Hour)
 	sessionTTL := 7 * 24 * time.Hour
 	if d.Auth != nil {
 		sessionTTL = d.Auth.SessionTTL()
@@ -233,8 +242,9 @@ func New(d Deps) http.Handler {
 				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
 				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
 			)),
+			middleware.OnPrefix(demoPairPath, middleware.PublicRateLimit(demoPairLimit, demoPairLimit)),
 			middleware.Authenticate(devicedomain.DeviceOnly{Devices: deviceAuthenticator(d)}, d.Log),
-			middleware.RequireAuth([]string{pairPath}, ""),
+			middleware.RequireAuth([]string{pairPath, demoPairPath}, ""),
 		),
 		desktopGuard(d, sessionTTL),
 		middleware.OnPrefix("/api/public/", middleware.PublicRateLimit(

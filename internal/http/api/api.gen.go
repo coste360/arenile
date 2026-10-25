@@ -15148,6 +15148,9 @@ type ServerInterface interface {
 	// UpdateDesktopSettings Aggiorna le impostazioni dell'app desktop
 	// (PUT /api/desktop/v1/settings)
 	UpdateDesktopSettings(w http.ResponseWriter, r *http.Request, params UpdateDesktopSettingsParams)
+	// CreateDemoPairingCode Codice di abbinamento allo stabilimento dimostrativo
+	// (POST /api/device/v1/demo-pairing)
+	CreateDemoPairingCode(w http.ResponseWriter, r *http.Request)
 	// UnregisterFiscalBridge Annulla la registrazione di questo dispositivo come ponte fiscale
 	// (DELETE /api/device/v1/fiscal-bridge)
 	UnregisterFiscalBridge(w http.ResponseWriter, r *http.Request)
@@ -17002,6 +17005,12 @@ func (_ Unimplemented) GetDesktopSettings(w http.ResponseWriter, r *http.Request
 // UpdateDesktopSettings Aggiorna le impostazioni dell'app desktop
 // (PUT /api/desktop/v1/settings)
 func (_ Unimplemented) UpdateDesktopSettings(w http.ResponseWriter, r *http.Request, params UpdateDesktopSettingsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateDemoPairingCode Codice di abbinamento allo stabilimento dimostrativo
+// (POST /api/device/v1/demo-pairing)
+func (_ Unimplemented) CreateDemoPairingCode(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -35456,6 +35465,20 @@ func (siw *ServerInterfaceWrapper) UpdateDesktopSettings(w http.ResponseWriter, 
 	handler.ServeHTTP(w, r)
 }
 
+// CreateDemoPairingCode operation middleware
+func (siw *ServerInterfaceWrapper) CreateDemoPairingCode(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateDemoPairingCode(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // UnregisterFiscalBridge operation middleware
 func (siw *ServerInterfaceWrapper) UnregisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
 
@@ -38178,6 +38201,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/device/v1/pair", wrapper.PairDevice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/device/v1/demo-pairing", wrapper.CreateDemoPairingCode)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/api/device/v1/self", wrapper.UnpairCurrentDevice)

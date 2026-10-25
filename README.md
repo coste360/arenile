@@ -359,6 +359,8 @@ Tutta la configurazione avviene tramite variabili d'ambiente, compatibili con Do
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
 | `ARENILE_UPDATE_CHECK` | `true` | Avviso di nuova versione nel pannello (ADR 0025); `false` = nessuna chiamata di rete |
 | `ARENILE_UPDATE_URL` | `https://updates.coste360.it/arenile/latest.json` | File dell'ultima versione letto dal controllo |
+| `ARENILE_DEMO_PAIRING_USER` | vuoto | Solo istanze dimostrative: email dell'utente dei codici di "Prova la demo" dell'app |
+| `ARENILE_DEMO_PAIRING_ESTABLISHMENT` | vuoto | Solo istanze dimostrative: slug dello stabilimento demo (insieme alla variabile sopra) |
 | `ARENILE_INSTALL` | `binary` | `docker` nell'immagine ufficiale (impostato dall'immagine): l'avviso propone `docker compose pull` |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (equivale a `arenile serve --dev`); mai in produzione |
 | `ARENILE_EDITION` | `server` | `desktop` è il profilo loopback impostato dall'app desktop (non dall'operatore): base URL facoltativo, cookie `Secure` solo sulle richieste TLS |

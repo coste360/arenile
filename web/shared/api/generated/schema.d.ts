@@ -3264,6 +3264,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/device/v1/demo-pairing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Codice di abbinamento allo stabilimento dimostrativo
+         * @description Spec 29.2. Solo sulle istanze dimostrative (`ARENILE_DEMO_PAIRING_USER` e `ARENILE_DEMO_PAIRING_ESTABLISHMENT`, spec 24.4); sulle altre risponde `404`. Non autenticato, limitato per IP (5 richieste all'ora). Restituisce un codice di abbinamento nuovo per l'utente dimostrativo configurato, valido 5 minuti: il pulsante "Prova la demo" dell'app lo scambia subito con `POST /api/device/v1/pair`. Il dispositivo abbinato ha il ruolo di quell'utente. Nessun corpo.
+         */
+        post: operations["createDemoPairingCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/device/v1/self": {
         parameters: {
             query?: never;
@@ -18842,6 +18862,29 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             429: components["responses"]["TooManyRequests"];
             501: components["responses"]["NotImplemented"];
+        };
+    };
+    createDemoPairingCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Codice creato */
+            201: {
+                headers: {
+                    "Cache-Control"?: "no-store";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevicePairingCode"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     getCurrentDevice: {

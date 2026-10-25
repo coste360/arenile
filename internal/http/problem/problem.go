@@ -343,6 +343,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, SignatureInvalid)
 	case errors.Is(err, device.ErrPairingCodeInvalid):
 		Write(w, r, PairingCodeInvalid)
+	case errors.Is(err, device.ErrDemoPairingDisabled):
+		Write(w, r, NotFound)
 	case errors.Is(err, device.ErrLANModeRequired):
 		Write(w, r, LANModeRequired)
 	case errors.Is(err, control.ErrLoopbackRequired):

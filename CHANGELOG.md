@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- Istanze dimostrative: `POST /api/device/v1/demo-pairing` restituisce un codice di abbinamento per l'utente
+  dimostrativo, senza login e con un limite di 5 richieste all'ora per IP. Serve al pulsante **Prova la demo**
+  dell'app mobile, che così si prova senza avere un server. Si attiva con `ARENILE_DEMO_PAIRING_USER` e
+  `ARENILE_DEMO_PAIRING_ESTABLISHMENT`; sulle istanze normali risponde `404`. Il dispositivo ha il ruolo
+  dell'utente dimostrativo.
+
 ### Modificato
 - `arenile seed demo`: la stagione dimostrativa è sempre quella dell'anno in corso ed è prenotabile tutti i giorni
   (dall'1 gennaio al 31 dicembre; fuori da maggio-settembre vale la bassa stagione), così vendita rapida, cassa e

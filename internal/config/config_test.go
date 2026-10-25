@@ -114,6 +114,8 @@ func TestParse_Invalid(t *testing.T) {
 		{"bad update check", map[string]string{EnvUpdateCheck: "sometimes"}},
 		{"bad update url", map[string]string{EnvUpdateURL: "updates.example.com/latest.json"}},
 		{"bad install", map[string]string{EnvInstall: "snap"}},
+		{"demo pairing user only", map[string]string{EnvDemoPairingUser: "demo@lido-demo.example"}},
+		{"demo pairing establishment only", map[string]string{EnvDemoPairingEstablishment: "lido-demo"}},
 		{"bootstrap owner without org", map[string]string{EnvBootstrapOwnerEmail: "a@b.it", EnvBootstrapOwnerName: "A", EnvAdminPassword: "x"}},
 	}
 	for _, tt := range tests {
@@ -252,5 +254,16 @@ func TestParse_DesktopEdition(t *testing.T) {
 	}
 	if _, err := Parse(env(map[string]string{EnvEdition: "mobile", EnvDataDir: t.TempDir()})); err == nil || !errors.Is(err, ErrInvalid) {
 		t.Fatalf("unknown edition accepted: %v", err)
+	}
+}
+
+func TestParse_DemoPairing(t *testing.T) {
+	cfg, err := Parse(env(nil))
+	if err != nil || cfg.DemoPairingUser != "" || cfg.DemoPairingEstablishment != "" {
+		t.Fatalf("default: %+v %v", cfg, err)
+	}
+	cfg, err = Parse(env(map[string]string{EnvDemoPairingUser: " demo@lido-demo.example ", EnvDemoPairingEstablishment: "lido-demo"}))
+	if err != nil || cfg.DemoPairingUser != "demo@lido-demo.example" || cfg.DemoPairingEstablishment != "lido-demo" {
+		t.Fatalf("set: %q %q %v", cfg.DemoPairingUser, cfg.DemoPairingEstablishment, err)
 	}
 }

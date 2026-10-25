@@ -9084,6 +9084,35 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplemented"
 
+  /api/device/v1/demo-pairing:
+    post:
+      operationId: createDemoPairingCode
+      tags: [device]
+      summary: Codice di abbinamento allo stabilimento dimostrativo
+      description: >-
+        Spec 29.2. Solo sulle istanze dimostrative (`ARENILE_DEMO_PAIRING_USER` e
+        `ARENILE_DEMO_PAIRING_ESTABLISHMENT`, spec 24.4); sulle altre risponde `404`. Non autenticato, limitato
+        per IP (5 richieste all'ora). Restituisce un codice di abbinamento nuovo per l'utente dimostrativo
+        configurato, valido 5 minuti: il pulsante "Prova la demo" dell'app lo scambia subito con
+        `POST /api/device/v1/pair`. Il dispositivo abbinato ha il ruolo di quell'utente. Nessun corpo.
+      security: []
+      responses:
+        "201":
+          description: Codice creato
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevicePairingCode"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
   /api/device/v1/self:
     get:
       operationId: getCurrentDevice

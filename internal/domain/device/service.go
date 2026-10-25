@@ -23,6 +23,8 @@ var (
 	// ErrLANModeRequired: desktop edition in local mode, no address other
 	// devices can reach (409 lan_mode_required).
 	ErrLANModeRequired = errors.New("device: lan mode required")
+	// ErrDemoPairingDisabled: the instance has no demo pairing (404).
+	ErrDemoPairingDisabled = errors.New("device: demo pairing disabled")
 	// ErrNotImplemented: scaffolding, the operation is not built yet (501).
 	ErrNotImplemented = configerr.ErrNotImplemented
 )
@@ -71,6 +73,16 @@ type Deps struct {
 	Instance   Instance
 	// Bridge is optional (nil: no fiscal bridge wired).
 	Bridge BridgeRevoker
+	// Demo enables CreateDemoPairingCode (nil: disabled, the usual case).
+	Demo *DemoPairing
+}
+
+// DemoPairing names who a demo pairing code is for (ARENILE_DEMO_PAIRING_USER
+// and ARENILE_DEMO_PAIRING_ESTABLISHMENT): an active member of that
+// establishment, whose role the paired devices get.
+type DemoPairing struct {
+	UserEmail         string
+	EstablishmentSlug string
 }
 
 // Service implements the device use cases. Construct with NewService.
