@@ -17,6 +17,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/setup"
+	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -25,6 +26,11 @@ import (
 const (
 	DemoOrganizationName = "Lido Demo"
 	DemoSlug             = "lido-demo"
+	// DemoStaffEmail is the cashier of the demo establishment, the account
+	// the "Prova la demo" button of the mobile app pairs with
+	// (ARENILE_DEMO_PAIRING_USER): the demo owner cannot be used, demo
+	// pairing refuses owners and managers.
+	DemoStaffEmail = "cassa@lido-demo.example"
 )
 
 // SeedResult reports what SeedDemo did.
@@ -145,6 +151,37 @@ func (a *App) SeedDemoOperations(ctx context.Context, actorEmail string) (*setup
 		return res, fmt.Errorf("app: seed demo terms: %w", err)
 	}
 	return res, nil
+}
+
+// DemoStaffResult reports what SeedDemoStaff did.
+type DemoStaffResult struct {
+	Created bool
+	// InitialPassword is the generated password of a new account, shown once.
+	InitialPassword string
+}
+
+// SeedDemoStaff gives DemoStaffEmail the cashier role on the demo
+// establishment, acting as the demo owner (actorEmail), when it has no
+// access yet. Idempotent.
+func (a *App) SeedDemoStaff(ctx context.Context, actorEmail string) (*DemoStaffResult, error) {
+	est, err := store.GetEstablishmentBySlug(ctx, a.db, DemoSlug)
+	if err != nil {
+		return nil, fmt.Errorf("app: seed demo staff: %w", err)
+	}
+	p, err := a.Auth.PrincipalForEmail(ctx, actorEmail)
+	if err != nil {
+		return nil, fmt.Errorf("app: seed demo staff: %w", err)
+	}
+	res, err := a.Team.Create(ctx, p, est.ID, team.CreateInput{
+		Email: DemoStaffEmail, Name: "Cassa Demo", Locale: "it", Role: auth.RoleCashier, IP: "127.0.0.1",
+	})
+	if errors.Is(err, team.ErrAlreadyMember) {
+		return &DemoStaffResult{}, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("app: seed demo staff: %w", err)
+	}
+	return &DemoStaffResult{Created: true, InitialPassword: res.InitialPassword}, nil
 }
 
 // demoTermsVersion is the label of the demo booking terms.

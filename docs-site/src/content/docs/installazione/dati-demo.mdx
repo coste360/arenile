@@ -41,6 +41,12 @@ Il comando stampa l'indirizzo della pagina pubblica (`/b/lido-demo`) e del panne
 **demo@lido-demo.example** (Gestore Demo, proprietario). La password è quella di `ARENILE_ADMIN_PASSWORD`
 se impostata, altrimenti viene generata e **mostrata una sola volta**.
 
+Crea anche **cassa@lido-demo.example** (Cassa Demo, cassiere del Lido Demo, password generata e mostrata una volta):
+è l'utente a cui il pulsante **Prova la demo** dell'app mobile abbina i telefoni. Su un'istanza dimostrativa basta
+impostare `ARENILE_DEMO_PAIRING_USER=cassa@lido-demo.example` e `ARENILE_DEMO_PAIRING_ESTABLISHMENT=lido-demo`
+(il comando lo ricorda alla fine); il proprietario non si può usare, perché l'abbinamento dimostrativo accetta solo
+cassiere, personale di spiaggia o sola lettura.
+
 Il comando è **idempotente**: lanciato di nuovo non duplica nulla.
 
 ## Cosa contiene

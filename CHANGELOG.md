@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- `arenile seed demo` crea anche **cassa@lido-demo.example** (cassiere del Lido Demo), l'utente per il pulsante
+  **Prova la demo** dell'app mobile: su un'istanza dimostrativa basta impostare
+  `ARENILE_DEMO_PAIRING_USER=cassa@lido-demo.example` e `ARENILE_DEMO_PAIRING_ESTABLISHMENT=lido-demo`.
+
 ## [1.0.5] - 2026-10-26
 
 ### Corretto
