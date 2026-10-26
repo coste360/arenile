@@ -37,8 +37,8 @@
     "descriptionOwner": "Koppeln Sie die Telefone des Personals oder die Desktop-App der Kasse mit der Schaltfläche „Gerät koppeln“."
   },
   "lan": {
-    "title": "Lokalen Netzwerkmodus aktivieren",
-    "description": "Im lokalen Modus ist die Desktop-App für andere Geräte nicht erreichbar. Aktivieren Sie den lokalen Netzwerkmodus im App-Menü (Symbol in der Taskleiste) und kehren Sie dann hierher zurück, um Telefone und andere PCs zu koppeln."
+    "title": "Lokalen Netzwerkmodus in der Desktop-App aktivieren",
+    "description": "Um Telefone und andere PCs zu koppeln, muss die Arenile-Desktop-App Verbindungen aus dem WLAN des Strandbads annehmen. Die Einstellung befindet sich in der Desktop-App, nicht in diesem Panel: Klicken Sie auf das Arenile-Symbol in der Menü- bzw. Taskleiste (oben rechts auf dem Mac, neben der Uhr unter Windows) und wählen Sie „Local network mode“. Kehren Sie dann hierher zurück."
   },
   "pair": {
     "open": "Gerät koppeln",

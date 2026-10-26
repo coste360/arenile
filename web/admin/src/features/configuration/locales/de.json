@@ -20,6 +20,8 @@
     "code": "Kleinbuchstaben, Ziffern, Bindestriche oder Unterstriche verwenden (max. 64)",
     "date": "Gültiges Datum eingeben",
     "dateOrder": "Das Enddatum muss gleich oder nach dem Anfangsdatum liegen",
+    "seasonOpensInYear": "Die Saison muss im angegebenen Jahr beginnen",
+    "seasonClosesBy": "Die Saison muss bis Ende des Folgejahres enden",
     "amount": "Gültigen Betrag eingeben, z. B. 25 oder 25,50",
     "percent": "Prozentsatz zwischen 0 und 100 eingeben (max. 2 Dezimalstellen)",
     "integer": "Gültige ganze Zahl eingeben",

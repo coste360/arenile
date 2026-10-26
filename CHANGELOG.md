@@ -12,6 +12,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   bisognava ricaricare.
 - Editor della mappa: con modifiche non salvate chiede conferma prima di uscire anche quando si cambia pagina dal
   pannello (menu, rinvio al login), non solo chiudendo o ricaricando la scheda.
+- Stagioni (configurazione guidata e Configurazione → Stagioni): cambiando l'anno, le date di apertura e chiusura
+  si spostano nello stesso anno (stesso giorno e mese); date fuori dall'anno della stagione sono segnalate nel
+  modulo invece di essere rifiutate dal server dopo l'invio.
+- Dispositivi e Rete locale: il messaggio sulla modalità rete locale dice chiaramente che l'impostazione è
+  nell'app desktop (icona di Arenile nella barra di sistema), non nel pannello.
 
 ## [1.0.4] - 2026-10-26
 

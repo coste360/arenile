@@ -20,6 +20,8 @@
     "code": "Utilisez des minuscules, chiffres, tirets ou underscores (max 64)",
     "date": "Saisissez une date valide",
     "dateOrder": "La date de fin doit être égale ou postérieure à la date de début",
+    "seasonOpensInYear": "La saison doit ouvrir dans son année",
+    "seasonClosesBy": "La saison doit fermer avant la fin de l'année suivante",
     "amount": "Saisissez un montant valide, par ex. 25 ou 25,50",
     "percent": "Saisissez un pourcentage entre 0 et 100 (2 décimales max)",
     "integer": "Saisissez un nombre entier valide",

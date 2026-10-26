@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { parseEuroToCents as euroToCents } from '@arenile/shared/lib/money';
-import { V, intField, isCalendarDate, isoDate } from '../configuration/lib/validation';
+import { V, intField, isoDate } from '../configuration/lib/validation';
+import { checkSeasonDates } from '../configuration/pages/seasons.schema';
 import type { ApplyTemplateRequest, QuickPricelistRequest } from './api';
 import type { TemplateCode } from './progress';
 
@@ -33,9 +34,7 @@ export const rowsSchema = z
         }
       }
     }
-    if (isCalendarDate(v.opens_on) && isCalendarDate(v.closes_on) && v.opens_on > v.closes_on) {
-      ctx.addIssue({ code: 'custom', message: V.dateOrder, path: ['closes_on'] });
-    }
+    checkSeasonDates(v.season_year, v.opens_on, v.closes_on, ctx);
   });
 
 export type RowsValues = z.infer<typeof rowsSchema>;

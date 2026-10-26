@@ -37,8 +37,8 @@
     "descriptionOwner": "Pair the staff phones or the cash desk desktop app with the “Pair a device” button."
   },
   "lan": {
-    "title": "Turn on the local network mode",
-    "description": "In local mode the desktop app cannot be reached by other devices. Turn on the local network mode from the app menu (system tray icon), then come back here to pair phones and other PCs."
+    "title": "Turn on the local network mode in the desktop app",
+    "description": "To pair phones and other PCs, the Arenile desktop app must accept connections from the beach Wi-Fi. The setting is in the desktop app, not in this panel: click the Arenile icon in the system tray (top right on Mac, next to the clock on Windows) and choose “Local network mode”. Then come back here."
   },
   "pair": {
     "open": "Pair a device",

@@ -14,7 +14,7 @@ import { DateRangeField, Field } from '../../configuration/components/fields';
 import { FormAlert } from '../../configuration/components/FormAlert';
 import { fieldAria } from '../../configuration/lib/aria';
 import { problemToFormState, type FormAlertState } from '../../configuration/lib/formErrors';
-import { defaultSeasonYear } from '../../configuration/pages/seasons.schema';
+import { defaultSeasonYear, moveSeasonDates } from '../../configuration/pages/seasons.schema';
 import {
   useApplyTemplate,
   useSetupTemplates,
@@ -210,7 +210,25 @@ function RowsForm({
             <Input
               {...fieldAria('rows-year', errors.season_year)}
               inputMode="numeric"
-              {...register('season_year')}
+              {...register('season_year', {
+                // A new year moves the dates with it (same day and month).
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                  const moved = moveSeasonDates(
+                    e.target.value,
+                    form.getValues('opens_on'),
+                    form.getValues('closes_on'),
+                  );
+                  if (!moved) return;
+                  form.setValue('opens_on', moved.opens_on, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  form.setValue('closes_on', moved.closes_on, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                },
+              })}
             />
           </Field>
           <Field id="rows-dates" label={t('rows.dates')}>

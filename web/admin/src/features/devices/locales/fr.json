@@ -37,8 +37,8 @@
     "descriptionOwner": "Associez les téléphones du personnel ou l'application de bureau de la caisse avec le bouton « Associer un appareil »."
   },
   "lan": {
-    "title": "Activez le mode réseau local",
-    "description": "En mode local, l'application de bureau n'est pas joignable par les autres appareils. Activez le mode réseau local depuis le menu de l'application (icône de la barre système), puis revenez ici pour associer téléphones et autres PC."
+    "title": "Activez le mode réseau local dans l'application de bureau",
+    "description": "Pour associer des téléphones et d'autres PC, l'application de bureau Arenile doit accepter les connexions du Wi-Fi de la plage. Le réglage se trouve dans l'application de bureau, pas dans ce panneau : cliquez sur l'icône d'Arenile dans la barre système (en haut à droite sur Mac, près de l'horloge sur Windows) et choisissez « Local network mode ». Revenez ensuite ici."
   },
   "pair": {
     "open": "Associer un appareil",

@@ -14,6 +14,8 @@ export const V = {
   code: 'configuration:validation.code',
   date: 'configuration:validation.date',
   dateOrder: 'configuration:validation.dateOrder',
+  seasonOpensInYear: 'configuration:validation.seasonOpensInYear',
+  seasonClosesBy: 'configuration:validation.seasonClosesBy',
   amount: 'configuration:validation.amount',
   percent: 'configuration:validation.percent',
   integer: 'configuration:validation.integer',
