@@ -300,6 +300,20 @@ func (c *cli) seedDemoOperations(ctx context.Context, cfg config.Config, log *sl
 	} else {
 		fmt.Fprintln(c.stdout, "Dati operativi dimostrativi già presenti: nessuna modifica")
 	}
+	staff, err := a.SeedDemoStaff(ctx, DemoOwnerEmail)
+	if err != nil {
+		return err
+	}
+	switch {
+	case staff.Created && staff.InitialPassword != "":
+		fmt.Fprintf(c.stdout, "Utente cassa demo creato: %s, password: %s (mostrata una sola volta)\n", app.DemoStaffEmail, staff.InitialPassword)
+	case staff.Created:
+		fmt.Fprintf(c.stdout, "Utente cassa demo creato: %s\n", app.DemoStaffEmail)
+	default:
+		fmt.Fprintf(c.stdout, "Utente cassa demo già presente: %s\n", app.DemoStaffEmail)
+	}
+	fmt.Fprintf(c.stdout, "Per il pulsante \"Prova la demo\" dell'app: ARENILE_DEMO_PAIRING_USER=%s e ARENILE_DEMO_PAIRING_ESTABLISHMENT=%s\n",
+		app.DemoStaffEmail, app.DemoSlug)
 	return nil
 }
 

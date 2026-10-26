@@ -63,8 +63,13 @@ func TestCLI_Lifecycle(t *testing.T) {
 	if code != 0 || !strings.Contains(out, "creato") {
 		t.Fatalf("seed: %d %q", code, out)
 	}
+	// The demo cashier for the "Prova la demo" button, with the env to set.
+	if !strings.Contains(out, "Utente cassa demo creato: cassa@lido-demo.example, password: ") ||
+		!strings.Contains(out, "ARENILE_DEMO_PAIRING_USER=cassa@lido-demo.example e ARENILE_DEMO_PAIRING_ESTABLISHMENT=lido-demo") {
+		t.Fatalf("seed demo cashier: %q", out)
+	}
 	code, out, _ = runCLI(t, e, "", "seed", "demo")
-	if code != 0 || !strings.Contains(out, "già presente") {
+	if code != 0 || !strings.Contains(out, "già presente") || !strings.Contains(out, "Utente cassa demo già presente: cassa@lido-demo.example") {
 		t.Fatalf("seed again: %d %q", code, out)
 	}
 

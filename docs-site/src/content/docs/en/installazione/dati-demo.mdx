@@ -41,6 +41,11 @@ The command prints the address of the public page (`/b/lido-demo`) and of the pa
 **demo@lido-demo.example** (Gestore Demo, owner). The password is the one in `ARENILE_ADMIN_PASSWORD` if set,
 otherwise it is generated and **shown only once**.
 
+It also creates **cassa@lido-demo.example** (Cassa Demo, cashier of Lido Demo, password generated and shown once): the
+user the mobile app's **Try the demo** button pairs phones with. On a demo instance set
+`ARENILE_DEMO_PAIRING_USER=cassa@lido-demo.example` and `ARENILE_DEMO_PAIRING_ESTABLISHMENT=lido-demo` (the command
+reminds you at the end); the owner cannot be used, because demo pairing only accepts cashier, beach staff or read-only.
+
 The command is **idempotent**: running it again duplicates nothing.
 
 ## What it contains
