@@ -7,7 +7,7 @@
   },
   "off": {
     "title": "Le mode réseau local est désactivé",
-    "description": "Activez-le dans l'application de bureau, pas dans ce panneau : cliquez sur l'icône d'Arenile dans la barre système (en haut à droite sur Mac, près de l'horloge sur Windows) et choisissez « Local network mode », ou utilisez le bouton ci-dessous. Les autres appareils du Wi-Fi de la plage pourront ouvrir le panneau ; les connexions venant de l'extérieur du réseau local restent refusées.",
+    "description": "Activez-le depuis l'icône d'Arenile dans la barre système (en haut à droite sur Mac, près de l'horloge sur Windows) → « Local network mode », ou dans Configuration → Application de bureau → « Activer le mode réseau local » avec le bouton ci-dessous. Les autres appareils du Wi-Fi de la plage pourront ouvrir le panneau ; les connexions venant de l'extérieur du réseau local restent refusées.",
     "action": "Ouvrir les réglages de l'application de bureau"
   },
   "server": {

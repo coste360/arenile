@@ -111,6 +111,46 @@ describe('SeasonsPage', () => {
     expect(post?.headers.get('Idempotency-Key')).toBeTruthy();
   });
 
+  it('moves the dates of a new season with its year, not those of an existing one', async () => {
+    const user = userEvent.setup();
+    let posted: unknown;
+    const { fetchMock } = renderApp(`/admin/e/${EST_ID}/config/seasons`, {
+      ...routes('manager'),
+      [`POST ${API}/seasons`]: async (req) => {
+        posted = await req.json();
+        return json(201, { ...SEASON, ...(posted as object), id: 's2', status: 'draft' });
+      },
+    });
+    await user.click(await screen.findByRole('button', { name: 'Nuova stagione' }));
+    let dialog = await screen.findByRole('dialog');
+    await user.clear(within(dialog).getByLabelText('Anno'));
+    await user.type(within(dialog).getByLabelText('Anno'), '2031');
+    expect(
+      within(dialog).getByRole('button', { name: /01\/05\/2031 – 30\/09\/2031/ }),
+    ).toBeVisible();
+    await user.click(within(dialog).getByRole('button', { name: 'Salva' }));
+    await waitFor(() => expect(callsTo(fetchMock, 'POST', `${API}/seasons`)).toHaveLength(1));
+    expect(posted).toMatchObject({
+      year: 2031,
+      opens_on: '2031-05-01',
+      closes_on: '2031-09-30',
+    });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    await user.click(screen.getByRole('button', { name: 'Modifica la stagione 2027' }));
+    dialog = await screen.findByRole('dialog');
+    await user.clear(within(dialog).getByLabelText('Anno'));
+    await user.type(within(dialog).getByLabelText('Anno'), '2028');
+    // Kept, and flagged: the season must open in its year.
+    expect(
+      within(dialog).getByRole('button', { name: /01\/05\/2027 – 30\/09\/2027/ }),
+    ).toBeVisible();
+    await user.click(within(dialog).getByRole('button', { name: 'Salva' }));
+    expect(
+      await within(dialog).findByText("La stagione deve aprire nell'anno indicato"),
+    ).toBeInTheDocument();
+  });
+
   it('hides editing for a cashier', async () => {
     renderApp(`/admin/e/${EST_ID}/config/seasons`, routes('cashier'));
     await screen.findByRole('button', { name: '2027' });

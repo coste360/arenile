@@ -231,6 +231,13 @@ describe('seasons schemas', () => {
     ['same year', '2027', '2027-05-01', '2027-09-30', null],
     ['year still being typed', '202', '2027-05-01', '2027-09-30', null],
     ['dates not complete', '2026', '2027-05-01', '', null],
+    [
+      'closing on the last day of February into a leap year',
+      '2027',
+      '2026-11-01',
+      '2027-02-28',
+      { opens_on: '2027-11-01', closes_on: '2028-02-29' },
+    ],
   ])('moveSeasonDates: %s', (_, year, opens, closes, want) => {
     expect(moveSeasonDates(year, opens, closes)).toEqual(want);
   });

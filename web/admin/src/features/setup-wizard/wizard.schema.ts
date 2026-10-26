@@ -34,7 +34,8 @@ export const rowsSchema = z
         }
       }
     }
-    checkSeasonDates(v.season_year, v.opens_on, v.closes_on, ctx);
+    // apply-template accepts seasons of at most a year (setup/apply.go).
+    checkSeasonDates(v.season_year, v.opens_on, v.closes_on, ctx, { maxDays: 366 });
   });
 
 export type RowsValues = z.infer<typeof rowsSchema>;

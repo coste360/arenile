@@ -16,6 +16,7 @@ export const V = {
   dateOrder: 'configuration:validation.dateOrder',
   seasonOpensInYear: 'configuration:validation.seasonOpensInYear',
   seasonClosesBy: 'configuration:validation.seasonClosesBy',
+  seasonMaxOneYear: 'configuration:validation.seasonMaxOneYear',
   amount: 'configuration:validation.amount',
   percent: 'configuration:validation.percent',
   integer: 'configuration:validation.integer',

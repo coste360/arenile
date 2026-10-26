@@ -7,7 +7,7 @@
   },
   "off": {
     "title": "Der Modus lokales Netzwerk ist aus",
-    "description": "Aktivieren Sie ihn in der Desktop-App, nicht in diesem Panel: Klicken Sie auf das Arenile-Symbol in der Menü- bzw. Taskleiste (oben rechts auf dem Mac, neben der Uhr unter Windows) und wählen Sie „Local network mode“, oder verwenden Sie die Schaltfläche unten. Andere Geräte im WLAN des Strandbads können dann das Panel öffnen; Verbindungen von außerhalb des lokalen Netzwerks bleiben abgelehnt.",
+    "description": "Aktivieren Sie ihn über das Arenile-Symbol in der Menü- bzw. Taskleiste (oben rechts auf dem Mac, neben der Uhr unter Windows) → „Local network mode“ oder unter Konfiguration → Desktop-App → „Lokalen Netzwerkmodus aktivieren“ mit der Schaltfläche unten. Andere Geräte im WLAN des Strandbads können dann das Panel öffnen; Verbindungen von außerhalb des lokalen Netzwerks bleiben abgelehnt.",
     "action": "Einstellungen der Desktop-App öffnen"
   },
   "server": {

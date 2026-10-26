@@ -30,35 +30,48 @@ export const seasonSchema = z
   .superRefine((v, ctx) => checkSeasonDates(v.year, v.opens_on, v.closes_on, ctx));
 
 /**
- * Season dates against its year, as the server checks them (spec 5.1): the
- * season opens in its year and closes by the end of the following one, never
- * before it opens.
+ * Season dates against its year, as the server checks them: the season opens
+ * in its year and never closes before it opens; the Seasons API lets it close
+ * by the end of the following year (season/validate.go), the setup wizard at
+ * most a year later (setup/apply.go, maxDays 366).
  */
 export function checkSeasonDates(
   year: string,
   opensOn: string,
   closesOn: string,
   ctx: z.RefinementCtx,
-  paths: { opens: string; closes: string } = { opens: 'opens_on', closes: 'closes_on' },
+  opts: { maxDays?: number } = {},
 ) {
   if (!isCalendarDate(opensOn) || !isCalendarDate(closesOn)) return;
-  if (opensOn > closesOn) {
-    ctx.addIssue({ code: 'custom', message: V.dateOrder, path: [paths.closes] });
+  const ordered = opensOn <= closesOn;
+  if (!ordered) {
+    ctx.addIssue({ code: 'custom', message: V.dateOrder, path: ['closes_on'] });
   }
-  const y = Number(year);
   if (!/^\d{4}$/.test(year.trim())) return;
+  const y = Number(year);
   if (Number(opensOn.slice(0, 4)) !== y) {
-    ctx.addIssue({ code: 'custom', message: V.seasonOpensInYear, path: [paths.opens] });
+    ctx.addIssue({ code: 'custom', message: V.seasonOpensInYear, path: ['opens_on'] });
+  } else if (ordered && opts.maxDays && daysBetween(opensOn, closesOn) + 1 > opts.maxDays) {
+    ctx.addIssue({ code: 'custom', message: V.seasonMaxOneYear, path: ['closes_on'] });
   } else if (Number(closesOn.slice(0, 4)) > y + 1) {
-    ctx.addIssue({ code: 'custom', message: V.seasonClosesBy, path: [paths.closes] });
+    ctx.addIssue({ code: 'custom', message: V.seasonClosesBy, path: ['closes_on'] });
   }
 }
 
-/** Same day and month in another year; 29 February becomes the 28th. */
-function inYear(iso: string, year: number): string {
+const isLeap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+
+/**
+ * Same day and month in another year; 29 February becomes the 28th. A
+ * closing date on the last day of February stays on the last day (as
+ * pricing.ShiftDate does when a season is copied).
+ */
+function inYear(iso: string, year: number, endOfMonth = false): string {
   const md = iso.slice(5);
-  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-  return `${year}-${md === '02-29' && !leap ? '02-28' : md}`;
+  const lastOfFeb = md === '02-29' || (md === '02-28' && !isLeap(Number(iso.slice(0, 4))));
+  if (md === '02-29' || (endOfMonth && lastOfFeb)) {
+    return `${year}-02-${isLeap(year) ? '29' : '28'}`;
+  }
+  return `${year}-${md}`;
 }
 
 /**
@@ -79,7 +92,7 @@ export function moveSeasonDates(
   if (y === from || y < 2000 || y > 2100) return null;
   return {
     opens_on: inYear(opensOn, y),
-    closes_on: inYear(closesOn, y + Number(closesOn.slice(0, 4)) - from),
+    closes_on: inYear(closesOn, y + Number(closesOn.slice(0, 4)) - from, true),
   };
 }
 

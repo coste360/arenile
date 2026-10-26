@@ -43,6 +43,13 @@ describe('row generator', () => {
     expect(r.success).toBe(false);
     expect(r.error?.issues.map((i) => i.path.join('.')).sort()).toEqual(['closes_on', 'rows']);
   });
+
+  it('refuses a season longer than a year, as apply-template does', () => {
+    const r = rowsSchema.safeParse({ ...rowsDefaults(true, 2026), closes_on: '2027-09-30' });
+    expect(r.error?.issues.map((i) => i.message)).toEqual([
+      'configuration:validation.seasonMaxOneYear',
+    ]);
+  });
 });
 
 describe('quick price list', () => {

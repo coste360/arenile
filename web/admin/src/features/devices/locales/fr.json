@@ -38,7 +38,7 @@
   },
   "lan": {
     "title": "Activez le mode réseau local dans l'application de bureau",
-    "description": "Pour associer des téléphones et d'autres PC, l'application de bureau Arenile doit accepter les connexions du Wi-Fi de la plage. Le réglage se trouve dans l'application de bureau, pas dans ce panneau : cliquez sur l'icône d'Arenile dans la barre système (en haut à droite sur Mac, près de l'horloge sur Windows) et choisissez « Local network mode ». Revenez ensuite ici."
+    "description": "Pour associer des téléphones et d'autres PC, l'application de bureau Arenile doit accepter les connexions du Wi-Fi de la plage. Cliquez sur l'icône d'Arenile dans la barre système (en haut à droite sur Mac, près de l'horloge sur Windows) et choisissez « Local network mode » ; le propriétaire peut aussi utiliser Configuration → Application de bureau → « Activer le mode réseau local ». Revenez ensuite ici."
   },
   "pair": {
     "open": "Associer un appareil",

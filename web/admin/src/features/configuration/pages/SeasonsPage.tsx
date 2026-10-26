@@ -276,8 +276,10 @@ function SeasonForm({
             {...fieldAria('season-year', errors.year)}
             inputMode="numeric"
             {...register('year', {
-              // A new year moves the dates with it (same day and month).
+              // A new season follows its year (same day and month); an existing
+              // one keeps its dates, which bookings may already depend on.
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                if (item) return;
                 const moved = moveSeasonDates(
                   e.target.value,
                   form.getValues('opens_on'),

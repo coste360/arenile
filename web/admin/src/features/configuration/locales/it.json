@@ -22,6 +22,7 @@
     "dateOrder": "La data finale deve essere uguale o successiva a quella iniziale",
     "seasonOpensInYear": "La stagione deve aprire nell'anno indicato",
     "seasonClosesBy": "La stagione deve chiudere entro la fine dell'anno seguente",
+    "seasonMaxOneYear": "Una stagione non può superare un anno",
     "amount": "Inserisci un importo valido, ad esempio 25 o 25,50",
     "percent": "Inserisci una percentuale tra 0 e 100 (max 2 decimali)",
     "integer": "Inserisci un numero intero valido",
