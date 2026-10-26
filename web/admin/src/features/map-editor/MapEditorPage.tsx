@@ -3,6 +3,14 @@ import type { AlignMode, KitAsset, Point } from '@arenile/shared/map';
 import {
   Alert,
   AlertDescription,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertTitle,
   Badge,
   ButtonGroup,
@@ -26,7 +34,7 @@ import {
   TriangleAlertIcon,
   Undo2Icon,
 } from 'lucide-react';
-import { Link, useParams } from '@tanstack/react-router';
+import { Link, useBlocker, useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -255,14 +263,13 @@ function Editor(props: EditorProps) {
     [props.zones],
   );
 
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [dirty]);
+  // Unsaved edits: ask before leaving, also when the panel itself navigates
+  // away (to the login form when the session expires, see lib/sessionExpiry).
+  const leave = useBlocker({
+    shouldBlockFn: () => dirty,
+    enableBeforeUnload: () => dirty,
+    withResolver: true,
+  });
 
   const commit = (next: DraftDocument) => {
     setHistory((h) => pushHistory(h, next));
@@ -793,6 +800,20 @@ function Editor(props: EditorProps) {
         }}
         onOverwrite={() => void onOverwrite()}
       />
+      <AlertDialog open={leave.status === 'blocked'} onOpenChange={(o) => !o && leave.reset?.()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('leave.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('leave.description')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => leave.reset?.()}>{t('leave.stay')}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => leave.proceed?.()}>
+              {t('leave.discard')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

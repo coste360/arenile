@@ -386,5 +386,11 @@
       "dirty": "There are unsaved changes: save or discard them before flipping the layout.",
       "resized": "You also changed the size: apply and save it first, then move the sea."
     }
+  },
+  "leave": {
+    "title": "Leave without saving?",
+    "description": "You have unsaved changes to the map: if you leave, they are lost.",
+    "stay": "Stay on the map",
+    "discard": "Leave without saving"
   }
 }
