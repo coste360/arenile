@@ -85,7 +85,9 @@ for (const viewport of [
       const id = await establishmentId(page);
       await page.goto(`/admin/e/${id}/config/devices`);
       await expect(
-        page.getByText("Attiva la modalità rete locale", { exact: true }),
+        page.getByText("Attiva la modalità rete locale nell'app desktop", {
+          exact: true,
+        }),
       ).toBeVisible();
       await expect(
         page.getByRole("button", { name: "Abbina un dispositivo" }),
