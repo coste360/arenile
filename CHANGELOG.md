@@ -18,6 +18,9 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   controllate nel modulo, prima dell'invio.
 - Dispositivi e Rete locale: il messaggio sulla modalità rete locale indica dove attivarla nell'app desktop: dall'icona
   di Arenile nella barra di sistema o in Configurazione → App desktop.
+- Rinnovi: se il cliente accetta dal link un rinnovo già confermato (dalla cassa nello stesso istante, oppure già
+  pagato online o con il credito, prima che la proposta risulti convertita), ora riceve «proposta non più aperta»
+  (`409`) invece di «proposta scaduta» (`410`).
 
 ## [1.0.4] - 2026-10-26
 
