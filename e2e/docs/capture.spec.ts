@@ -37,7 +37,12 @@ async function publicStep(page: Page, step: "where" | "what" | "who", seat = 0) 
     const current = order[i - 1];
     if (current === "when") {
       await page.getByRole("button", { name: /Date del soggiorno/ }).click();
-      const day = () => page.getByRole("grid").first().locator("button:not([disabled])").nth(9);
+      // The tenth bookable day of the month shown, or its last one near the
+      // end of the month (a phone shows a single month).
+      const days = page.getByRole("grid").first().locator("button:not([disabled])");
+      await expect(days.first()).toBeVisible();
+      const pick = Math.min(9, (await days.count()) - 1);
+      const day = () => days.nth(pick);
       await day().click();
       await day().click(); // single-day range
       await page.keyboard.press("Escape");
