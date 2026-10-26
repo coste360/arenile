@@ -5,9 +5,10 @@ import { TooltipProvider } from '@arenile/shared/ui/tooltip';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { RouterProvider, type RouterHistory } from '@tanstack/react-router';
 import type { i18n as I18n } from 'i18next';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { createQueryClient } from './lib/queryClient';
+import { watchSessionExpiry } from './lib/sessionExpiry';
 import { OfflineProvider } from './offline/OfflineProvider';
 import type { OfflineRuntime } from './offline/runtime';
 import { createAppRouter } from './router';
@@ -24,6 +25,7 @@ export interface AppProps {
 export function App({ api, i18n, queryClient, history, offline }: AppProps) {
   const [qc] = useState(() => queryClient ?? createQueryClient());
   const [router] = useState(() => createAppRouter({ queryClient: qc, api }, history));
+  useEffect(() => watchSessionExpiry(qc, router), [qc, router]);
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>

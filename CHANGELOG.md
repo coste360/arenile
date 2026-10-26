@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Corretto
+- Pannello: quando la sessione scade, la prima richiesta che riceve `401` riporta al login e, dopo l'accesso, alla
+  pagina in cui si era. Prima la pagina mostrava «Qualcosa è andato storto» e **Riprova** non poteva funzionare;
+  bisognava ricaricare.
+- Editor della mappa: con modifiche non salvate chiede conferma prima di uscire anche quando si cambia pagina dal
+  pannello (menu, rinvio al login), non solo chiudendo o ricaricando la scheda.
+
 ## [1.0.4] - 2026-10-26
 
 ### Aggiunto

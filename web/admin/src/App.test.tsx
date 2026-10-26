@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { createAdminTestI18n } from './i18n';
 import { createQueryClient } from './lib/queryClient';
-import { safeRedirect } from './router';
+import { safeRedirect } from './lib/redirect';
 
 type Handler = (req: Request) => Response | Promise<Response>;
 
@@ -204,6 +204,33 @@ describe('admin app', () => {
     await user.click(await screen.findByRole('button', { name: /Menu utente/ }));
     await user.click(await screen.findByRole('menuitem', { name: 'Esci' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/login'));
+  });
+
+  it('goes back to login when the session expires on a page, then returns to it', async () => {
+    const user = userEvent.setup();
+    let sessionValid = true;
+    const { history } = setup('/admin/configurazione', {
+      // The guard sees a valid session: it expires before the page data loads.
+      'GET /api/admin/v1/auth/me': () => {
+        const res = sessionValid ? json(200, ME) : problem(401, 'unauthorized');
+        sessionValid = false;
+        return res;
+      },
+      'GET /api/admin/v1/establishments': () =>
+        sessionValid ? json(200, { items: [ESTABLISHMENT] }) : problem(401, 'unauthorized'),
+      'POST /api/admin/v1/auth/login': () => {
+        sessionValid = true;
+        return json(200, ME);
+      },
+    });
+    expect(await screen.findByRole('heading', { name: 'Accedi al pannello' })).toBeInTheDocument();
+    expect(history.location.pathname).toBe('/admin/login');
+    expect(history.location.search).toBe('?redirect=%2Fconfigurazione');
+    await user.type(screen.getByLabelText('Email'), 'gestore@example.it');
+    await user.type(screen.getByLabelText('Password'), 'segreta');
+    await user.click(screen.getByRole('button', { name: 'Accedi' }));
+    expect(await screen.findByRole('cell', { name: 'Lido Demo' })).toBeInTheDocument();
+    expect(history.location.pathname).toBe('/admin/configurazione');
   });
 
   it('redirects a legacy section to the current establishment', async () => {
