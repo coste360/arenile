@@ -150,6 +150,25 @@ func PublicActions(in ActionsInput) Actions {
 	}
 }
 
+// AcceptRefusal is the error of an acceptance the public actions refuse
+// (PublicActions(in).Accept false): a closed proposal, or a booking already
+// confirmed (by the desk, the payment webhook or a credit payment, before
+// renewals.sync converts the proposal), is no longer open; a passed deadline
+// or hold, or a booking closed otherwise, is an expiry, as sync records it.
+func AcceptRefusal(in ActionsInput) error {
+	switch {
+	case in.Status == store.RenewalExpired:
+		return ErrExpired
+	case !Open(in.Status):
+		return ErrNotOpen
+	}
+	switch in.BookingStatus {
+	case "confirmed", "checked_in", "completed", "no_show":
+		return ErrNotOpen
+	}
+	return ErrExpired
+}
+
 // AmountDue is what the customer pays online for the chosen payment after
 // what is already paid (deposit: up to the deposit; full: the balance),
 // never negative.

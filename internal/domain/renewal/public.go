@@ -59,18 +59,20 @@ func (s *Service) GetByToken(ctx context.Context, slug, token string) (*PublicPr
 	if err != nil {
 		return nil, err
 	}
-	return s.publicView(ctx, s.d.DB, l)
+	view, _, err := s.publicView(ctx, s.d.DB, l)
+	return view, err
 }
 
-func (s *Service) publicView(ctx context.Context, db bun.IDB, l *linked) (*PublicProposal, error) {
+// publicView also returns the inputs of its actions, for AcceptRefusal.
+func (s *Service) publicView(ctx context.Context, db bun.IDB, l *linked) (*PublicProposal, ActionsInput, error) {
 	es, est := l.ref.Scope, l.ref.Establishment
 	prop, err := s.proposalView(ctx, db, es, l.prop)
 	if err != nil {
-		return nil, err
+		return nil, ActionsInput{}, err
 	}
 	b, err := store.GetBooking(ctx, db, es, l.prop.BookingID)
 	if err != nil {
-		return nil, err
+		return nil, ActionsInput{}, err
 	}
 	out := &PublicProposal{Proposal: *prop, TermsVersion: l.ref.TermsVersion}
 	if b.SeasonID != nil {
@@ -102,13 +104,14 @@ func (s *Service) publicView(ctx context.Context, db bun.IDB, l *linked) (*Publi
 			s.d.Log.WarnContext(ctx, "renewal: credit balance unavailable", slog.String("proposal_id", l.prop.ID), slog.String("error", err.Error()))
 		}
 	}
-	a := PublicActions(ActionsInput{
+	in := ActionsInput{
 		Status: l.prop.Status, BookingStatus: b.Status, Deadline: l.prop.DeadlineAt, HoldExpiresAt: b.HoldExpiresAt, Now: now,
 		Total: b.TotalAmount, Paid: b.PaidAmount, Deposit: b.DepositDue, Online: l.ref.Online,
 		Credit: out.CreditAvailable, CanApply: s.d.CreditApplier != nil,
-	})
+	}
+	a := PublicActions(in)
 	out.CanAccept, out.CanDecline, out.CanPayDeposit, out.CanPayFull, out.CanUseCredit = a.Accept, a.Decline, a.PayDeposit, a.PayFull, a.UseCredit
-	return out, nil
+	return out, in, nil
 }
 
 // text picks the locale of an i18n text, then the fallback, then any.
@@ -154,7 +157,7 @@ func (s *Service) AcceptByToken(ctx context.Context, slug, token string, in Publ
 	}
 	es := l.ref.Scope
 	actor := customerActor(ctx, l.ref.LinkID)
-	view, err := s.publicView(ctx, s.d.DB, l)
+	view, actions, err := s.publicView(ctx, s.d.DB, l)
 	if err != nil {
 		return nil, err
 	}
@@ -162,14 +165,15 @@ func (s *Service) AcceptByToken(ctx context.Context, slug, token string, in Publ
 		return nil, err
 	}
 	if !view.CanAccept {
-		// The view reads the booking after the link loaded the proposal: an
-		// answer from the desk in between closes it, which is not an expiry.
-		if fresh, err := store.GetRenewalProposal(ctx, s.d.DB, es, l.prop.ID); err == nil {
-			if err := checkOpen(fresh, s.now()); err != nil {
-				return nil, err
-			}
+		// The view reads the booking after the link loaded the proposal: the
+		// desk may have answered in between, so the error uses the current
+		// proposal status with the booking the view saw.
+		fresh, err := store.GetRenewalProposal(ctx, s.d.DB, es, l.prop.ID)
+		if err != nil {
+			return nil, err
 		}
-		return nil, ErrExpired
+		actions.Status = fresh.Status
+		return nil, AcceptRefusal(actions)
 	}
 	if in.Payment == PaymentDeposit && !view.CanPayDeposit && l.ref.Online {
 		return nil, configerr.Invalid("payment", "L'acconto non è previsto per questo rinnovo: scegli il pagamento intero.")
@@ -251,7 +255,7 @@ func (s *Service) AcceptByToken(ctx context.Context, slug, token string, in Publ
 	if l.prop, err = store.GetRenewalProposal(ctx, s.d.DB, es, l.prop.ID); err != nil {
 		return nil, err
 	}
-	view, err = s.publicView(ctx, s.d.DB, l)
+	view, _, err = s.publicView(ctx, s.d.DB, l)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +317,8 @@ func (s *Service) DeclineByToken(ctx context.Context, slug, token, reason string
 	if err != nil {
 		return nil, err
 	}
-	return s.publicView(ctx, s.d.DB, l)
+	view, _, err := s.publicView(ctx, s.d.DB, l)
+	return view, err
 }
 
 // ---- jobs ----------------------------------------------------------------------

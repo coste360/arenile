@@ -386,5 +386,11 @@
       "dirty": "Ci sono modifiche non salvate: salvale o annullale prima di ribaltare la disposizione.",
       "resized": "Hai cambiato anche le dimensioni: applica e salva prima quelle, poi sposta il mare."
     }
+  },
+  "leave": {
+    "title": "Uscire senza salvare?",
+    "description": "Hai modifiche alla mappa non salvate: se esci le perdi.",
+    "stay": "Resta nella mappa",
+    "discard": "Esci senza salvare"
   }
 }

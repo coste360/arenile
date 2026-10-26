@@ -386,5 +386,11 @@
       "dirty": "Es gibt ungespeicherte Änderungen: Speichern oder verwerfen Sie sie, bevor Sie die Anordnung spiegeln.",
       "resized": "Sie haben auch die Größe geändert: Übernehmen und speichern Sie sie zuerst, dann verschieben Sie das Meer."
     }
+  },
+  "leave": {
+    "title": "Ohne Speichern verlassen?",
+    "description": "Der Plan hat ungespeicherte Änderungen: Wenn Sie ihn verlassen, gehen sie verloren.",
+    "stay": "Beim Plan bleiben",
+    "discard": "Ohne Speichern verlassen"
   }
 }

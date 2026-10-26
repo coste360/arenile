@@ -386,5 +386,11 @@
       "dirty": "Il y a des modifications non enregistrées : enregistrez-les ou annulez-les avant de retourner la disposition.",
       "resized": "Vous avez aussi changé les dimensions : appliquez-les et enregistrez d'abord, puis déplacez la mer."
     }
+  },
+  "leave": {
+    "title": "Quitter sans enregistrer ?",
+    "description": "Le plan contient des modifications non enregistrées : si vous le quittez, elles sont perdues.",
+    "stay": "Rester sur le plan",
+    "discard": "Quitter sans enregistrer"
   }
 }

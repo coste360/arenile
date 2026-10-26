@@ -151,6 +151,42 @@ describe('MapEditorPage', () => {
     expect(await screen.findByText('2 postazioni · salvata')).toBeInTheDocument();
   });
 
+  it('keeps the draft when the session expires on save, unless the user leaves', async () => {
+    const user = userEvent.setup();
+    let expired = false;
+    const base: Record<string, Handler> = routes('manager');
+    const { history } = renderApp(`/admin/e/${EST_ID}/maps/m1`, {
+      ...base,
+      'GET /api/admin/v1/auth/me': (req) =>
+        expired ? problem(401, 'unauthorized') : base['GET /api/admin/v1/auth/me']!(req),
+      [`PUT ${API}/maps/m1`]: () => {
+        expired = true;
+        return problem(401, 'unauthorized');
+      },
+    });
+    const a1 = await spotButton('A1');
+    a1.focus();
+    await user.keyboard('{Enter}{ArrowRight}');
+    await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
+    // The panel heads to the login form; the editor asks first.
+    const dialog = await screen.findByRole('alertdialog', { name: 'Uscire senza salvare?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Resta nella mappa' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(history.location.pathname).toBe(`/admin/e/${EST_ID}/maps/m1`);
+    expect(await spotButton('A1')).toHaveAttribute('data-x', '110');
+    // Still editable: the cached user is dropped only once the login form opens.
+    expect(screen.getByRole('button', { name: 'Salva mappa' })).toBeEnabled();
+    // Saving again still finds no session: leaving now discards the draft.
+    await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', {
+        name: 'Esci senza salvare',
+      }),
+    );
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/login'));
+    expect(history.location.search).toBe(`?redirect=%2Fe%2F${EST_ID}%2Fmaps%2Fm1`);
+  });
+
   it('multi-selects with shift, aligns, and undoes/redoes with the keyboard', async () => {
     const user = userEvent.setup();
     const d = { ...DOC, spots: [spot('s1', 'A1', 100, 200), spot('s2', 'A2', 160, 230)] };

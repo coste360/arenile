@@ -138,6 +138,29 @@ func TestPublicActions_Scenarios(t *testing.T) {
 	}
 }
 
+func TestAcceptRefusal_Scenarios(t *testing.T) {
+	for _, tc := range []struct {
+		name, status, booking string
+		want                  error
+	}{
+		{"deadline passed while proposed", store.RenewalProposed, "held", ErrExpired},
+		{"hold elapsed after the acceptance", store.RenewalAccepted, "pending_payment", ErrExpired},
+		{"booking cancelled, proposal still open", store.RenewalProposed, "cancelled", ErrExpired},
+		{"confirmed by the desk before the link loaded", store.RenewalProposed, "confirmed", ErrNotOpen},
+		{"paid online, not yet converted", store.RenewalAccepted, "confirmed", ErrNotOpen},
+		{"already checked in", store.RenewalAccepted, "checked_in", ErrNotOpen},
+		{"converted", store.RenewalConverted, "confirmed", ErrNotOpen},
+		{"declined", store.RenewalDeclined, "cancelled", ErrNotOpen},
+		{"expired", store.RenewalExpired, "cancelled", ErrExpired},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := AcceptRefusal(ActionsInput{Status: tc.status, BookingStatus: tc.booking}); !errors.Is(got, tc.want) {
+				t.Fatalf("got %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestAmountDue_Scenarios(t *testing.T) {
 	for _, tc := range []struct {
 		name                 string
