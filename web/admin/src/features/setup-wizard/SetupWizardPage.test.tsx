@@ -202,9 +202,22 @@ describe('SetupWizardPage', () => {
     expect(screen.getByLabelText('File')).toHaveValue('8');
     expect(screen.getByLabelText('Posti per fila')).toHaveValue('15');
     expect(screen.getByText('120 postazioni')).toBeInTheDocument();
+    // Another year moves the season dates with it.
+    await user.clear(screen.getByLabelText('Anno'));
+    await user.type(screen.getByLabelText('Anno'), '2031');
+    expect(screen.getByRole('button', { name: /Apertura e chiusura/ })).toHaveTextContent(
+      '01/05/2031 – 30/09/2031',
+    );
     await user.click(screen.getByRole('button', { name: 'Crea stagione e mappa' }));
     expect(await screen.findByText('Configurazione creata.')).toBeInTheDocument();
-    expect(applyBodies[0]).toMatchObject({ template: 'classic_rows', rows: 8, spots_per_row: 15 });
+    expect(applyBodies[0]).toMatchObject({
+      template: 'classic_rows',
+      rows: 8,
+      spots_per_row: 15,
+      season_year: 2031,
+      opens_on: '2031-05-01',
+      closes_on: '2031-09-30',
+    });
     expect(
       callsTo(fetchMock, 'POST', `${API}/setup/apply-template`)[0]?.headers.get('Idempotency-Key'),
     ).toBeTruthy();

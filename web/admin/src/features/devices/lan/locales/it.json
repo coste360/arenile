@@ -7,7 +7,7 @@
   },
   "off": {
     "title": "La modalità rete locale è spenta",
-    "description": "Attivala nelle impostazioni dell'app desktop (o dal menu nella barra di sistema): gli altri dispositivi della Wi-Fi del lido potranno aprire il pannello. Le connessioni da fuori della rete locale restano rifiutate.",
+    "description": "Attivala dall'icona di Arenile nella barra di sistema (in alto a destra su Mac, vicino all'orologio su Windows) → «Modalità rete locale», oppure in Configurazione → App desktop → «Attiva la modalità rete locale» con il pulsante qui sotto. Gli altri dispositivi della Wi-Fi del lido potranno aprire il pannello; le connessioni da fuori della rete locale restano rifiutate.",
     "action": "Apri le impostazioni dell'app desktop"
   },
   "server": {

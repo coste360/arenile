@@ -146,7 +146,9 @@ describe('DevicesPage', () => {
     });
     await user.click(await screen.findByRole('button', { name: 'Abbina un dispositivo' }));
     const dialog = await screen.findByRole('dialog');
-    expect(await within(dialog).findByText('Attiva la modalità rete locale')).toBeInTheDocument();
+    expect(
+      await within(dialog).findByText("Attiva la modalità rete locale nell'app desktop"),
+    ).toBeInTheDocument();
   });
 
   it('disables pairing on the desktop edition in local mode', async () => {
@@ -175,7 +177,9 @@ describe('DevicesPage', () => {
           features: [],
         }),
     });
-    expect(await screen.findByText('Attiva la modalità rete locale')).toBeInTheDocument();
+    expect(
+      await screen.findByText("Attiva la modalità rete locale nell'app desktop"),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Abbina un dispositivo' })).toBeDisabled();
   });
 });

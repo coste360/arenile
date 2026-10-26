@@ -7,7 +7,7 @@
   },
   "off": {
     "title": "Local network mode is off",
-    "description": "Turn it on in the desktop app settings (or from the system tray menu): other devices on the beach Wi-Fi will be able to open the panel. Connections from outside the local network stay refused.",
+    "description": "Turn it on from the Arenile icon in the system tray (top right on Mac, next to the clock on Windows) → “Local network mode”, or in Configuration → Desktop app → “Enable local network mode” with the button below. Other devices on the beach Wi-Fi will be able to open the panel; connections from outside the local network stay refused.",
     "action": "Open the desktop app settings"
   },
   "server": {

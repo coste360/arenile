@@ -37,8 +37,8 @@
     "descriptionOwner": "Abbina i telefoni dello staff o l'app desktop della cassa con il pulsante “Abbina un dispositivo”."
   },
   "lan": {
-    "title": "Attiva la modalità rete locale",
-    "description": "L'app desktop in modalità locale non è raggiungibile da altri dispositivi. Attiva la modalità rete locale dal menu dell'app (icona nella barra di sistema), poi torna qui per abbinare telefoni e altri PC."
+    "title": "Attiva la modalità rete locale nell'app desktop",
+    "description": "Per abbinare telefoni e altri PC, l'app desktop di Arenile deve accettare le connessioni dalla Wi-Fi del lido. Clicca l'icona di Arenile nella barra di sistema (in alto a destra su Mac, vicino all'orologio su Windows) e scegli «Modalità rete locale»; il titolare può anche usare Configurazione → App desktop → «Attiva la modalità rete locale». Poi torna qui."
   },
   "pair": {
     "open": "Abbina un dispositivo",

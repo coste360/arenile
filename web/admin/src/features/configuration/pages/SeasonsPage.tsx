@@ -68,6 +68,7 @@ import {
   toRatePeriodInput,
   toRatePeriodValues,
   toSeasonInput,
+  moveSeasonDates,
   toSeasonValues,
   uncoveredDays,
   type RatePeriodValues,
@@ -274,7 +275,27 @@ function SeasonForm({
           <Input
             {...fieldAria('season-year', errors.year)}
             inputMode="numeric"
-            {...register('year')}
+            {...register('year', {
+              // A new season follows its year (same day and month); an existing
+              // one keeps its dates, which bookings may already depend on.
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                if (item) return;
+                const moved = moveSeasonDates(
+                  e.target.value,
+                  form.getValues('opens_on'),
+                  form.getValues('closes_on'),
+                );
+                if (!moved) return;
+                form.setValue('opens_on', moved.opens_on, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+                form.setValue('closes_on', moved.closes_on, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+              },
+            })}
           />
         </Field>
         <SelectField

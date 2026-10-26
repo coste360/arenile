@@ -33,6 +33,7 @@ import { newEstablishmentSchema, toEstablishmentCreate } from './newEstablishmen
 import {
   holidaysPatch,
   ratePeriodSchema,
+  moveSeasonDates,
   seasonSchema,
   timelineSegments,
   toRatePeriodInput,
@@ -174,6 +175,71 @@ describe('seasons schemas', () => {
         }),
       ),
     ).toEqual({ closes_on: 'configuration:validation.dateOrder' });
+  });
+
+  it.each([
+    [
+      'opens in another year',
+      '2026',
+      '2027-05-01',
+      '2027-09-30',
+      { opens_on: 'configuration:validation.seasonOpensInYear' },
+    ],
+    [
+      'closes after the following year',
+      '2026',
+      '2026-11-01',
+      '2028-01-15',
+      { closes_on: 'configuration:validation.seasonClosesBy' },
+    ],
+    ['winter season across two years', '2026', '2026-11-01', '2027-03-31', {}],
+    [
+      'year still being typed',
+      '20',
+      '2027-05-01',
+      '2027-09-30',
+      { year: 'configuration:validation.integer' },
+    ],
+  ])('season dates against the year: %s', (_, year, opens_on, closes_on, want) => {
+    expect(
+      messages(seasonSchema.safeParse({ year, opens_on, closes_on, status: 'draft' })),
+    ).toEqual(want);
+  });
+
+  it.each([
+    [
+      'summer to an earlier year',
+      '2026',
+      '2027-05-01',
+      '2027-09-30',
+      { opens_on: '2026-05-01', closes_on: '2026-09-30' },
+    ],
+    [
+      'winter season keeps the year gap',
+      '2030',
+      '2026-11-01',
+      '2027-03-31',
+      { opens_on: '2030-11-01', closes_on: '2031-03-31' },
+    ],
+    [
+      '29 February in a common year',
+      '2027',
+      '2028-02-29',
+      '2028-09-30',
+      { opens_on: '2027-02-28', closes_on: '2027-09-30' },
+    ],
+    ['same year', '2027', '2027-05-01', '2027-09-30', null],
+    ['year still being typed', '202', '2027-05-01', '2027-09-30', null],
+    ['dates not complete', '2026', '2027-05-01', '', null],
+    [
+      'closing on the last day of February into a leap year',
+      '2027',
+      '2026-11-01',
+      '2027-02-28',
+      { opens_on: '2027-11-01', closes_on: '2028-02-29' },
+    ],
+  ])('moveSeasonDates: %s', (_, year, opens, closes, want) => {
+    expect(moveSeasonDates(year, opens, closes)).toEqual(want);
   });
 
   it('rate period: overlap with other periods, with itself, outside the season', () => {

@@ -27,13 +27,74 @@ export const seasonSchema = z
     closes_on: isoDate,
     status: z.enum(SEASON_STATUSES),
   })
-  .refine(
-    (v) => !isCalendarDate(v.opens_on) || !isCalendarDate(v.closes_on) || v.opens_on <= v.closes_on,
-    {
-      message: V.dateOrder,
-      path: ['closes_on'],
-    },
-  );
+  .superRefine((v, ctx) => checkSeasonDates(v.year, v.opens_on, v.closes_on, ctx));
+
+/**
+ * Season dates against its year, as the server checks them: the season opens
+ * in its year and never closes before it opens; the Seasons API lets it close
+ * by the end of the following year (season/validate.go), the setup wizard at
+ * most a year later (setup/apply.go, maxDays 366).
+ */
+export function checkSeasonDates(
+  year: string,
+  opensOn: string,
+  closesOn: string,
+  ctx: z.RefinementCtx,
+  opts: { maxDays?: number } = {},
+) {
+  if (!isCalendarDate(opensOn) || !isCalendarDate(closesOn)) return;
+  const ordered = opensOn <= closesOn;
+  if (!ordered) {
+    ctx.addIssue({ code: 'custom', message: V.dateOrder, path: ['closes_on'] });
+  }
+  if (!/^\d{4}$/.test(year.trim())) return;
+  const y = Number(year);
+  if (Number(opensOn.slice(0, 4)) !== y) {
+    ctx.addIssue({ code: 'custom', message: V.seasonOpensInYear, path: ['opens_on'] });
+  } else if (ordered && opts.maxDays && daysBetween(opensOn, closesOn) + 1 > opts.maxDays) {
+    ctx.addIssue({ code: 'custom', message: V.seasonMaxOneYear, path: ['closes_on'] });
+  } else if (Number(closesOn.slice(0, 4)) > y + 1) {
+    ctx.addIssue({ code: 'custom', message: V.seasonClosesBy, path: ['closes_on'] });
+  }
+}
+
+const isLeap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+
+/**
+ * Same day and month in another year; 29 February becomes the 28th. A
+ * closing date on the last day of February stays on the last day (as
+ * pricing.ShiftDate does when a season is copied).
+ */
+function inYear(iso: string, year: number, endOfMonth = false): string {
+  const md = iso.slice(5);
+  const lastOfFeb = md === '02-29' || (md === '02-28' && !isLeap(Number(iso.slice(0, 4))));
+  if (md === '02-29' || (endOfMonth && lastOfFeb)) {
+    return `${year}-02-${isLeap(year) ? '29' : '28'}`;
+  }
+  return `${year}-${md}`;
+}
+
+/**
+ * The season dates moved to a new year, keeping day and month (the closing
+ * date keeps its distance in years from the opening), or null when the year
+ * or the dates are not complete yet.
+ */
+export function moveSeasonDates(
+  year: string,
+  opensOn: string,
+  closesOn: string,
+): { opens_on: string; closes_on: string } | null {
+  if (!/^\d{4}$/.test(year.trim()) || !isCalendarDate(opensOn) || !isCalendarDate(closesOn)) {
+    return null;
+  }
+  const y = Number(year);
+  const from = Number(opensOn.slice(0, 4));
+  if (y === from || y < 2000 || y > 2100) return null;
+  return {
+    opens_on: inYear(opensOn, y),
+    closes_on: inYear(closesOn, y + Number(closesOn.slice(0, 4)) - from, true),
+  };
+}
 
 export type SeasonValues = z.infer<typeof seasonSchema>;
 
