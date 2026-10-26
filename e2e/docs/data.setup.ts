@@ -35,6 +35,9 @@ const isoAddDays = (iso: string, days: number) => {
   return d.toISOString().slice(0, 10);
 };
 const minIso = (a: string, b: string) => (a < b ? a : b);
+const maxIso = (a: string, b: string) => (a > b ? a : b);
+/** Today in the demo establishment's time zone, "YYYY-MM-DD". */
+const romeToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date());
 const text = (t: I18nText | string | null | undefined): I18nText =>
   typeof t === "string" ? { it: t } : { ...(t ?? {}) };
 
@@ -52,10 +55,12 @@ setup("demo context and data snapshots", async ({ playwright, baseURL }) => {
   // The demo season is the one `seed demo` filled with bookings: the first
   // that has not closed yet (by the real date of the seed), else the last.
   const seasons = (await api.all<Season>(`${E}/seasons`)).sort((a, b) => a.opens_on.localeCompare(b.opens_on));
-  const today = new Date().toISOString().slice(0, 10);
+  const today = romeToday();
   const season = seasons.find((s) => s.closes_on >= today) ?? seasons[seasons.length - 1];
   if (!season) throw new Error("demo season not found");
-  const date = process.env.DOCS_DATE ?? minIso(isoAddDays(season.opens_on, 9), season.closes_on);
+  // A week ahead, inside the season: the demo bookings fill the next 30 days
+  // and the daily sale refuses past days.
+  const date = process.env.DOCS_DATE ?? minIso(isoAddDays(maxIso(today, season.opens_on), 7), season.closes_on);
 
   const maps = await api.all<{ id: string; sort_order?: number }>(`${E}/maps`);
   const mapId = maps[0]?.id;

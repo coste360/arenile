@@ -23,7 +23,7 @@ import { DOCS_OWNER_PASSWORD } from "./support/env";
  *
  * Environment: ARENILE_DOCS_BIN (binary, default bin/arenile),
  * DOCS_BASE_URL (use a running instance instead), DOCS_PORT (default 8091),
- * DOCS_DATE (operating date, default: 10th day of the demo season).
+ * DOCS_DATE (operating date, default: a week from today, inside the demo season).
  */
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
