@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-10-26
+
 ### Corretto
 - Pannello: quando la sessione scade, la prima richiesta che riceve `401` riporta al login e, dopo l'accesso, alla
   pagina in cui si era. Prima la pagina mostrava «Qualcosa è andato storto» e **Riprova** non poteva funzionare;
@@ -953,7 +955,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.4...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.5...main
+[1.0.5]: https://github.com/coste360/arenile/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/coste360/arenile/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/coste360/arenile/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/coste360/arenile/compare/v1.0.1...v1.0.2
