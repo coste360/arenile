@@ -135,6 +135,11 @@ func TestRenewal_CampaignLifecycle(t *testing.T) {
 			t.Fatalf("sync before the webhook: %d %v", n, err)
 		}
 		webhookConfirm(t, x, props[1].BookingID)
+		// Paid but not yet converted (the sink has not run): accepting again
+		// from the link is refused as no longer open, not as expired.
+		if _, err := x.rn.AcceptByToken(ctx, checkouttestSlug, tok, renewal.PublicAcceptInput{Payment: renewal.PaymentFull}); !errors.Is(err, renewal.ErrNotOpen) {
+			t.Fatalf("accept after the payment: %v", err)
+		}
 		// The booking.confirmed event converts the proposal at once (event
 		// sink); a redelivery and the next job run change nothing more.
 		var confirmed store.OutboxEvent
