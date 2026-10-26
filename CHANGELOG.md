@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-10-26
+
 ### Aggiunto
 - `arenile seed demo` crea anche **cassa@lido-demo.example** (cassiere del Lido Demo), l'utente per il pulsante
   **Prova la demo** dell'app mobile: su un'istanza dimostrativa basta impostare
@@ -960,7 +962,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.5...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.6...main
+[1.0.6]: https://github.com/coste360/arenile/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/coste360/arenile/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/coste360/arenile/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/coste360/arenile/compare/v1.0.2...v1.0.3
