@@ -162,6 +162,13 @@ func (s *Service) AcceptByToken(ctx context.Context, slug, token string, in Publ
 		return nil, err
 	}
 	if !view.CanAccept {
+		// The view reads the booking after the link loaded the proposal: an
+		// answer from the desk in between closes it, which is not an expiry.
+		if fresh, err := store.GetRenewalProposal(ctx, s.d.DB, es, l.prop.ID); err == nil {
+			if err := checkOpen(fresh, s.now()); err != nil {
+				return nil, err
+			}
+		}
 		return nil, ErrExpired
 	}
 	if in.Payment == PaymentDeposit && !view.CanPayDeposit && l.ref.Online {

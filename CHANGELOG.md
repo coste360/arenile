@@ -6,6 +6,10 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Corretto
+- Rinnovi: se il cliente accetta dal link nello stesso istante in cui la cassa conferma il rinnovo, ora riceve
+  «proposta non più aperta» (`409`) invece di «proposta scaduta» (`410`).
+
 ## [1.0.4] - 2026-10-26
 
 ### Aggiunto
