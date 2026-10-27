@@ -1,9 +1,9 @@
 package availability
 
 import (
-	"slices"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 

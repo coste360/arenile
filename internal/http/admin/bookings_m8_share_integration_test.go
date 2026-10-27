@@ -24,7 +24,7 @@ func TestBookingsHTTP_PartnerShareType(t *testing.T) {
 		est := f.Est.ID
 		for _, share := range []map[string]any{{"type": "bogus"}, {"type": ""}, {"percent": "10"}} {
 			create := map[string]any{
-				"customer": map[string]any{"first_name": "Mario", "last_name": "Rossi"},
+				"customer":  map[string]any{"first_name": "Mario", "last_name": "Rossi"},
 				"starts_on": "2027-07-10", "ends_on": "2027-07-11", "slots": "FULL", "formula": "multi_day",
 				"lines":         []map[string]any{{"pack_id": f.Base.ID, "spot_id": f.Spots[0].ID}},
 				"partner_share": share,

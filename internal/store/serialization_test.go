@@ -8,7 +8,7 @@ import (
 
 type fakePgErr struct{ code string }
 
-func (e fakePgErr) Error() string         { return "pg: " + e.code }
+func (e fakePgErr) Error() string       { return "pg: " + e.code }
 func (e fakePgErr) Field(b byte) string { return map[byte]string{'C': e.code}[b] }
 
 // TestIsSerializationFailure_Codes: deadlocks, serialization failures and
