@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@arenile/shared/ui/dropdown-menu';
-import { ListOrderedIcon, MapIcon, PrinterIcon, SearchIcon } from 'lucide-react';
+import { ListOrderedIcon, LocateFixedIcon, MapIcon, PrinterIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MapPaper } from './DayMapSheet';
 import { UndoLastMoveButton } from './UndoLastMoveButton';
@@ -24,8 +24,9 @@ export interface MapToolsProps {
 
 /**
  * Cash-desk tools above the operational map (spec 30.6, 30.7, 30.10):
- * "Trova posto", undo of the last move and printing (map of the day in A4
- * or A3 landscape, list for the lifeguards).
+ * "Trova posto" (a crosshair, distinct from the search field next to it),
+ * undo of the last move and printing (map of the day at A4 or A3 scale, list
+ * for the lifeguards).
  */
 export function MapTools({
   establishmentId,
@@ -39,7 +40,7 @@ export function MapTools({
     <div className="flex flex-wrap items-center gap-2" data-testid="map-tools">
       {onFindSpot && (
         <Button variant="outline" onClick={onFindSpot}>
-          <SearchIcon aria-hidden="true" />
+          <LocateFixedIcon aria-hidden="true" />
           <span className="sr-only sm:not-sr-only">{t('tools.findSpot')}</span>
         </Button>
       )}

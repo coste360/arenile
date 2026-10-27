@@ -116,6 +116,18 @@ export function PartnerDetailPage() {
       actions={
         <>
           {perms.canConfigure && (
+            <Button variant="outline" onClick={() => setEditing(true)}>
+              <PencilIcon aria-hidden="true" />
+              {t('common.actions.edit', { ns: 'translation' })}
+            </Button>
+          )}
+          {perms.canTakePayments && (
+            <Button onClick={() => setRecording(true)}>
+              <WalletIcon aria-hidden="true" />
+              {t('payments.record')}
+            </Button>
+          )}
+          {perms.canConfigure && (
             <ConfirmDialog
               title={t('common.actions.confirmDelete', { ns: 'translation' })}
               description={t('detail.deleteConfirm', { name: p.name })}
@@ -131,24 +143,12 @@ export function PartnerDetailPage() {
                 });
               }}
               trigger={
-                <Button variant="destructive">
+                <Button variant="ghost" className="text-destructive">
                   <Trash2Icon aria-hidden="true" />
                   {t('common.actions.delete', { ns: 'translation' })}
                 </Button>
               }
             />
-          )}
-          {perms.canConfigure && (
-            <Button variant="outline" onClick={() => setEditing(true)}>
-              <PencilIcon aria-hidden="true" />
-              {t('common.actions.edit', { ns: 'translation' })}
-            </Button>
-          )}
-          {perms.canTakePayments && (
-            <Button onClick={() => setRecording(true)}>
-              <WalletIcon aria-hidden="true" />
-              {t('payments.record')}
-            </Button>
           )}
         </>
       }

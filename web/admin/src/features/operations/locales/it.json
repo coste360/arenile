@@ -21,6 +21,7 @@
     "assignTicketAria": "Assegna il biglietto {{number}} sulla mappa"
   },
   "map": {
+    "legendToggle": "Legenda ed etichette",
     "title": "Mappa",
     "description": "Vista operativa della mappa per qualsiasi data e fascia, con colori per stato.",
     "noMapsTitle": "Nessuna mappa",

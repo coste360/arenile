@@ -124,7 +124,7 @@
   },
   "period": {
     "label": "Période",
-    "season": "Saison {{year}} ({{from}} – {{to}})",
+    "season": "Saison {{year}}",
     "custom": "Période personnalisée",
     "range": "Du – au",
     "errors": {

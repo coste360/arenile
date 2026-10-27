@@ -21,6 +21,7 @@
     "assignTicketAria": "Ticket {{number}} auf der Karte zuweisen"
   },
   "map": {
+    "legendToggle": "Legende und Beschriftungen",
     "title": "Plan",
     "description": "Operativer Plan für jedes Datum und jede Tageszeit, nach Status eingefärbt.",
     "noMapsTitle": "Noch kein Plan",

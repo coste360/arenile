@@ -21,6 +21,7 @@
     "assignTicketAria": "Assign ticket {{number}} on the map"
   },
   "map": {
+    "legendToggle": "Legend and labels",
     "title": "Map",
     "description": "Operational map for any date and slot, coloured by status.",
     "noMapsTitle": "No map yet",

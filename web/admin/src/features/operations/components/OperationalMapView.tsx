@@ -26,10 +26,16 @@ import {
 import { useMe } from '@arenile/shared/api';
 import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Toggle } from '@arenile/shared/ui/toggle';
-import { ResponsiveTabsList } from '@arenile/shared/ui/patterns';
+import { ResponsiveTabsList, useIsNarrow } from '@arenile/shared/ui/patterns';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@arenile/shared/ui/collapsible';
 import {
   ArrowRightLeftIcon,
   CalendarCheckIcon,
+  ChevronDownIcon,
   ListChecksIcon,
   MapPinnedIcon,
   SearchIcon,
@@ -190,6 +196,9 @@ export function OperationalMapView({
   const [lifeguard, setLifeguard] = useState(false);
   const { establishment } = useCurrentEstablishment();
   const dayPrint = useDayMapPrint();
+  // On phones the legend, the indicators and the label toggles fold into
+  // one section, so the drawing is on the first screen (390 and 320 px).
+  const narrow = useIsNarrow();
 
   const spots = useMemo(() => day?.spots ?? [], [day]);
   const byId = useMemo(() => new Map(spots.map((s) => [s.spot_id, s])), [spots]);
@@ -426,6 +435,44 @@ export function OperationalMapView({
       ? shown.proposal.spot_ids
       : matches;
 
+  const labelSelector = (
+    <MapLabelSelector
+      value={labelParts}
+      onChange={setLabelParts}
+      canSeeCustomers={canSeeCustomers}
+    />
+  );
+  const legend = (
+    <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
+      <MapLegend statuses={OPERATIONAL_LEGEND} />
+      <div className="space-y-1.5">
+        <p id={indicatorLegendId} className="text-xs font-medium text-muted-foreground">
+          {t('indicator.legend')}
+        </p>
+        <ul className="flex flex-wrap gap-3 text-xs" aria-labelledby={indicatorLegendId}>
+          {SPOT_INDICATORS.map((kind) => {
+            const Icon = INDICATOR_ICONS[kind];
+            return (
+              <li key={kind} className="flex items-center gap-1.5" data-indicator-legend={kind}>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex size-4 items-center justify-center rounded-full',
+                    INDICATOR_CLASSES[kind].bg,
+                    INDICATOR_CLASSES[kind].fg,
+                  )}
+                >
+                  <Icon className="size-3" />
+                </span>
+                {t(`indicator.${kind}`)}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={cn('space-y-3', className)}
@@ -581,40 +628,22 @@ export function OperationalMapView({
         />
         <TabsContent value="map" className="space-y-2">
           {/* Legend first: readable before scrolling past the drawing (spec 11.3);
-              folded away while a ticket is being placed, so the drawing is next. */}
-          {!assignment.active && (
-            <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
-              <MapLegend statuses={OPERATIONAL_LEGEND} />
-              <div className="space-y-1.5">
-                <p id={indicatorLegendId} className="text-xs font-medium text-muted-foreground">
-                  {t('indicator.legend')}
-                </p>
-                <ul className="flex flex-wrap gap-3 text-xs" aria-labelledby={indicatorLegendId}>
-                  {SPOT_INDICATORS.map((kind) => {
-                    const Icon = INDICATOR_ICONS[kind];
-                    return (
-                      <li
-                        key={kind}
-                        className="flex items-center gap-1.5"
-                        data-indicator-legend={kind}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            'flex size-4 items-center justify-center rounded-full',
-                            INDICATOR_CLASSES[kind].bg,
-                            INDICATOR_CLASSES[kind].fg,
-                          )}
-                        >
-                          <Icon className="size-3" />
-                        </span>
-                        {t(`indicator.${kind}`)}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
+              folded away while a ticket is being placed, so the drawing is next.
+              On phones it is a collapsed section together with the label toggles. */}
+          {!assignment.active && !narrow && legend}
+          {!assignment.active && narrow && (
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full justify-between">
+                  {t('map.legendToggle')}
+                  <ChevronDownIcon aria-hidden="true" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 pt-2">
+                {labelSelector}
+                {legend}
+              </CollapsibleContent>
+            </Collapsible>
           )}
           <div ref={mapRef} className="scroll-mt-4">
             <BeachMap
@@ -630,13 +659,7 @@ export function OperationalMapView({
               spotDescription={spotDescription}
               spotCaptions={captions}
               labelMode={labelMode}
-              toolbar={
-                <MapLabelSelector
-                  value={labelParts}
-                  onChange={setLabelParts}
-                  canSeeCustomers={canSeeCustomers}
-                />
-              }
+              toolbar={narrow ? undefined : labelSelector}
               legendStatuses={OPERATIONAL_LEGEND}
               showLegend={false}
               title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}

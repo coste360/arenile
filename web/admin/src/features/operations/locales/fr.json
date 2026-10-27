@@ -21,6 +21,7 @@
     "assignTicketAria": "Attribuer le billet {{number}} sur le plan"
   },
   "map": {
+    "legendToggle": "Légende et étiquettes",
     "title": "Plan",
     "description": "Plan opérationnel pour toute date et tout créneau, coloré par statut.",
     "noMapsTitle": "Aucun plan",
