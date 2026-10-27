@@ -7,15 +7,65 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 ## [Unreleased]
 
 ### Aggiunto
-- Contratto della milestone M8, cassa avanzata e convenzioni (spec 30, ADR 0028): partner e categorie di clienti,
-  convenzioni estese (destinatari, prezzi fissi per pack, ambito, versioni, contingente riservato, requisito da
-  verificare, canali e link della convenzione), conto del partner con pagamenti registrati, rendiconto per partner
-  e registro delle convenzioni, Trova posto con cambi di posto, scambio tra prenotazioni, spostamento di gruppo e
-  annulla entro 5 minuti, duplica, riepilogo via WhatsApp e stampabile, calendario della postazione, lista per i
-  bagnini, rilasci degli abbonati per intervalli e giorni ricorrenti, vendita online per postazione. Le operazioni
-  nuove rispondono `501` finché non vengono completate.
-- Migrazione 00013 (SQLite e PostgreSQL) con le tabelle delle convenzioni e dei partner e un vincolo nuovo: una
-  riga di prenotazione occupa al massimo una postazione per mezza giornata.
+- **Cassa avanzata e convenzioni (M8, spec 30, ADR 0028).** Migrazione 00013 (SQLite e PostgreSQL) con partner,
+  categorie di clienti, verifiche dei requisiti, versioni e contingente delle convenzioni, pagamenti dei partner e
+  annullamento degli spostamenti, e un vincolo nuovo: una riga di prenotazione occupa al massimo una postazione per
+  mezza giornata.
+- **Trova posto** (`POST /find-spot`, `POST /find-spot/book`; pannello: Mappa → **Trova posto** e foglio della nuova
+  prenotazione): proposte ordinate per cambi di posto, continuità e vicinanza (anche per gruppi), con prezzo e
+  convenzione; la proposta scelta diventa una prenotazione con una riga sola che occupa le postazioni dei segmenti
+  nella stessa transazione. Nel soggiorno spezzato ogni giorno è prezzato con la categoria della postazione occupata
+  quel giorno, anche dopo uno spostamento da una data.
+- **Spostamenti e scambi:** spostamento da oggi, da domani o da una data; scambio tra due prenotazioni toccando una
+  postazione occupata, con la differenza di prezzo di entrambe (`POST /bookings/swap`); spostamento di gruppo che
+  mantiene la disposizione (`POST /bookings/group-move`); annulla dell'ultimo spostamento entro 5 minuti
+  (`GET /moves/last`, `POST /moves/{moveId}/undo`); duplica su nuove date e cambio del cliente con anteprima del
+  prezzo. Ogni operazione è una transazione sola con audit ed evento per ogni prenotazione.
+- **Riepilogo per il cliente:** testo pronto per WhatsApp nella lingua del cliente con un link di gestione nuovo e
+  link `wa.me` solo se il cliente ha un telefono (`GET /bookings/{bookingId}/share-summary`; Arenile non invia
+  nulla), e riepilogo stampabile con il QR della prenotazione su A4 o scontrino 80 mm
+  (`GET /bookings/{bookingId}/summary-print`).
+- **Mappa operativa:** glifi di arrivo, partenza, convenzione o partner e gruppo; etichette combinabili Codice,
+  Cliente, Fine e Allestimento (dagli extra con `show_on_map` e `map_label`), ricordate per utente; filtri rapidi
+  (arrivi, partenze, da saldare, presenti, una convenzione, un gruppo); vista **Intervallo** con le postazioni
+  libere in parte ("N/M"); stampa della mappa del giorno su A4 o A3 orizzontale e **lista per i bagnini**
+  (`GET /operations/lifeguard-list`, JSON o pagina stampabile in italiano, inglese, tedesco e francese).
+- **Calendario della postazione** (`GET /spots/{spotId}/calendar`): la stagione con mattina e pomeriggio di ogni
+  giorno; un giorno libero avvia una prenotazione, uno occupato apre la sua. I nomi solo con il permesso di vedere
+  le prenotazioni.
+- **Rilasci degli abbonati per intervallo e giorni della settimana**, dal pannello e dal link di gestione del
+  cliente: si rilasciano solo i giorni ancora occupati, il credito è confermato quando il giorno viene rivenduto.
+- **Vendita online per postazione:** l'editor della mappa ha **Vendibile online**; le postazioni escluse non
+  compaiono nella disponibilità pubblica e non si vendono online (INV-105), la cassa continua a venderle.
+- **Partner e convenzioni** (spec 30.2-30.3; pannello: **Partner e convenzioni**): anagrafica dei partner
+  (`/partners`), categorie di clienti con i membri (`/customer-categories`), verifica dei requisiti sul cliente e
+  sulla prenotazione (solo data e operatore, mai copie di documenti). Le convenzioni hanno destinatari (partner,
+  categoria, singoli clienti), prezzo fisso per pack, ambito su pack ed extra, stagioni, canali (cassa, codice
+  online, link `/b/{slug}?c={codice}`), requisito, categoria del registro e storico delle versioni; la condizione
+  applicata resta nello snapshot del prezzo. Sulla prenotazione: convenzione, partner, nome del gruppo, adulti e
+  bambini, nomi degli ospiti e quota a carico del partner; filtri `agreement_id`, `partner_id`, `group_name`.
+- **Contingente delle convenzioni garantito dal database:** tetto per mezza giornata e capacità riservata che torna
+  in vendita `release_days_before` giorni prima (predefinito 3), senza job (`409 agreement_quota_exceeded`;
+  `/agreements/{id}/quota` mostra l'uso).
+- **Conto del partner:** estratto conto (JSON, Excel, pagina stampabile) con saldo iniziale, addebitato, pagato e
+  saldo finale, pagamenti registrati e annullabili; **rendiconto per partner** (`/reports/partners`, JSON, CSV,
+  Excel) e **registro delle convenzioni per il bando** (`/reports/agreements-register`, JSON, Excel, pagina
+  stampabile con totali per categoria e spazio per la firma), con gli stessi importi dei report di cassa.
+- **Pagina pubblica:** link della convenzione (`?c=`) con il riquadro della convenzione e campo del codice nel passo
+  "Cosa"; `GET /api/public/v1/{slug}/agreements/{codice}` (solo convenzioni attive vendute online, altrimenti
+  `404`), `agreement_code` nel preventivo e nella prenotazione, esito in `PublicQuote.agreement`.
+- **GDPR:** l'esportazione del cliente include categorie, verifiche dei requisiti e nomi degli ospiti;
+  l'anonimizzazione li cancella insieme al nome del gruppo.
+- Accettazione di M8 (`internal/acceptance`): con il 15 agosto pieno la settimana 10-16 agosto si vende su due
+  postazioni, nessun percorso di overbooking, 120 scambi e spostamenti in parallelo senza doppie allocazioni, a
+  fine stagione il registro delle convenzioni coincide con i report di cassa. Test end-to-end in
+  `e2e/tests/m8.spec.ts`.
+- Documentazione: guide "Convenzioni e partner", "Trova posto", "Spostamenti e scambi", "Calendario della
+  postazione" e "Stampa della mappa" (italiano e inglese).
+
+### Modificato
+- Mappa operativa: le etichette sono pulsanti combinabili (prima Codice / Cliente / Entrambi) anche sul telefono; su
+  telefono Trova posto, annulla e stampa sono pulsanti con la sola icona e i filtri rapidi scorrono su una riga.
 
 ## [1.0.6] - 2026-10-26
 

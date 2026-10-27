@@ -325,3 +325,36 @@ movimenti di credito ──credit.Service──► customer_credits + customer_c
   di pagamenti e abbonamenti) delega a esso con `UseCreditLedger`.
 - Cablaggio in un solo file, `internal/app/m5b.go` (servizi, job `renewals.sync`, `credits.expire`,
   `waitlist.expire`, sink `waitlist` e `renewal`).
+
+## 11. M8: cassa avanzata e convenzioni
+
+Decisioni in [ADR 0028](adr/0028-cassa-avanzata-e-convenzioni.md); invarianti INV-101..INV-105.
+
+```
+Trova posto ──findspot.Service──► occupazione dal DB ──► availability.FindSpots (puro: segmenti, ≤ N cambi)
+                                    │                         │
+                                    └── booking.Quote (prezzo per giorno con la categoria della postazione)
+proposta scelta ──booking.Create (segmenti)──► una allocazione per segmento, stessa transazione (INV-102)
+scambio / spostamento di gruppo / annulla ──booking──► lock in ordine di ID, rilascio e nuove allocazioni,
+                                                     audit + booking.modified + move_undo_log (INV-101)
+vendita con convenzione ──inventory──► agreement_quota_usage (UPDATE condizionale) + riconteggio della riserva (INV-103)
+ogni scrittura della prenotazione ──store──► partner_amount ricalcolato col totale ──► estratto conto (INV-104)
+```
+
+- **Soggiorno spezzato:** i segmenti di una riga sono le sue allocazioni (nessuna tabella); il motore prezzi riceve
+  i segmenti come input della riga e resta puro (`internal/domain/pricing/segments.go`).
+- **Convenzioni:** restano in `pricingconfig` (destinatari, prezzi fissi per pack, ambito, canali, versioni); il
+  contingente è in `inventory` (`agreement_quota.go`); partner, categorie, verifiche e pagamenti del partner in
+  `internal/domain/partner`; estratto conto, rendiconto per partner e registro in `internal/domain/report`, con le
+  pagine stampabili in `internal/printout` (A4, nessuno script, PDF con la stampa del browser).
+- **Operatività:** calendario della postazione, lista per i bagnini e aggiunte alla vista del giorno (arrivi,
+  partenze, convenzione, gruppo, allestimento dagli extra con `show_on_map`) in `inventory`, con poche query per
+  giorno e mai per postazione; rilasci degli abbonati per intervallo e giorni della settimana in `pass`
+  (`release_range.go`); vendita online per postazione (`spots.online_excluded`) applicata dall'inventario alle
+  prenotazioni del canale online (INV-105).
+- **Riepilogo per il cliente:** testo WhatsApp e riepilogo stampabile con QR in `notify` (`share_m8.go`, stessa
+  formattazione delle email) e `printout` (`booking_summary.go`).
+- Cablaggio in un solo file, `internal/app/m8.go`; pannello in `web/admin/src/features/{partners,agreements-reports,
+  findspot}` e nelle aggiunte alla mappa operativa (`features/operations`).
+- Accettazione: `internal/acceptance/m8_test.go` (Trova posto con il 15 agosto pieno, nessun percorso di
+  overbooking, scambi in parallelo, registro uguale ai report di cassa) e `e2e/tests/m8.spec.ts`.

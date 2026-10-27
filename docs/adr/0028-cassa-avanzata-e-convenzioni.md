@@ -26,7 +26,9 @@ lavorare in parallelo su cinque filoni senza conflitti.
 2. **Conto del partner:** estratto conto **e** pagamenti registrati per partner (`partner_payments`). Saldo =
    addebitato - pagato; addebitato = somma di `bookings.partner_amount`, mantenuto dal servizio delle prenotazioni
    nella stessa transazione del totale (INV-104). Un pagamento sbagliato si annulla (resta con motivo e
-   operatore), non si cancella. La fattura resta fuori da Arenile.
+   operatore), non si cancella. La fattura resta fuori da Arenile. Una prenotazione cancellata, scaduta o rifiutata
+   non addebita nulla al partner (l'eventuale penale resta con l'ospite); il saldo iniziale dell'estratto conto
+   conta le prenotazioni finite prima del periodo e i pagamenti ricevuti prima.
 3. **Registro delle convenzioni:** Excel (`internal/xlsx`) e documento HTML stampabile con impaginazione neutra
    (PDF con la stampa del browser, come la chiusura Z, ADR 0019): intestazione dello stabilimento (nome,
    ragione sociale, partita IVA), stagione o periodo, data di generazione; per convenzione condizioni in italiano
@@ -36,7 +38,10 @@ lavorare in parallelo su cinque filoni senza conflitti.
    uno.
 4. **Contingente riservato:** la parte riservata e non usata torna alla vendita generale `release_days_before`
    giorni prima della data (per convenzione, predefinito **3**). Il rilascio è implicito nella data
-   (`agreement_quota_usage.release_on`): nessun job.
+   (`agreement_quota_usage.release_on`): nessun job. Due convenzioni con riserva sulle stesse zone sono garantite
+   ciascuna da sola (le riserve non si sommano): per riserve indipendenti si usano zone diverse. La categoria del
+   registro, se non indicata, deriva dalla categoria di clienti o dal tipo di partner (struttura ricettiva, azienda,
+   associazione), altrimenti `other`.
 
 ### Scelte di progetto
 
@@ -88,15 +93,28 @@ lavorare in parallelo su cinque filoni senza conflitti.
 - **Link della convenzione:** `/b/{slug}?c={codice}`; `GET /api/public/v1/{slug}/agreements/{codice}` risponde
   solo per convenzioni attive, valide e con canale online, altrimenti `404` (non rivela i codici). Il codice si
   applica nel preventivo e nel checkout con `agreement_code`; l'esito è `PublicQuote.agreement`.
-- **Riepilogo via WhatsApp:** testo e link `wa.me` costruiti dal server; Arenile non chiama servizi esterni.
+- **Riepilogo via WhatsApp:** testo e link `wa.me` costruiti dal server nella lingua del cliente con la stessa
+  formattazione delle email (date, postazioni, totale, saldo); Arenile non chiama servizi esterni. Ogni richiesta
+  emette un link di gestione nuovo e revoca i precedenti, come la rigenerazione del link magico (audit
+  `booking.magic_link_regenerated`); la risposta è `no-store` e il testo non finisce nei log. Il link `wa.me` c'è
+  solo se il cliente ha un telefono.
+- **Riepilogo stampabile:** documento HTML autonomo (`internal/printout`, A4 o scontrino 80 mm, nessuno script,
+  immagini solo `data:`) con il QR della prenotazione e senza link di gestione; PDF con la stampa del browser.
 
 ## Conseguenze
 
-- Positive: nessuna invariante esistente cambia; le nuove (INV-101..INV-104) sono garantite dal database o da un
+- Positive: nessuna invariante esistente cambia; le nuove (INV-101..INV-105) sono garantite dal database o da un
   valore mantenuto nella stessa transazione; cinque filoni lavorano su file e package propri.
 - Negative: l'indice unico nuovo su `spot_allocations` (tabella calda) aggiunge un costo di scrittura; il registro
   in PDF dipende dalla stampa del browser; le quattro decisioni potrebbero cambiare dopo il confronto con i gestori
   e con l'associazione di categoria (in quel caso un nuovo ADR).
+- Limiti noti, da chiudere dopo M8: un hold del pannello convertito in prenotazione (`ConvertHold`) non conta il
+  contingente della convenzione; la disponibilità pubblica non sottrae la capacità riservata (la prenotazione è
+  rifiutata con `409`, ma il preventivo può mostrarla libera); il requisito non verificato è registrato e mostrato,
+  non blocca; l'appartenenza alla categoria di clienti non è richiesta per usarne la convenzione; cambiare date o
+  righe di un soggiorno spezzato lo riporta su una postazione sola.
 - Verifiche: `TestMigration00013_ModelsRoundtrip` (`internal/store`, SQLite e PostgreSQL), `TestError_M8Mapping`
-  (`internal/http/problem`), `TestResetEstablishment_EveryTableClassified`; i test previsti per INV-101..INV-104 in
-  `docs/invariants.md`.
+  (`internal/http/problem`), `TestResetEstablishment_EveryTableClassified`; i test di INV-101..INV-105 in
+  `docs/invariants.md`; l'accettazione di M8 `TestAcceptance_M8CashDeskAndAgreements` e
+  `TestConcurrency_AcceptanceM8Swaps` (`internal/acceptance`, SQLite e PostgreSQL) e `e2e/tests/m8.spec.ts`
+  (Playwright sul binario reale).

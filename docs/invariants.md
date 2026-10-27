@@ -993,8 +993,11 @@ nessun istante visibile una postazione ha due allocazioni nella stessa mezza gio
 ciascuna prenotazione resta dov'era; audit ed evento `booking.modified` per entrambe nella stessa transazione.
 Verificata da: `TestConcurrency_SwapBookings` (100 scambi paralleli e incrociati sulle stesse due righe: dopo, ogni
 mezza giornata ha una sola allocazione per postazione e una per riga, le due prenotazioni coprono le loro date),
-`TestSwap_CommonIntervalFromDate` (`internal/domain/booking`, tag `integration`, SQLite e PostgreSQL). Stato:
-planned.
+`TestSwap_CommonIntervalFromDate`, `TestGroupMove_AllOrNothing`, `TestUndoMove` (`internal/domain/booking`, tag
+`integration`, SQLite e PostgreSQL). Stato: implemented.
+Verifica di sistema: `TestConcurrency_AcceptanceM8Swaps` (`internal/acceptance`: 120 scambi, spostamenti da una data
+e vendite in parallelo sulla settimana piena, attraverso l'API) e `TestAcceptance_M8CashDeskAndAgreements` (scambio,
+anteprima e annulla) controllano INV-01 e INV-102 sul database.
 
 **INV-102 — I segmenti di un soggiorno spezzato coprono il soggiorno esattamente una volta.**
 Per ogni riga con postazione e ogni mezza giornata del soggiorno c'è una e una sola allocazione (indice unico
@@ -1003,26 +1006,48 @@ scambio) sono consecutivi, senza buchi né sovrapposizioni, e il prezzo di ogni 
 postazione occupata quel giorno (ADR 0028).
 Verificata da: `TestMigration00013_ModelsRoundtrip` (`internal/store`, vincolo; implementato),
 `TestFindSpots_SegmentsCoverStay` (proprietà `rapid`, `internal/domain/availability`),
-`TestBookFindSpotProposal_SegmentsAllocated` (`internal/domain/findspot`, tag `integration`). Stato: partial
-(vincolo verificato; algoritmo e prenotazione a segmenti da scrivere).
+`TestBookFindSpotProposal_SegmentsAllocated` (`internal/domain/findspot`, tag `integration`),
+`TestConcurrency_FindSpotBook`, `TestCreate_SplitStaySegments`, `TestMove_FromDatePricedPerDay`
+(`internal/domain/booking`), `TestQuote_SegmentsPerDayCategory` (`internal/domain/pricing`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_M8CashDeskAndAgreements` (`internal/acceptance`, SQLite e PostgreSQL): con il
+15 agosto pieno la settimana 10-16 agosto si vende su due postazioni con Trova posto, e nessun percorso della cassa
+(prenotazione, spostamento da una data, proposta non più valida, scambio) occupa due volte una mezza giornata.
 
 **INV-103 — Il contingente riservato a una convenzione non è mai venduto fuori convenzione prima del rilascio.**
 Fino a `release_on` (`release_days_before` giorni prima, predefinito 3) una vendita fuori convenzione non può
 portare le postazioni libere della zona sotto la quota riservata e non ancora usata; una vendita in convenzione non
 supera `max_per_day` (`UPDATE` condizionale su `agreement_quota_usage` e `CHECK used <= max_units`). Entrambi i
 rifiuti sono `409 agreement_quota_exceeded` con i conflitti, mai un controllo applicativo preventivo.
-Verificata da: `TestMigration00013_ModelsRoundtrip` (`CHECK` e `UPDATE` condizionale; implementato),
-`TestConcurrency_AgreementQuota` (100 vendite parallele dentro e fuori convenzione sulla stessa zona e mezza
-giornata), `TestAgreementQuota_ReleasedBeforeDate` (`internal/domain/inventory`, tag `integration`). Stato:
-partial.
+Il rilascio è implicito nella data, senza job. Le vendite in convenzione e quelle che toccano la capacità riservata
+bloccano le convenzioni coinvolte in ordine di ID e ricontano le unità libere dopo l'inserimento; i contatori tornano
+indietro con il rilascio delle allocazioni (cancellazione, spostamento, hold scaduto). Due riserve sulle stesse zone
+sono garantite ciascuna da sola, non sommate (ADR 0028).
+Verificata da: `TestMigration00013_ModelsRoundtrip` (`CHECK` e `UPDATE` condizionale),
+`TestConcurrency_AgreementReservedQuota` (120 vendite parallele dentro e fuori convenzione sulla stessa zona e mezza
+giornata: mai oltre la parte non riservata fuori convenzione, mai oltre il tetto dentro, contatore uguale al
+dettaglio), `TestAgreementQuota_ReservedBlocksOtherSales`, `TestAgreementQuota_ReleasedBeforeDate`,
+`TestAgreementQuota_MaxPerDayAndRelease` (`internal/domain/inventory`, tag `integration`, SQLite e PostgreSQL),
+`TestCheckout_AgreementCode` (`internal/domain/checkout`). Stato: implemented.
 
 **INV-104 — Il saldo del partner è addebitato meno pagato.**
-`bookings.partner_amount` è ricalcolato dal servizio delle prenotazioni nella stessa transazione di ogni
-cambiamento del totale o della quota del partner (mai oltre il totale, zero per le prenotazioni cancellate senza
-trattenuta); l'estratto conto ha saldo finale = saldo iniziale + addebitato - pagato, dove pagato somma i
-`partner_payments` non annullati; il registro e il rendiconto per partner usano gli stessi importi dei report di
-cassa.
+`bookings.partner_amount` è ricalcolato a ogni scrittura della prenotazione nella stessa istruzione del totale
+(`store.PartnerAmountOf`, applicato da ogni insert e update versionato): mai oltre il totale, zero per le
+prenotazioni in bozza, cancellate, scadute o rifiutate (ADR 0028); l'estratto conto ha saldo finale = saldo
+iniziale + addebitato - pagato, dove pagato somma i `partner_payments` non annullati; il registro e il rendiconto per
+partner usano gli stessi importi dei report di cassa.
 Verificata da: `TestPartnerStatement_BalanceIsChargedMinusPaid` (proprietà `rapid` sugli importi,
-`internal/domain/report`), `TestPartnerAmount_FollowsTotal` (`internal/domain/booking`, tag `integration`).
-Stato: planned.
+`internal/domain/report`), `TestPartnerAmount_FollowsTotal` (`internal/domain/booking`, tag `integration`),
+`TestPartnerAccount_StatementAndPayments` (`internal/domain/partner`, tag `integration`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_M8CashDeskAndAgreements` (`internal/acceptance`): a fine stagione i totali del
+registro delle convenzioni coincidono con il venduto e l'incassato dei report di cassa per le stesse prenotazioni, e
+i totali per categoria sommano ai totali generali.
+
+**INV-105 — Una postazione esclusa dalla vendita online non è mai venduta online.**
+Una postazione con `online_bookable = false` (colonna `spots.online_excluded`, migrazione 00013) non compare nella
+disponibilità pubblica e non la conta; un'allocazione per una prenotazione del canale online che la tocca (checkout
+pubblico, modifica o spostamento di una prenotazione nata online) è rifiutata dall'inventario con `409
+spot_unavailable`, come una postazione occupata, nella transazione dell'allocazione. La cassa continua a venderla.
+Verificata da: `TestOnlineBookable_Spot` (`internal/domain/inventory`), `TestCheckoutFlow_SpotNotOnlineBookable`
+(`internal/domain/checkout`, attraverso il checkout pubblico), tag `integration`, SQLite e PostgreSQL. Stato:
+implemented.
 
