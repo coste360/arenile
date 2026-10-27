@@ -1,0 +1,16 @@
+{
+  "title": "Rapports des conventions",
+  "description": "Rapport par partenaire et registre des conventions pour la concession, par saison ou période, en Excel et PDF.",
+  "placeholder": {
+    "title": "Disponible avec le jalon M8",
+    "description": "Ici, vous trouverez le rapport par partenaire et le registre des conventions pour la commune."
+  },
+  "partners": {
+    "title": "Rapport par partenaire"
+  },
+  "register": {
+    "title": "Registre des conventions",
+    "exportXlsx": "Exporter en Excel",
+    "print": "Imprimer ou enregistrer en PDF"
+  }
+}

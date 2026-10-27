@@ -1,0 +1,19 @@
+{
+  "title": "Partenaires et conventions",
+  "description": "Hébergements, organismes publics, entreprises et associations avec lesquels la plage a un accord, catégories de clients et compte du partenaire.",
+  "placeholder": {
+    "title": "Disponible avec le jalon M8",
+    "description": "Ici, vous gérerez les partenaires, les catégories de clients, les vérifications des justificatifs et les relevés."
+  },
+  "tabs": {
+    "partners": "Partenaires",
+    "categories": "Catégories de clients",
+    "reports": "Rapports"
+  },
+  "detail": {
+    "title": "Partenaire",
+    "back": "Partenaires et conventions",
+    "statement": "Relevé de compte",
+    "payments": "Paiements reçus"
+  }
+}

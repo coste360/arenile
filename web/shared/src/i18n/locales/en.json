@@ -174,7 +174,10 @@
     "establishments": "All establishments",
     "goTo": "Go to…",
     "search": "Search",
-    "searchPlaceholder": "Search a page…"
+    "searchPlaceholder": "Search a page…",
+    "partners": "Partners and agreements",
+    "agreementsReports": "Agreement reports",
+    "findSpot": "Find a spot"
   },
   "admin": {
     "placeholder": {
@@ -191,7 +194,8 @@
       "dailySale": "Walk-in daily sale: spot or zone, price, payment and numbered ticket.",
       "tickets": "Tickets issued today, to assign, voided and entered; CSV export.",
       "reports": "Occupancy, revenue, channels and exports.",
-      "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments."
+      "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments.",
+      "partners": "Accommodation, public bodies and associations with an agreement, customer categories and partner account."
     },
     "establishments": {
       "title": "All establishments",

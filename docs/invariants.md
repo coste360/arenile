@@ -982,3 +982,47 @@ fiscale `queued`/`leased`; i documenti fiscali si conservano); l'azzeramento scr
 `setup_reset`) nella stessa transazione (INV-39), spegne `booking_enabled` e, con `everything`, toglie le stampe non
 ancora fatte e le notifiche su prenotazioni, pagamenti e clienti. Stato: partial (risposte salvate di
 `Idempotency-Key`, per utente e per 24 ore, che puntano a righe cancellate: INV-31).
+
+## Cassa avanzata e convenzioni (spec 30 — M8, ADR 0028)
+
+**INV-101 — Uno scambio non produce mai una doppia allocazione.**
+Lo scambio di due righe (`POST /bookings/swap`), lo spostamento di gruppo e l'annullamento di uno spostamento
+rilasciano e ricreano le allocazioni in una sola transazione, con le prenotazioni bloccate in ordine di ID: in
+nessun istante visibile una postazione ha due allocazioni nella stessa mezza giornata (vincolo unico
+`spot_allocations (spot_id, date, slot)`, INV-01) e una riga non ne ha due (INV-102). Fuori dall'intervallo comune
+ciascuna prenotazione resta dov'era; audit ed evento `booking.modified` per entrambe nella stessa transazione.
+Verificata da: `TestConcurrency_SwapBookings` (100 scambi paralleli e incrociati sulle stesse due righe: dopo, ogni
+mezza giornata ha una sola allocazione per postazione e una per riga, le due prenotazioni coprono le loro date),
+`TestSwap_CommonIntervalFromDate` (`internal/domain/booking`, tag `integration`, SQLite e PostgreSQL). Stato:
+planned.
+
+**INV-102 — I segmenti di un soggiorno spezzato coprono il soggiorno esattamente una volta.**
+Per ogni riga con postazione e ogni mezza giornata del soggiorno c'è una e una sola allocazione (indice unico
+`spot_allocations (booking_line_id, date, slot)`); i segmenti di una riga (Trova posto, spostamento con `from`,
+scambio) sono consecutivi, senza buchi né sovrapposizioni, e il prezzo di ogni giorno usa la categoria della
+postazione occupata quel giorno (ADR 0028).
+Verificata da: `TestMigration00013_ModelsRoundtrip` (`internal/store`, vincolo; implementato),
+`TestFindSpots_SegmentsCoverStay` (proprietà `rapid`, `internal/domain/availability`),
+`TestBookFindSpotProposal_SegmentsAllocated` (`internal/domain/findspot`, tag `integration`). Stato: partial
+(vincolo verificato; algoritmo e prenotazione a segmenti da scrivere).
+
+**INV-103 — Il contingente riservato a una convenzione non è mai venduto fuori convenzione prima del rilascio.**
+Fino a `release_on` (`release_days_before` giorni prima, predefinito 3) una vendita fuori convenzione non può
+portare le postazioni libere della zona sotto la quota riservata e non ancora usata; una vendita in convenzione non
+supera `max_per_day` (`UPDATE` condizionale su `agreement_quota_usage` e `CHECK used <= max_units`). Entrambi i
+rifiuti sono `409 agreement_quota_exceeded` con i conflitti, mai un controllo applicativo preventivo.
+Verificata da: `TestMigration00013_ModelsRoundtrip` (`CHECK` e `UPDATE` condizionale; implementato),
+`TestConcurrency_AgreementQuota` (100 vendite parallele dentro e fuori convenzione sulla stessa zona e mezza
+giornata), `TestAgreementQuota_ReleasedBeforeDate` (`internal/domain/inventory`, tag `integration`). Stato:
+partial.
+
+**INV-104 — Il saldo del partner è addebitato meno pagato.**
+`bookings.partner_amount` è ricalcolato dal servizio delle prenotazioni nella stessa transazione di ogni
+cambiamento del totale o della quota del partner (mai oltre il totale, zero per le prenotazioni cancellate senza
+trattenuta); l'estratto conto ha saldo finale = saldo iniziale + addebitato - pagato, dove pagato somma i
+`partner_payments` non annullati; il registro e il rendiconto per partner usano gli stessi importi dei report di
+cassa.
+Verificata da: `TestPartnerStatement_BalanceIsChargedMinusPaid` (proprietà `rapid` sugli importi,
+`internal/domain/report`), `TestPartnerAmount_FollowsTotal` (`internal/domain/booking`, tag `integration`).
+Stato: planned.
+

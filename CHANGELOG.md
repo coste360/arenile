@@ -6,6 +6,17 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- Contratto della milestone M8, cassa avanzata e convenzioni (spec 30, ADR 0028): partner e categorie di clienti,
+  convenzioni estese (destinatari, prezzi fissi per pack, ambito, versioni, contingente riservato, requisito da
+  verificare, canali e link della convenzione), conto del partner con pagamenti registrati, rendiconto per partner
+  e registro delle convenzioni, Trova posto con cambi di posto, scambio tra prenotazioni, spostamento di gruppo e
+  annulla entro 5 minuti, duplica, riepilogo via WhatsApp e stampabile, calendario della postazione, lista per i
+  bagnini, rilasci degli abbonati per intervalli e giorni ricorrenti, vendita online per postazione. Le operazioni
+  nuove rispondono `501` finché non vengono completate.
+- Migrazione 00013 (SQLite e PostgreSQL) con le tabelle delle convenzioni e dei partner e un vincolo nuovo: una
+  riga di prenotazione occupa al massimo una postazione per mezza giornata.
+
 ## [1.0.6] - 2026-10-26
 
 ### Aggiunto

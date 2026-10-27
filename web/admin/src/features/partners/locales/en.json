@@ -1,0 +1,19 @@
+{
+  "title": "Partners and agreements",
+  "description": "Accommodation, public bodies, companies and associations the beach has an agreement with, customer categories and partner account.",
+  "placeholder": {
+    "title": "Coming with milestone M8",
+    "description": "Here you will manage partners, customer categories, requirement checks and statements."
+  },
+  "tabs": {
+    "partners": "Partners",
+    "categories": "Customer categories",
+    "reports": "Reports"
+  },
+  "detail": {
+    "title": "Partner",
+    "back": "Partners and agreements",
+    "statement": "Statement",
+    "payments": "Payments received"
+  }
+}

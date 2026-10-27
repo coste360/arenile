@@ -1,0 +1,16 @@
+{
+  "title": "Agreement reports",
+  "description": "Report per partner and agreements register for the concession, by season or period, in Excel and PDF.",
+  "placeholder": {
+    "title": "Coming with milestone M8",
+    "description": "Here you will find the report per partner and the agreements register for the municipality."
+  },
+  "partners": {
+    "title": "Report per partner"
+  },
+  "register": {
+    "title": "Agreements register",
+    "exportXlsx": "Export to Excel",
+    "print": "Print or save as PDF"
+  }
+}

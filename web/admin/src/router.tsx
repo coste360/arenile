@@ -394,6 +394,31 @@ const entryTicketTypesRoute = createRoute({
   path: 'config/entry-tickets',
   component: lazyRouteComponent(() => import('./features/entry-tickets'), 'EntryTicketTypesPage'),
 });
+// ---- M8: partners and agreements, find spot (ADR 0028) ----------------------
+const partnersRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'convenzioni',
+  component: lazyRouteComponent(() => import('./features/partners'), 'PartnersPage'),
+});
+const agreementsReportsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'convenzioni/rendiconti',
+  component: lazyRouteComponent(
+    () => import('./features/agreements-reports'),
+    'AgreementsReportsPage',
+  ),
+});
+const partnerDetailRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'convenzioni/partner/$partnerId',
+  component: lazyRouteComponent(() => import('./features/partners'), 'PartnerDetailPage'),
+});
+const findSpotRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'trova-posto',
+  validateSearch: validateDaySearch,
+  component: lazyRouteComponent(() => import('./features/findspot'), 'FindSpotPage'),
+});
 const reportsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'report',
@@ -493,6 +518,10 @@ const routeTree = rootRoute.addChildren([
       entryGateRoute,
       entryTicketTypesRoute,
       reportsRoute,
+      partnersRoute,
+      agreementsReportsRoute,
+      partnerDetailRoute,
+      findSpotRoute,
       apiKeysRoute,
       webhooksRoute,
       testModeRoute,

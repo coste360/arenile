@@ -47,6 +47,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/findspot"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/inventory"
@@ -54,6 +55,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
+	"github.com/coste360/arenile/internal/domain/partner"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
@@ -180,6 +182,9 @@ type App struct {
 	Printing *printing.Service
 	// Update notice (wired by wireUpdates, see updates.go; ADR 0025).
 	Updates *update.Service
+	// M8 (wired by wireM8, see m8.go; ADR 0028): partners and find spot.
+	Partners   *partner.Service
+	SpotFinder *findspot.Service
 
 	mu    sync.Mutex
 	addr  string
@@ -302,6 +307,7 @@ func (a *App) wire() error {
 	a.wireImports(aw)
 	a.wirePrinting(aw)
 	a.wireUpdates()
+	a.wireM8(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -349,6 +355,8 @@ func (a *App) wire() error {
 		Imports:        a.Imports,
 		Printing:       a.Printing,
 		Updates:        a.Updates,
+		Partners:       a.Partners,
+		SpotFinder:     a.SpotFinder,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

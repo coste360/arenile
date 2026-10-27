@@ -1,0 +1,16 @@
+{
+  "title": "Rendiconti delle convenzioni",
+  "description": "Rendiconto per partner e registro delle convenzioni per il bando, per stagione o periodo, in Excel e PDF.",
+  "placeholder": {
+    "title": "In arrivo con la milestone M8",
+    "description": "Qui troverai il rendiconto per partner e il registro delle convenzioni da consegnare al Comune."
+  },
+  "partners": {
+    "title": "Rendiconto per partner"
+  },
+  "register": {
+    "title": "Registro delle convenzioni",
+    "exportXlsx": "Esporta in Excel",
+    "print": "Stampa o salva in PDF"
+  }
+}

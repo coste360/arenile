@@ -1,0 +1,19 @@
+{
+  "title": "Partner und Vereinbarungen",
+  "description": "Unterkünfte, Behörden, Unternehmen und Vereine, mit denen der Strandbetrieb eine Vereinbarung hat, Kundenkategorien und Partnerkonto.",
+  "placeholder": {
+    "title": "Kommt mit Meilenstein M8",
+    "description": "Hier verwalten Sie Partner, Kundenkategorien, Nachweisprüfungen und Kontoauszüge."
+  },
+  "tabs": {
+    "partners": "Partner",
+    "categories": "Kundenkategorien",
+    "reports": "Berichte"
+  },
+  "detail": {
+    "title": "Partner",
+    "back": "Partner und Vereinbarungen",
+    "statement": "Kontoauszug",
+    "payments": "Erhaltene Zahlungen"
+  }
+}

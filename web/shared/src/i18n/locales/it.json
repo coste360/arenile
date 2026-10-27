@@ -174,7 +174,10 @@
     "establishments": "Tutti gli stabilimenti",
     "goTo": "Vai a…",
     "search": "Cerca",
-    "searchPlaceholder": "Cerca una pagina…"
+    "searchPlaceholder": "Cerca una pagina…",
+    "partners": "Partner e convenzioni",
+    "agreementsReports": "Rendiconti delle convenzioni",
+    "findSpot": "Trova posto"
   },
   "admin": {
     "placeholder": {
@@ -191,7 +194,8 @@
       "dailySale": "Vendita giornaliera al banco: postazione o zona, prezzo, incasso e biglietto numerato.",
       "tickets": "Biglietti emessi oggi, da assegnare, annullati ed entrati; esportazione CSV.",
       "reports": "Occupazione, ricavi, canali ed esportazioni.",
-      "settings": "Stagioni, mappe, zone, catalogo, prezzi, policy, pagina pubblica e pagamenti."
+      "settings": "Stagioni, mappe, zone, catalogo, prezzi, policy, pagina pubblica e pagamenti.",
+      "partners": "Strutture ricettive, enti e associazioni convenzionati, categorie di clienti e conto del partner."
     },
     "establishments": {
       "title": "Tutti gli stabilimenti",

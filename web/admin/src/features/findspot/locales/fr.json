@@ -1,0 +1,9 @@
+{
+  "title": "Trouver une place",
+  "description": "Recherchez la disponibilité par dates, créneau, nombre de places et changements de place admis, avec le prix estimé.",
+  "placeholder": {
+    "title": "Disponible avec le jalon M8",
+    "description": "Ici, la caisse trouvera les propositions classées, avec les segments et le prix avec la convention."
+  },
+  "open": "Trouver une place"
+}

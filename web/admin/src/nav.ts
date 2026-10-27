@@ -12,6 +12,7 @@ import {
   CreditCardIcon,
   EuroIcon,
   GlobeIcon,
+  HandshakeIcon,
   HourglassIcon,
   KeyRoundIcon,
   LayersIcon,
@@ -93,6 +94,17 @@ export const NAV_ITEMS = [
     descriptionKey: 'admin.placeholder.customers',
     milestone: 'M3',
     icon: UsersIcon,
+    available: true,
+  },
+  // M8 (ADR 0028): partners, customer categories, partner account and
+  // agreement reports, next to the customers they are an alternative to.
+  {
+    to: '/e/$establishmentId/convenzioni',
+    section: 'convenzioni',
+    labelKey: 'nav.partners',
+    descriptionKey: 'admin.placeholder.partners',
+    milestone: 'M8',
+    icon: HandshakeIcon,
     available: true,
   },
   {
@@ -305,4 +317,7 @@ export const BREADCRUMB_ONLY_ITEMS = [
   { to: '/e/$establishmentId/config/devices/lan', labelKey: 'nav.config.devicesLan' },
   { to: '/e/$establishmentId/config/seasons/rollover', labelKey: 'nav.config.seasonRollover' },
   { to: '/e/$establishmentId/ticket/varco', labelKey: 'nav.entryGate' },
+  // M8 (ADR 0028).
+  { to: '/e/$establishmentId/convenzioni/rendiconti', labelKey: 'nav.agreementsReports' },
+  { to: '/e/$establishmentId/trova-posto', labelKey: 'nav.findSpot' },
 ] as const satisfies readonly { to: string; labelKey: string }[];

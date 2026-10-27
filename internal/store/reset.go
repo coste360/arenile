@@ -21,6 +21,14 @@ import (
 // counters stay: the numbering of the day goes on and never repeats a paper
 // ticket already handed out (INV-81).
 var operationTables = []string{
+	// M8 (00013): undo log, verifications, agreement quota and partner
+	// payments before the bookings, customers and partners they reference.
+	"move_undo_log",
+	"requirement_verifications",
+	"agreement_quota_allocations",
+	"agreement_quota_usage",
+	"partner_payments",
+	"customer_category_members",
 	"waitlist_offers",
 	"waitlist_entries",
 	"renewal_proposals",
@@ -56,7 +64,7 @@ var operationTables = []string{
 // with restrictive foreign keys, or would lose their meaning).
 var operationMarkers = []string{
 	"bookings", "holds", "payments", "payment_intents", "cash_sessions", "tickets",
-	"waitlist_entries", "renewal_campaigns", "customer_credits",
+	"waitlist_entries", "renewal_campaigns", "customer_credits", "partner_payments",
 }
 
 // configurationTables are the configuration of an establishment, in delete
@@ -69,7 +77,11 @@ var configurationTables = []string{
 	"price_rules",
 	"fixed_duration_prices",
 	"promo_codes",
+	"agreement_versions",
 	"agreements",
+	// M8 (00013): referenced by agreements (and bookings, deleted first).
+	"customer_categories",
+	"partners",
 	"season_rollovers",
 	"closure_days",
 	"rate_periods",

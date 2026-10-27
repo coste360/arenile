@@ -1,0 +1,9 @@
+{
+  "title": "Find a spot",
+  "description": "Search availability by dates, slot, number of spots and allowed spot changes, with the estimated price.",
+  "placeholder": {
+    "title": "Coming with milestone M8",
+    "description": "Here the cash desk will find ranked proposals with segments and the price with the agreement."
+  },
+  "open": "Find a spot"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Trova posto",
+  "description": "Cerca la disponibilità per date, fascia, numero di postazioni e cambi di posto ammessi, con il prezzo stimato.",
+  "placeholder": {
+    "title": "In arrivo con la milestone M8",
+    "description": "Qui la cassa troverà le proposte ordinate, con i segmenti e il prezzo con la convenzione."
+  },
+  "open": "Trova posto"
+}

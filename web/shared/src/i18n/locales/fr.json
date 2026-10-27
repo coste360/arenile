@@ -174,7 +174,10 @@
     "establishments": "Tous les établissements",
     "goTo": "Aller à…",
     "search": "Rechercher",
-    "searchPlaceholder": "Rechercher une page…"
+    "searchPlaceholder": "Rechercher une page…",
+    "partners": "Partenaires et conventions",
+    "agreementsReports": "Rapports des conventions",
+    "findSpot": "Trouver une place"
   },
   "admin": {
     "placeholder": {
@@ -191,7 +194,8 @@
       "dailySale": "Vente à la journée au comptoir : emplacement ou zone, prix, encaissement et ticket numéroté.",
       "tickets": "Tickets émis aujourd'hui, à attribuer, annulés et entrés ; export CSV.",
       "reports": "Occupation, revenus, canaux et exports.",
-      "settings": "Saisons, plans, zones, catalogue, prix, politiques, page publique et paiements."
+      "settings": "Saisons, plans, zones, catalogue, prix, politiques, page publique et paiements.",
+      "partners": "Hébergements, organismes publics et associations conventionnés, catégories de clients et compte du partenaire."
     },
     "establishments": {
       "title": "Tous les établissements",

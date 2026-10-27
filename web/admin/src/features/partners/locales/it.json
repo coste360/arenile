@@ -1,0 +1,19 @@
+{
+  "title": "Partner e convenzioni",
+  "description": "Strutture ricettive, enti, aziende e associazioni con cui il lido ha un accordo, categorie di clienti e conto del partner.",
+  "placeholder": {
+    "title": "In arrivo con la milestone M8",
+    "description": "Qui gestirai partner, categorie di clienti, verifiche dei requisiti ed estratti conto."
+  },
+  "tabs": {
+    "partners": "Partner",
+    "categories": "Categorie di clienti",
+    "reports": "Rendiconti"
+  },
+  "detail": {
+    "title": "Scheda partner",
+    "back": "Partner e convenzioni",
+    "statement": "Estratto conto",
+    "payments": "Pagamenti ricevuti"
+  }
+}

@@ -158,6 +158,7 @@ describe('admin app', () => {
       'Prenotazioni',
       'Calendario',
       'Clienti',
+      'Partner e convenzioni',
       'Abbonamenti',
       'Rinnovi',
       "Lista d'attesa",

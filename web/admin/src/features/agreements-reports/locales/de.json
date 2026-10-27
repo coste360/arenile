@@ -1,0 +1,16 @@
+{
+  "title": "Berichte zu Vereinbarungen",
+  "description": "Bericht je Partner und Register der Vereinbarungen für die Konzession, nach Saison oder Zeitraum, als Excel und PDF.",
+  "placeholder": {
+    "title": "Kommt mit Meilenstein M8",
+    "description": "Hier finden Sie den Bericht je Partner und das Register der Vereinbarungen für die Gemeinde."
+  },
+  "partners": {
+    "title": "Bericht je Partner"
+  },
+  "register": {
+    "title": "Register der Vereinbarungen",
+    "exportXlsx": "Als Excel exportieren",
+    "print": "Drucken oder als PDF speichern"
+  }
+}

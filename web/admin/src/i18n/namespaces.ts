@@ -31,6 +31,10 @@ import entryTicketsIt from '../features/entry-tickets/locales/it.json';
 import printersIt from '../features/printers/locales/it.json';
 // Update notice (ADR 0025).
 import updatesIt from '../features/updates/locales/it.json';
+// M8: partners and agreements, agreement reports, find spot (ADR 0028).
+import partnersIt from '../features/partners/locales/it.json';
+import agreementsReportsIt from '../features/agreements-reports/locales/it.json';
+import findspotIt from '../features/findspot/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -324,6 +328,34 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/printers/locales/en.json'),
       de: () => import('../features/printers/locales/de.json'),
       fr: () => import('../features/printers/locales/fr.json'),
+    },
+  },
+  // M8: partners and agreements, agreement reports, find spot (ADR 0028).
+  {
+    ns: 'partners',
+    it: partnersIt,
+    load: {
+      en: () => import('../features/partners/locales/en.json'),
+      de: () => import('../features/partners/locales/de.json'),
+      fr: () => import('../features/partners/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'agreementsReports',
+    it: agreementsReportsIt,
+    load: {
+      en: () => import('../features/agreements-reports/locales/en.json'),
+      de: () => import('../features/agreements-reports/locales/de.json'),
+      fr: () => import('../features/agreements-reports/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'findspot',
+    it: findspotIt,
+    load: {
+      en: () => import('../features/findspot/locales/en.json'),
+      de: () => import('../features/findspot/locales/de.json'),
+      fr: () => import('../features/findspot/locales/fr.json'),
     },
   },
 ];

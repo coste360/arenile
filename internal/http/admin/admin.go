@@ -24,6 +24,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/dailysale"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/findspot"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/inventory"
@@ -31,6 +32,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
+	"github.com/coste360/arenile/internal/domain/partner"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
@@ -134,6 +136,13 @@ type Handlers struct {
 	Printing *printing.Service
 	// Update notice (system_update.go, ADR 0025); own block, nil = 501.
 	Updates *update.Service
+
+	// M8 (spec 30, ADR 0028); own block, nil = 501. Partners serves
+	// partners.go and partner_account.go, SpotFinder serves findspot.go;
+	// the other M8 handlers use Bookings (booking_moves.go), Inventory
+	// (spot_calendar.go) and Reports (partner_account.go).
+	Partners   *partner.Service
+	SpotFinder *findspot.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

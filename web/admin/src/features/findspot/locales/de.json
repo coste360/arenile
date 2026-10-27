@@ -1,0 +1,9 @@
+{
+  "title": "Platz finden",
+  "description": "Verfügbarkeit nach Datum, Tageszeit, Anzahl der Plätze und erlaubten Platzwechseln suchen, mit geschätztem Preis.",
+  "placeholder": {
+    "title": "Kommt mit Meilenstein M8",
+    "description": "Hier findet die Kasse sortierte Vorschläge mit Abschnitten und dem Preis mit Vereinbarung."
+  },
+  "open": "Platz finden"
+}
