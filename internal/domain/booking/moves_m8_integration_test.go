@@ -571,3 +571,44 @@ func TestConcurrency_FindSpotBook(t *testing.T) {
 		}
 	})
 }
+
+// TestMove_PastDaysNeverChange (spec 30.7): an explicit from in the past is
+// refused by move, swap and group move (422), and a move without from of a
+// stay in progress starts today, so the days already past keep their spot.
+func TestMove_PastDaysNeverChange(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		r := newReal(f)
+		a := mustCreate(t, f, r.svc, f.Input(f.Spots[0], "2027-07-10", "2027-07-14"))
+		b := mustCreate(t, f, r.svc, f.Input(f.Spots[1], "2027-07-10", "2027-07-14"))
+		f.Clock.Set(time.Date(2027, 7, 12, 10, 0, 0, 0, time.UTC))
+		past := dd("2027-07-11")
+		isFrom422 := func(err error) bool {
+			var ve *configerr.ValidationError
+			return errors.As(err, &ve) && len(ve.Fields) > 0 && ve.Fields[0].Field == "from"
+		}
+		if _, err := r.svc.Move(f.Ctx, f.Cashier, f.Est.ID, a.Booking.ID, booking.MoveInput{LineID: a.Lines[0].ID, SpotID: f.Spots[2].ID, From: &past}); !isFrom422(err) {
+			t.Fatalf("move from a past date: %v", err)
+		}
+		if _, err := r.svc.Swap(f.Ctx, f.Cashier, f.Est.ID, booking.SwapInput{
+			A: booking.SwapSide{BookingID: a.Booking.ID, LineID: a.Lines[0].ID},
+			B: booking.SwapSide{BookingID: b.Booking.ID, LineID: b.Lines[0].ID}, From: past,
+		}); !isFrom422(err) {
+			t.Fatalf("swap from a past date: %v", err)
+		}
+		if _, err := r.svc.GroupMove(f.Ctx, f.Cashier, f.Est.ID, booking.GroupMoveInput{
+			Moves: []booking.GroupMoveItem{{BookingID: a.Booking.ID, LineID: a.Lines[0].ID, SpotID: f.Spots[2].ID}}, From: &past,
+		}); !isFrom422(err) {
+			t.Fatalf("group move from a past date: %v", err)
+		}
+		// Without from: the stay in progress moves from today.
+		res, err := r.svc.Move(f.Ctx, f.Cashier, f.Est.ID, a.Booking.ID, booking.MoveInput{LineID: a.Lines[0].ID, SpotID: f.Spots[2].ID})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := segs(f, res.Detail); got != "A1@07-10..07-11+A3@07-12..07-14" {
+			t.Fatalf("move without from of a stay in progress: %s", got)
+		}
+		checkCover(t, res.Detail)
+	})
+}

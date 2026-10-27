@@ -152,6 +152,13 @@ func (s *Service) swapInTx(ctx context.Context, tx bun.IDB, p *auth.Principal, e
 	if err != nil {
 		return err
 	}
+	today, err := s.today(ctx, tx, es)
+	if err != nil {
+		return err
+	}
+	if in.From.Before(today) {
+		return configerr.Invalid("from", "La data non può essere nel passato.")
+	}
 	from := laterDate(in.From, laterDate(ba.StartsOn, bb.StartsOn))
 	to := ba.EndsOn
 	if bb.EndsOn.Before(to) {

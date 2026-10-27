@@ -82,13 +82,15 @@ func (s *Service) groupMoveInTx(ctx context.Context, tx bun.IDB, p *auth.Princip
 	if err := store.LockBookings(ctx, tx, es, ids); err != nil {
 		return err
 	}
+	today, err := s.today(ctx, tx, es)
+	if err != nil {
+		return err
+	}
 	from := in.From
 	if from == nil || from.IsZero() {
-		today, err := s.today(ctx, tx, es)
-		if err != nil {
-			return err
-		}
 		from = &today
+	} else if from.Before(today) {
+		return configerr.Invalid("from", "La data non può essere nel passato.")
 	}
 	spec := reassignSpec{Expected: map[string]*int64{}, Action: actionGroupMoved, Diff: map[string]any{"group_move": len(in.Moves)}}
 	for i, m := range in.Moves {

@@ -564,6 +564,19 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 	if idx < 0 {
 		return nil, ErrLineNotFound
 	}
+	// The days already past never change (spec 30.7): an explicit from in
+	// the past is refused; a move without from of a stay in progress starts
+	// today and leaves the past days where they were.
+	today, err := s.today(ctx, tx, es)
+	if err != nil {
+		return nil, err
+	}
+	if in.From != nil && in.From.Before(today) {
+		return nil, configerr.Invalid("from", "La data non può essere nel passato.")
+	}
+	if in.From == nil && today.After(b.StartsOn) && !today.After(b.EndsOn) && st.OccupiesResources() {
+		in.From = &today
+	}
 	partial := in.From != nil && in.From.After(b.StartsOn)
 	if in.From != nil && in.From.After(b.EndsOn) {
 		return nil, configerr.Invalid("from", "La data deve rientrare nel periodo della prenotazione.")
