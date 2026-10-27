@@ -111,7 +111,7 @@ test.describe("mobile", () => {
     isMobile: true,
   });
 
-  test("names wait for the zoom, the toggles wrap", async ({ page }) => {
+  test("names wait for the zoom, the toggles fold into the legend section", async ({ page }) => {
     await openMap(page);
     await expect(spot(page, "A1")).toHaveAccessibleName(/occupato da Rossi/);
     // Too small to read at the fitted zoom: no pill, the hint says how to get them.
@@ -123,7 +123,9 @@ test.describe("mobile", () => {
       await zoomIn.click();
     await expect(caption(page, "A1")).toHaveText(/^Ross/);
 
-    // Customer only (Codice switched off).
+    // Customer only (Codice switched off): on phones the toggles sit in the
+    // collapsed "Legenda ed etichette" section, so the map is on the first screen.
+    await page.getByRole("button", { name: "Legenda ed etichette" }).click();
     await page
       .getByRole("toolbar", { name: "Etichette" })
       .getByRole("button", { name: "Codice", exact: true })
