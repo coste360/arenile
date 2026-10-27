@@ -878,3 +878,74 @@ func TestBookingAutoAssign_OnlineSkipsExcludedSpot(t *testing.T) {
 		}
 	})
 }
+
+// TestBookingSnapshot_RequoteSplitStay (INV-12 with INV-102): the segments
+// are not stored but derived from the allocations (LineSegments); a split
+// stay from find spot and a scheduled move re-quoted with those segments
+// give the stored total, also after a notes-only edit (INV-106).
+func TestBookingSnapshot_RequoteSplitStay(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		// A2 is priced as "vip" for the base pack.
+		if _, err := db.NewUpdate().Model((*store.Spot)(nil)).Set("price_category_override = ?", "vip").Where("id = ?", f.Spots[1].ID).Exec(f.Ctx); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.Pricing.CreateRule(f.Ctx, f.Owner, f.Est.ID, pricingconfig.RuleInput{
+			SeasonID: f.Season.ID, Name: "vip-category", TargetType: pricing.TargetPack, TargetIDs: []string{f.Base.ID},
+			Conditions: pricing.Conditions{PriceCategories: []string{"vip"}}, Action: pricing.Action{Type: pricing.ActionSet, Amount: bookingtest.VIPPerDay},
+			Priority: 10, Stage: pricing.StageBase, Active: true,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		requote := func(det *booking.Detail) {
+			t.Helper()
+			segs := booking.LineSegments(det)
+			var lines []booking.LineInput
+			for _, l := range det.Lines {
+				in := booking.LineInput{PackID: l.PackID, Segments: segs[l.ID]}
+				if len(in.Segments) == 1 {
+					in.SpotID, in.Segments = in.Segments[0].SpotID, nil
+				}
+				lines = append(lines, in)
+			}
+			b := det.Booking
+			q, err := f.Svc.Quote(f.Ctx, f.Viewer, f.Est.ID, booking.CreateInput{
+				CustomerID: b.CustomerID, StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, Formula: b.Formula, Lines: lines,
+			})
+			if err != nil {
+				t.Fatalf("re-quote from the allocations: %v", err)
+			}
+			if q.Result.Breakdown.Total != b.TotalAmount {
+				t.Fatalf("re-quote from the allocations: total %d, stored %d", q.Result.Breakdown.Total, b.TotalAmount)
+			}
+		}
+		in := f.Input(f.Spots[0], "2027-07-10", "2027-07-13")
+		in.Lines[0].SpotID = ""
+		in.Lines[0].Segments = []booking.SegmentInput{
+			{SpotID: f.Spots[0].ID, StartsOn: d("2027-07-10"), EndsOn: d("2027-07-11")},
+			{SpotID: f.Spots[1].ID, StartsOn: d("2027-07-12"), EndsOn: d("2027-07-13")},
+		}
+		split := f.MustCreate(in)
+		if split.Booking.TotalAmount != 2*bookingtest.BasePerDay+2*bookingtest.VIPPerDay {
+			t.Fatalf("split total %d", split.Booking.TotalAmount)
+		}
+		requote(split)
+		note := "nota"
+		res, err := f.Svc.Update(f.Ctx, f.Owner, f.Est.ID, split.Booking.ID, nil, booking.PatchInput{NotesInternal: &note})
+		if err != nil {
+			t.Fatal(err)
+		}
+		requote(res.Detail)
+
+		moved := f.MustCreate(f.Input(f.Spots[2], "2027-07-20", "2027-07-24"))
+		from := d("2027-07-23")
+		mv, err := f.Svc.Move(f.Ctx, f.Owner, f.Est.ID, moved.Booking.ID, booking.MoveInput{LineID: moved.Lines[0].ID, SpotID: f.Spots[1].ID, From: &from})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if mv.NewTotal != 3*bookingtest.BasePerDay+2*bookingtest.VIPPerDay {
+			t.Fatalf("moved total %d", mv.NewTotal)
+		}
+		requote(mv.Detail)
+	})
+}

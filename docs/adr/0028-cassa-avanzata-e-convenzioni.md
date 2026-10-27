@@ -3,7 +3,7 @@
 - **Stato:** accettato (le quattro decisioni della sezione 30.13 sono valori predefiniti che il titolare può
   rivedere)
 - **Data:** 2026-10-27
-- **Sezioni della specifica:** `docs/spec/30-cassa-avanzata-e-convenzioni.md` (tutta), `docs/spec/28-roadmap.md`
+- **Sezioni della specifica:** `docs/spec/30-cassa-avanzata-e-convenzioni.md` (tutta), `docs/spec/28-roadmap-e-criteri-di-accettazione.md`
   (M8), `07` (7.5 segmenti, 7.6 quota online), `08` (convenzioni nello stage `discount`), `09` (rilasci), `10`
   (10.3 modifiche), `11.3`, `12`, `14`, `15`, `23`
 
@@ -108,12 +108,26 @@ lavorare in parallelo su cinque filoni senza conflitti.
 - Negative: l'indice unico nuovo su `spot_allocations` (tabella calda) aggiunge un costo di scrittura; il registro
   in PDF dipende dalla stampa del browser; le quattro decisioni potrebbero cambiare dopo il confronto con i gestori
   e con l'associazione di categoria (in quel caso un nuovo ADR).
-- Limiti noti, da chiudere dopo M8: un hold del pannello convertito in prenotazione (`ConvertHold`) non conta il
-  contingente della convenzione; la disponibilità pubblica non sottrae la capacità riservata (la prenotazione è
-  rifiutata con `409`, ma il preventivo può mostrarla libera); il requisito non verificato è registrato e mostrato,
-  non blocca; l'appartenenza alla categoria di clienti non è richiesta per usarne la convenzione; sostituire le
-  righe (`lines`) di un soggiorno spezzato lo riporta sulle postazioni indicate (una modifica che non le sostituisce
-  conserva i segmenti, INV-106).
+- Limiti noti, da chiudere dopo M8 (INV-103 resta `partial` finché i primi tre non sono chiusi):
+  - un hold del pannello convertito in prenotazione (`ConvertHold`) non conta il contingente della convenzione, quindi
+    `max_per_day` può essere superato da quella via;
+  - la disponibilità pubblica non sottrae la capacità riservata (la prenotazione è rifiutata con `409`, ma il
+    preventivo può mostrarla libera);
+  - due riserve sulle stesse zone sono garantite ciascuna da sola, non sommate (decisione 4): l'editor non avvisa
+    quando le zone di due riserve si sovrappongono; i blocchi delle postazioni e le revoche dei rilasci occupano
+    capacità senza passare dal controllo delle riserve, quindi possono portare le unità libere sotto la riserva (le
+    vendite successive fuori convenzione ricevono `409 agreement_reserved`);
+  - il requisito non verificato è registrato e mostrato, non blocca; l'appartenenza alla categoria di clienti non è
+    richiesta per usarne la convenzione;
+  - sostituire le righe (`lines`) di un soggiorno spezzato lo riporta sulle postazioni indicate (una modifica che non
+    le sostituisce conserva i segmenti, INV-106);
+  - il soggiorno spezzato è proposto solo dalla cassa (Trova posto): la pagina pubblica non propone segmenti con
+    accettazione esplicita (spec 30.6, ultimo punto) e vende solo postazioni libere per l'intero periodo;
+  - il rilascio di giorni dell'abbonato (singolo o per intervallo) scrive audit ed evento `season.day_released`
+    (lista d'attesa e webhook) ma non invia la conferma via email all'abbonato richiesta da spec 30.8;
+  - uno scambio o uno spostamento di gruppo su una prenotazione online con un pagamento in corso (`held`,
+    `pending_payment`) la riprezza: il webhook del pagamento può confermarla con `paid != total` o sotto la soglia
+    di conferma, e vale allora la scadenza con rimborso (INV-51); nessun test copre scambio contro webhook.
 - Verifiche: `TestMigration00013_ModelsRoundtrip` (`internal/store`, SQLite e PostgreSQL), `TestError_M8Mapping`
   (`internal/http/problem`), `TestResetEstablishment_EveryTableClassified`; i test di INV-101..INV-105 in
   `docs/invariants.md`; l'accettazione di M8 `TestAcceptance_M8CashDeskAndAgreements` e

@@ -34,8 +34,11 @@ In **Prezzi → Codici e convenzioni** ogni convenzione ha, oltre allo sconto:
 - **Prezzi fissi per pack**: per esempio *giornaliero residenti 12 €*, al posto del prezzo del pack;
 - **Ambito e validità**: pack, extra e stagioni a cui si applica;
 - **Contingente**: massimo di postazioni al giorno in convenzione e postazioni **riservate**; le riservate non usate
-  tornano in vendita alcuni giorni prima (predefinito 3). Il limite è garantito dal database: nessuna vendita lo
-  supera, anche con più casse insieme;
+  tornano in vendita alcuni giorni prima (predefinito 3). Nessuna cassa può superare il limite, nemmeno vendendo
+  insieme; conta anche una modifica del tetto fatta dopo le prime vendite. Due convenzioni con postazioni riservate
+  sulle stesse zone sono garantite una per volta, non sommate: per riserve indipendenti usa zone diverse. Una
+  postazione bloccata dal pannello o un hold del pannello trasformato in prenotazione non passano da questo
+  controllo;
 - **Requisito da verificare** (per esempio la conferma dell'hotel o la tessera associativa) e **Canali**: cassa,
   codice online, **link della convenzione** da dare al partner.
 

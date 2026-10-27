@@ -310,8 +310,8 @@
     "findSpot": "Trova posto",
     "print": "Stampa",
     "printMap": "Mappa del giorno",
-    "printA4": "Mappa A4 orizzontale",
-    "printA3": "Mappa A3 orizzontale",
+    "printA4": "Mappa del giorno (A4)",
+    "printA3": "Mappa del giorno (A3)",
     "lifeguard": "Lista per i bagnini"
   },
   "print": {

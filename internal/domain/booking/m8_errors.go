@@ -20,7 +20,7 @@ var (
 	// ErrAgreementNotApplicable: the agreement is inactive, outside its
 	// validity, not for this channel or customer -> 422.
 	ErrAgreementNotApplicable = pricingconfig.ErrAgreementNotApplicable
-	// ErrRequirementNotVerified: the agreement requires a verification that
-	// was not recorded (only where a flow demands it) -> 422.
-	ErrRequirementNotVerified = errors.New("booking: agreement requirement not verified")
 )
+
+// The requirement of an agreement is recorded and shown, never enforced
+// (ADR 0028, known limits): no error type exists for it.

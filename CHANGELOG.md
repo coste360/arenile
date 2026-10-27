@@ -29,7 +29,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - **Mappa operativa:** glifi di arrivo, partenza, convenzione o partner e gruppo; etichette combinabili Codice,
   Cliente, Fine e Allestimento (dagli extra con `show_on_map` e `map_label`), ricordate per utente; filtri rapidi
   (arrivi, partenze, da saldare, presenti, una convenzione, un gruppo); vista **Intervallo** con le postazioni
-  libere in parte ("N/M"); stampa della mappa del giorno su A4 o A3 orizzontale e **lista per i bagnini**
+  libere in parte ("N/M"); stampa della mappa del giorno in scala A4 o A3 (l'orientamento si sceglie nella finestra
+  di stampa) e **lista per i bagnini**
   (`GET /operations/lifeguard-list`, JSON o pagina stampabile in italiano, inglese, tedesco e francese).
 - **Calendario della postazione** (`GET /spots/{spotId}/calendar`): la stagione con mattina e pomeriggio di ogni
   giorno; un giorno libero avvia una prenotazione, uno occupato apre la sua. I nomi solo con il permesso di vedere

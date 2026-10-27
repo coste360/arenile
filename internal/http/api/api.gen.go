@@ -2463,7 +2463,6 @@ const (
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
 	ProblemTypeRefundInProgress           ProblemType = "refund_in_progress"
 	ProblemTypeRenewalExpired             ProblemType = "renewal_expired"
-	ProblemTypeRequirementNotVerified     ProblemType = "requirement_not_verified"
 	ProblemTypeSeasonRolloverConflict     ProblemType = "season_rollover_conflict"
 	ProblemTypeSetupCompleted             ProblemType = "setup_completed"
 	ProblemTypeSetupTokenInvalid          ProblemType = "setup_token_invalid"
@@ -2582,8 +2581,6 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeRefundInProgress:
 		return true
 	case ProblemTypeRenewalExpired:
-		return true
-	case ProblemTypeRequirementNotVerified:
 		return true
 	case ProblemTypeSeasonRolloverConflict:
 		return true
@@ -5318,6 +5315,9 @@ type BookingSummary struct {
 	// Formula Formula di durata.
 	Formula   Formula `json:"formula"`
 	GroupName *string `json:"group_name,omitempty"`
+
+	// GroupOrigin Provenienza del gruppo, testo libero (solo nell'esportazione GDPR del cliente, spec 23).
+	GroupOrigin *string `json:"group_origin,omitempty"`
 
 	// GuestNames Nomi degli ospiti (solo nell'esportazione GDPR del cliente, spec 23).
 	GuestNames    *[]string  `json:"guest_names,omitempty"`

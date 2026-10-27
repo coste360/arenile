@@ -310,8 +310,8 @@
     "findSpot": "Trouver une place",
     "print": "Imprimer",
     "printMap": "Plan du jour",
-    "printA4": "Plan A4 paysage",
-    "printA3": "Plan A3 paysage",
+    "printA4": "Plan du jour (A4)",
+    "printA3": "Plan du jour (A3)",
     "lifeguard": "Liste pour les surveillants de baignade"
   },
   "print": {

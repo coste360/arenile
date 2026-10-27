@@ -284,7 +284,7 @@
     "note": "Note",
     "noteHint": "Facultative et courte (ex. carte 2027) ; jamais de numéros de document.",
     "editTitle": "Convention et catégories",
-    "editDescription": "La convention par défaut est proposée à chaque réservation ; les catégories donnent accès aux conventions par catégorie.",
+    "editDescription": "La convention par défaut est proposée à chaque réservation ; les catégories identifient le client et proposent ses conventions.",
     "saved": "Client mis à jour"
   },
   "validation": {
@@ -305,7 +305,6 @@
   "problems": {
     "agreement_quota_exceeded": "Le contingent de la convention est épuisé pour ces dates.",
     "agreement_not_applicable": "La convention ne s'applique pas à cette réservation.",
-    "requirement_not_verified": "La condition de la convention doit être vérifiée avant de confirmer.",
     "partner_in_use": "Le partenaire a des conventions ou des réservations : désactivez-le au lieu de le supprimer.",
     "customer_category_in_use": "La catégorie est utilisée par des clients ou des conventions : désactivez-la au lieu de la supprimer."
   }

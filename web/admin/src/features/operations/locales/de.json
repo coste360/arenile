@@ -310,8 +310,8 @@
     "findSpot": "Platz finden",
     "print": "Drucken",
     "printMap": "Tageskarte",
-    "printA4": "Karte A4 quer",
-    "printA3": "Karte A3 quer",
+    "printA4": "Tageskarte (A4)",
+    "printA3": "Tageskarte (A3)",
     "lifeguard": "Liste für die Rettungsschwimmer"
   },
   "print": {

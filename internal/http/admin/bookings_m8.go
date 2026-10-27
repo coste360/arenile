@@ -36,6 +36,9 @@ func bkShareFromAPI(sh *api.BookingPartnerShare) (*booking.PartnerShareInput, er
 			return nil, configerr.Invalid("partner_share.amount", "Campo obbligatorio.")
 		}
 		out.Value = *sh.Amount
+	case booking.ShareNone, booking.ShareFull:
+	default:
+		return nil, configerr.Invalid("partner_share.type", "Usa none, full, percent o amount.")
 	}
 	return out, nil
 }

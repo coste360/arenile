@@ -14370,7 +14370,6 @@ components:
         - email_template_invalid
         - agreement_quota_exceeded
         - agreement_not_applicable
-        - requirement_not_verified
         - swap_conflict
         - move_undo_expired
         - move_undo_conflict
@@ -18428,6 +18427,9 @@ components:
           description: Nomi degli ospiti (solo nell'esportazione GDPR del cliente, spec 23).
           items:
             type: string
+        group_origin:
+          type: string
+          description: Provenienza del gruppo, testo libero (solo nell'esportazione GDPR del cliente, spec 23).
     BookingList:
       type: object
       required: [items]

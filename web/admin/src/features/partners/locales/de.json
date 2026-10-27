@@ -284,7 +284,7 @@
     "note": "Notiz",
     "noteHint": "Optional und kurz (z. B. Ausweis 2027); nie Dokumentnummern.",
     "editTitle": "Vereinbarung und Kategorien",
-    "editDescription": "Die Standardvereinbarung wird bei jeder Buchung vorgeschlagen; die Kategorien geben Zugang zu den Vereinbarungen je Kategorie.",
+    "editDescription": "Die Standardvereinbarung wird bei jeder Buchung vorgeschlagen; die Kategorien kennzeichnen den Kunden und schlagen seine Vereinbarungen vor.",
     "saved": "Kunde aktualisiert"
   },
   "validation": {
@@ -305,7 +305,6 @@
   "problems": {
     "agreement_quota_exceeded": "Das Kontingent der Vereinbarung ist für diese Tage ausgeschöpft.",
     "agreement_not_applicable": "Die Vereinbarung gilt nicht für diese Buchung.",
-    "requirement_not_verified": "Die Voraussetzung der Vereinbarung muss vor der Bestätigung geprüft werden.",
     "partner_in_use": "Der Partner hat Vereinbarungen oder Buchungen: Deaktivieren Sie ihn, statt ihn zu löschen.",
     "customer_category_in_use": "Die Kategorie wird von Kunden oder Vereinbarungen verwendet: Deaktivieren Sie sie, statt sie zu löschen."
   }

@@ -82,7 +82,7 @@
     "description": "Anagrafica del partner, separata dai clienti.",
     "general": "Dati generali",
     "contacts": "Referente",
-    "contactsHelp": "Facoltativi: servono al lido per contattare il partner, non compaiono mai nei log.",
+    "contactsHelp": "Facoltativi. Restano riservati: servono solo per contattare il partner.",
     "billing": "Dati per l'estratto conto",
     "billingHelp": "Facoltativi: compaiono sull'estratto conto; la fattura resta fuori da Arenile.",
     "created": "Partner {{name}} creato",
@@ -197,7 +197,7 @@
     "addPackPrice": "Aggiungi prezzo fisso",
     "removePackPrice": "Rimuovi il prezzo fisso",
     "scope": "Ambito e validità",
-    "scopeHelp": "Vuoto = tutti i pack e tutte le stagioni; zone, periodi, giorni e fasce si limitano nelle condizioni.",
+    "scopeHelp": "Lascia vuoto per applicarla a tutti i pack e a tutte le stagioni; zone, periodi, giorni e fasce si limitano nelle condizioni.",
     "scopePacks": "Pack",
     "scopeExtras": "Extra",
     "seasons": "Stagioni",
@@ -206,7 +206,7 @@
     "applyToExtras": "Sconto anche sugli extra",
     "applyToExtrasHelp": "Senza, gli extra restano a prezzo pieno salvo quelli scelti sopra.",
     "quota": "Contingente",
-    "quotaHelp": "Facoltativo, per giorno: massimo di postazioni in convenzione e postazioni riservate, garantite dal database.",
+    "quotaHelp": "Facoltativo, per giorno: massimo di postazioni in convenzione e postazioni riservate. Nessuna cassa può superarlo.",
     "quotaMax": "Massimo al giorno",
     "quotaReserved": "Riservate al giorno",
     "quotaRelease": "Rilascio (giorni prima)",
@@ -284,7 +284,7 @@
     "note": "Nota",
     "noteHint": "Facoltativa e breve (es. tessera 2027); mai numeri di documento.",
     "editTitle": "Convenzione e categorie",
-    "editDescription": "La convenzione predefinita si propone a ogni prenotazione; le categorie danno accesso alle convenzioni per categoria.",
+    "editDescription": "La convenzione predefinita si propone a ogni prenotazione; le categorie servono a riconoscere il cliente e a proporre le sue convenzioni.",
     "saved": "Cliente aggiornato"
   },
   "validation": {
@@ -305,7 +305,6 @@
   "problems": {
     "agreement_quota_exceeded": "Contingente della convenzione esaurito per queste date.",
     "agreement_not_applicable": "La convenzione non si applica a questa prenotazione.",
-    "requirement_not_verified": "Il requisito della convenzione va verificato prima di confermare.",
     "partner_in_use": "Il partner ha convenzioni o prenotazioni: disattivalo invece di eliminarlo.",
     "customer_category_in_use": "La categoria è usata da clienti o convenzioni: disattivala invece di eliminarla."
   }

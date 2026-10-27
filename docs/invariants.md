@@ -1035,8 +1035,14 @@ Verificata da: `TestMigration00013_ModelsRoundtrip` (`CHECK` e `UPDATE` condizio
 `TestConcurrency_AgreementReservedQuota` (120 vendite parallele dentro e fuori convenzione sulla stessa zona e mezza
 giornata: mai oltre la parte non riservata fuori convenzione, mai oltre il tetto dentro, contatore uguale al
 dettaglio), `TestAgreementQuota_ReservedBlocksOtherSales`, `TestAgreementQuota_ReleasedBeforeDate`,
-`TestAgreementQuota_MaxPerDayAndRelease` (`internal/domain/inventory`, tag `integration`, SQLite e PostgreSQL),
-`TestCheckout_AgreementCode` (`internal/domain/checkout`). Stato: implemented.
+`TestAgreementQuota_MaxPerDayAndRelease`, `TestAgreementQuota_CapEditedAfterFirstSale` (il tetto confrontato è
+quello della convenzione com'è configurata ora, non quello copiato alla prima vendita) (`internal/domain/inventory`,
+tag `integration`, SQLite e PostgreSQL), `TestCheckout_AgreementCode` (`internal/domain/checkout`). Stato: partial.
+Lacune (ADR 0028, limiti noti): un hold del pannello convertito in prenotazione (`ConvertHold`) non consuma il
+contingente, quindi `max_per_day` può essere superato da quella via; la disponibilità pubblica non sottrae la capacità
+riservata (il preventivo può mostrare libera una postazione che la prenotazione poi non ottiene); due riserve sulle
+stesse zone non si sommano; i blocchi delle postazioni e le revoche dei rilasci non passano dal controllo delle
+riserve e possono ridurre le unità libere sotto la riserva.
 
 **INV-104 — Il saldo del partner è addebitato meno pagato.**
 `bookings.partner_amount` è ricalcolato a ogni scrittura della prenotazione nella stessa istruzione del totale

@@ -310,8 +310,8 @@
     "findSpot": "Find a spot",
     "print": "Print",
     "printMap": "Map of the day",
-    "printA4": "A4 landscape map",
-    "printA3": "A3 landscape map",
+    "printA4": "Day map (A4)",
+    "printA3": "Day map (A3)",
     "lifeguard": "Lifeguard list"
   },
   "print": {

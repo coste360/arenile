@@ -284,7 +284,7 @@
     "note": "Note",
     "noteHint": "Optional and short (e.g. card 2027); never document numbers.",
     "editTitle": "Agreement and categories",
-    "editDescription": "The default agreement is proposed on every booking; categories give access to the agreements for a category.",
+    "editDescription": "The default agreement is proposed on every booking; categories identify the customer and suggest their agreements.",
     "saved": "Customer updated"
   },
   "validation": {
@@ -305,7 +305,6 @@
   "problems": {
     "agreement_quota_exceeded": "The agreement quota is used up for these dates.",
     "agreement_not_applicable": "The agreement does not apply to this booking.",
-    "requirement_not_verified": "The agreement requirement must be verified before confirming.",
     "partner_in_use": "The partner has agreements or bookings: deactivate it instead of deleting it.",
     "customer_category_in_use": "The category is used by customers or agreements: deactivate it instead of deleting it."
   }

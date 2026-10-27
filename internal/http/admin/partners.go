@@ -420,12 +420,18 @@ func RequirementVerificationToAPI(v *store.RequirementVerification, names map[st
 }
 
 // customerExportM8 adds the M8 personal data to the GDPR export: guest
-// names of the bookings and the requirement verifications.
+// names and group origin of the bookings and the requirement verifications.
 func customerExportM8(out *api.CustomerExport, x *customer.Export) {
 	for i := range x.Bookings {
-		if g := x.Bookings[i].GuestNames; len(g) > 0 && i < len(out.Bookings) {
+		if i >= len(out.Bookings) {
+			break
+		}
+		if g := x.Bookings[i].GuestNames; len(g) > 0 {
 			names := append([]string{}, g...)
 			out.Bookings[i].GuestNames = &names
+		}
+		if o := x.Bookings[i].GroupOrigin; o != "" {
+			out.Bookings[i].GroupOrigin = strPtr(o)
 		}
 	}
 	vs := make([]api.RequirementVerification, 0, len(x.RequirementVerifications))

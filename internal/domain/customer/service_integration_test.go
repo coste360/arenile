@@ -364,12 +364,16 @@ func TestCustomerService_AnonymizeKeepsAccounting(t *testing.T) {
 			DeclineReason: "motivo-rinnovo-rossi", Version: 1, CreatedAt: t0, UpdatedAt: t0,
 		})
 
+		// M8 group data: the origin is operator free text (spec 23).
+		if _, err := db.NewUpdate().Table("bookings").Set("group_origin = ?", "Hotel Riva, camera 12").Set("group_name = ?", "Famiglia Rossi").Where("id = ?", b.ID).Exec(e.ctx); err != nil {
+			t.Fatal(err)
+		}
 		x, err := e.svc.Export(e.ctx, e.owner, "", e.estA.ID, c.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if len(x.Bookings) != 1 || len(x.Payments) != 1 || len(x.Credits) != 1 || x.BookingCodes[b.ID] != "AR-TEST1" ||
-			x.SpotLabels[b.ID][0] != "A1" || *x.Customer.Email != "mario@example.it" {
+			x.SpotLabels[b.ID][0] != "A1" || *x.Customer.Email != "mario@example.it" || x.Bookings[0].GroupOrigin != "Hotel Riva, camera 12" {
 			t.Fatalf("export %+v", x)
 		}
 		if n := e.count(t, "audit_log", "action = ? AND entity_id = ?", "customer.exported", c.ID); n != 1 {
@@ -392,7 +396,8 @@ func TestCustomerService_AnonymizeKeepsAccounting(t *testing.T) {
 			t.Fatal(err)
 		}
 		if gotB.CustomerID != c.ID || gotB.TotalAmount != 7000 || gotB.PaidAmount != 5000 || gotB.Status != "confirmed" ||
-			gotB.NotesCustomer != "" || gotB.NotesInternal != "" || gotB.CancelReason != nil || gotB.ManageTokenHash != nil || gotB.Version != 2 {
+			gotB.NotesCustomer != "" || gotB.NotesInternal != "" || gotB.CancelReason != nil || gotB.ManageTokenHash != nil || gotB.Version != 2 ||
+			gotB.GroupName != "" || gotB.GroupOrigin != "" {
 			t.Fatalf("booking after anonymize %+v", gotB)
 		}
 		// Every free text written by the desk is gone (spec 23): cancel

@@ -49,7 +49,6 @@ export function usePartnerPermissions(): PartnerPermissions {
 export const M8_PROBLEMS = [
   'agreement_quota_exceeded',
   'agreement_not_applicable',
-  'requirement_not_verified',
   'partner_in_use',
   'customer_category_in_use',
 ] as const;

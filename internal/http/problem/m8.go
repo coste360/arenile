@@ -14,7 +14,6 @@ import (
 const (
 	AgreementQuotaExceeded = api.ProblemType("agreement_quota_exceeded")
 	AgreementNotApplicable = api.ProblemType("agreement_not_applicable")
-	RequirementNotVerified = api.ProblemType("requirement_not_verified")
 	SwapConflict           = api.ProblemType("swap_conflict")
 	MoveUndoExpired        = api.ProblemType("move_undo_expired")
 	MoveUndoConflict       = api.ProblemType("move_undo_conflict")
@@ -25,7 +24,6 @@ const (
 func init() {
 	catalog[AgreementQuotaExceeded] = meta{http.StatusConflict, "Contingente della convenzione esaurito per le date richieste"}
 	catalog[AgreementNotApplicable] = meta{http.StatusUnprocessableEntity, "La convenzione non si applica a questa prenotazione"}
-	catalog[RequirementNotVerified] = meta{http.StatusUnprocessableEntity, "Requisito della convenzione da verificare"}
 	catalog[SwapConflict] = meta{http.StatusConflict, "Le due prenotazioni non si possono scambiare"}
 	catalog[MoveUndoExpired] = meta{http.StatusGone, "Lo spostamento non si può più annullare"}
 	catalog[MoveUndoConflict] = meta{http.StatusConflict, "Lo spostamento non si può annullare: le postazioni di partenza non sono più libere"}
@@ -47,8 +45,6 @@ func writeM8(w http.ResponseWriter, r *http.Request, err error) bool {
 		typ = AgreementQuotaExceeded
 	case errors.Is(err, booking.ErrAgreementNotApplicable):
 		typ = AgreementNotApplicable
-	case errors.Is(err, booking.ErrRequirementNotVerified):
-		typ = RequirementNotVerified
 	case errors.Is(err, booking.ErrSwapConflict):
 		typ = SwapConflict
 	case errors.Is(err, booking.ErrMoveUndoExpired):

@@ -519,8 +519,9 @@ type CustomerM8Wiped struct {
 // WipeCustomerM8Data removes the M8 personal data of a customer being
 // anonymized: category memberships and the verifications recorded on the
 // customer are deleted, the notes of the verifications on its bookings
-// are cleared, and the guest names and group name of its bookings are
-// wiped (the party size stays for the attendance statistics).
+// are cleared, and the guest names, group name and group origin (free text
+// of the operator) of its bookings are wiped (the party size stays for the
+// attendance statistics).
 func WipeCustomerM8Data(ctx context.Context, db bun.IDB, es EstablishmentScope, customerID string, now time.Time) (CustomerM8Wiped, error) {
 	var out CustomerM8Wiped
 	if err := es.mustBeValid(); err != nil {
@@ -546,9 +547,9 @@ func WipeCustomerM8Data(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 		return out, wrapWrite("wipe booking verification notes", err)
 	}
 	res, err = db.NewUpdate().Model((*Booking)(nil)).
-		Set("guest_names = NULL").Set("group_name = ''").Set("updated_at = ?", now).
+		Set("guest_names = NULL").Set("group_name = ''").Set("group_origin = ''").Set("updated_at = ?", now).
 		Where("establishment_id = ?", es.ID()).Where("customer_id = ?", customerID).
-		Where("(guest_names IS NOT NULL OR group_name <> '')").Exec(ctx)
+		Where("(guest_names IS NOT NULL OR group_name <> '' OR group_origin <> '')").Exec(ctx)
 	if err != nil {
 		return out, wrapWrite("wipe booking guests", err)
 	}

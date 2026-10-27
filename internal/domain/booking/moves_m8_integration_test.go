@@ -612,3 +612,101 @@ func TestMove_PastDaysNeverChange(t *testing.T) {
 		checkCover(t, res.Detail)
 	})
 }
+
+// TestConcurrency_UndoMove (INV-101): 100 parallel undos of the same move
+// entry let exactly one through (the conditional MarkMoveUndone and the
+// unique keys decide); the others get ErrMoveUndoConflict. Then an undo
+// races desk sales of the origin spot: whoever wins, no half-day of the
+// spot ever has two allocations.
+func TestConcurrency_UndoMove(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		r := newReal(f)
+		d := mustCreate(t, f, r.svc, f.Input(f.Spots[0], "2027-07-10", "2027-07-12"))
+		mv, err := r.svc.Move(f.Ctx, f.Cashier, f.Est.ID, d.Booking.ID, booking.MoveInput{LineID: d.Lines[0].ID, SpotID: f.Spots[1].ID})
+		if err != nil || mv.Undo == nil {
+			t.Fatalf("move: %v", err)
+		}
+		var (
+			wg        sync.WaitGroup
+			mu        sync.Mutex
+			undone    int
+			conflicts int
+			other     []error
+		)
+		start := make(chan struct{})
+		for range parallel {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				_, err := r.svc.UndoMove(f.Ctx, f.Cashier, f.Est.ID, mv.Undo.MoveID)
+				mu.Lock()
+				defer mu.Unlock()
+				switch {
+				case err == nil:
+					undone++
+				case errors.Is(err, booking.ErrMoveUndoConflict):
+					conflicts++
+				default:
+					other = append(other, err)
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		if undone != 1 || conflicts != parallel-1 || len(other) > 0 {
+			t.Fatalf("undone=%d conflicts=%d other=%v", undone, conflicts, other)
+		}
+		checkCover(t, get(t, f, r.svc, d.Booking.ID))
+
+		// Undo against desk sales of the origin spot: one of them owns each
+		// half-day, never both.
+		d2 := mustCreate(t, f, r.svc, f.Input(f.Spots[2], "2027-07-20", "2027-07-22"))
+		mv2, err := r.svc.Move(f.Ctx, f.Cashier, f.Est.ID, d2.Booking.ID, booking.MoveInput{LineID: d2.Lines[0].ID, SpotID: f.Spots[3].ID})
+		if err != nil || mv2.Undo == nil {
+			t.Fatalf("second move: %v", err)
+		}
+		var sold, undoOK int
+		start = make(chan struct{})
+		for i := range parallel {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				var err error
+				if i%2 == 0 {
+					_, err = r.svc.UndoMove(f.Ctx, f.Cashier, f.Est.ID, mv2.Undo.MoveID)
+				} else {
+					_, err = r.svc.Create(f.Ctx, f.Cashier, f.Est.ID, f.Input(f.Spots[2], "2027-07-21", "2027-07-21"))
+				}
+				mu.Lock()
+				defer mu.Unlock()
+				var ce *availability.ConflictError
+				switch {
+				case err == nil && i%2 == 0:
+					undoOK++
+				case err == nil:
+					sold++
+				case errors.Is(err, booking.ErrMoveUndoConflict), errors.As(err, &ce):
+				default:
+					other = append(other, err)
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		if len(other) > 0 || undoOK > 1 || sold > 1 || undoOK+sold == 0 {
+			t.Fatalf("undoOK=%d sold=%d other=%v", undoOK, sold, other)
+		}
+		if undoOK == 1 && sold == 1 {
+			t.Fatal("the undo and a sale of the origin spot both succeeded on 21 July")
+		}
+		var n int
+		if err := db.NewSelect().TableExpr("spot_allocations").ColumnExpr("COUNT(*)").
+			Where("spot_id = ? AND date = ? AND slot = ?", f.Spots[2].ID, dd("2027-07-21"), calendar.AM).Scan(f.Ctx, &n); err != nil || n != 1 {
+			t.Fatalf("allocations of A3 on 21 July AM: %d %v", n, err)
+		}
+		checkCover(t, get(t, f, r.svc, d2.Booking.ID))
+	})
+}

@@ -28,7 +28,6 @@ func TestError_M8Mapping(t *testing.T) {
 	}{
 		{fmt.Errorf("allocate: %w", quota), http.StatusConflict, AgreementQuotaExceeded, 1},
 		{booking.ErrAgreementNotApplicable, http.StatusUnprocessableEntity, AgreementNotApplicable, 0},
-		{booking.ErrRequirementNotVerified, http.StatusUnprocessableEntity, RequirementNotVerified, 0},
 		{fmt.Errorf("swap: %w", booking.ErrSwapConflict), http.StatusConflict, SwapConflict, 0},
 		{booking.ErrMoveUndoExpired, http.StatusGone, MoveUndoExpired, 0},
 		{booking.ErrMoveUndoConflict, http.StatusConflict, MoveUndoConflict, 0},
