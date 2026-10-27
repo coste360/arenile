@@ -150,6 +150,10 @@ func (m *m8) fullWeek() api.BookingDetail {
 	if res := m.findSpot(aug(10), aug(16), 0); len(res.Proposals) != 0 {
 		t.Fatalf("a single spot is free for the week: %+v", res.Proposals)
 	}
+	// Spec 28: the week is sold "in meno di un minuto" through the API
+	// (search with one change, then book the proposal), measured here with
+	// a generous budget for a loaded CI machine.
+	started := time.Now()
 	res := m.findSpot(aug(10), aug(16), 1)
 	var p *api.FindSpotProposal
 	for i := range res.Proposals {
@@ -171,6 +175,11 @@ func (m *m8) fullWeek() api.BookingDetail {
 	if d.Status != api.BookingStatusConfirmed || d.TotalAmount != *p.Total || len(d.Lines) != 1 ||
 		d.Lines[0].Segments == nil || len(*d.Lines[0].Segments) != 2 {
 		t.Fatalf("split booking %+v", d)
+	}
+	if took := time.Since(started); took > time.Minute {
+		t.Fatalf("find spot and book took %s, the budget is one minute (spec 28)", took)
+	} else {
+		t.Logf("find spot and book: %s", took.Round(time.Millisecond))
 	}
 	// The same proposal again: the spots are gone (INV-01).
 	m.expectRefused(m.bookProposal(*p, aug(10), aug(16)), "stale proposal")
