@@ -59,6 +59,8 @@ const WhereStep = lazy(() => import('./WhereStep'));
 const WhatStep = lazy(() => import('./WhatStep'));
 const WhoStep = lazy(() => import('./WhoStep'));
 const ConfirmationPage = lazy(() => import('../confirmation/ConfirmationPage'));
+// Only pages opened from an agreement link (`?c=`) or with a typed code load it.
+const AgreementBanner = lazy(() => import('./what/AgreementBanner'));
 
 /** Delay of the price quote after the last change (spec 12.3 "con debounce"). */
 export const QUOTE_DEBOUNCE_MS = 400;
@@ -131,10 +133,11 @@ export function Stepper({ header, aside, returnedBookingId, now = serverNow }: S
     }
     return resumable(slug, now());
   });
-  const [flow, dispatch] = useReducer(
-    flowReducer,
-    location.from ? { from: location.from, to: location.to ?? undefined } : undefined,
-    initialFlowState,
+  const [flow, dispatch] = useReducer(flowReducer, undefined, () =>
+    initialFlowState(
+      location.from ? { from: location.from, to: location.to ?? undefined } : undefined,
+      location.agreementCode ?? '',
+    ),
   );
   const [step, setStep] = useState<Step>(initialSession ? 'who' : 'when');
   const [session, setSession] = useState<StoredCheckout | null>(initialSession);
@@ -350,6 +353,11 @@ export function Stepper({ header, aside, returnedBookingId, now = serverNow }: S
             <CardDescription>{tc(`booking.stepText.${step}`)}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {flow.agreementCode && (
+              <Suspense fallback={null}>
+                <AgreementBanner code={flow.agreementCode} status={quote.data?.agreement} />
+              </Suspense>
+            )}
             {notice && (
               <Alert variant="destructive">
                 <InfoIcon aria-hidden="true" />
@@ -360,7 +368,12 @@ export function Stepper({ header, aside, returnedBookingId, now = serverNow }: S
               {step === 'when' && <WhenStep state={flow} dispatch={dispatch} />}
               {step === 'where' && <WhereStep state={flow} dispatch={dispatch} />}
               {step === 'what' && (
-                <WhatStep state={flow} dispatch={dispatch} promoStatus={quote.data?.promo} />
+                <WhatStep
+                  state={flow}
+                  dispatch={dispatch}
+                  promoStatus={quote.data?.promo}
+                  agreementStatus={quote.data?.agreement}
+                />
               )}
               {step === 'who' && session && (
                 <WhoStep

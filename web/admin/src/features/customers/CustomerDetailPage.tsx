@@ -32,6 +32,7 @@ import { describeProblem } from '../bookings/problem';
 import { NewBookingSheet } from '../bookings/NewBookingSheet';
 import { CustomerCreditsSection } from '../credits';
 import { downloadJson, useCustomer, useExportCustomer, type CustomerDetail } from './api';
+import { CustomerAgreementCard } from './agreement/CustomerAgreementCard';
 import { AnonymizeDialog, CustomerFormDialog } from './CustomerDialogs';
 
 type RecentBooking = CustomerDetail['recent_bookings'][number];
@@ -274,6 +275,11 @@ export function CustomerDetailPage() {
         </div>
 
         <div className="min-w-0 space-y-6">
+          <CustomerAgreementCard
+            establishmentId={establishmentId}
+            customer={c}
+            canWrite={perms.canWrite && !anonymized}
+          />
           <SectionCard title={t('detail.profile')}>
             <dl className="space-y-4 text-sm">
               <Field label={t('fields.locale')}>

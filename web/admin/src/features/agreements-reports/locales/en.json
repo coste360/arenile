@@ -1,16 +1,36 @@
 {
   "title": "Agreement reports",
-  "description": "Report per partner and agreements register for the concession, by season or period, in Excel and PDF.",
-  "placeholder": {
-    "title": "Coming with milestone M8",
-    "description": "Here you will find the report per partner and the agreements register for the municipality."
+  "description": "Report per partner and agreements register for the tender, by season or period, in Excel and PDF.",
+  "forbidden": "Reports require the permission to read reports.",
+  "validity": "Valid from {{from}} to {{to}}",
+  "export": {
+    "label": "Export",
+    "xlsx": "Excel",
+    "csv": "CSV",
+    "html": "Print or save as PDF"
   },
   "partners": {
-    "title": "Report per partner"
+    "title": "Report per partner",
+    "empty": "No bookings with partners in the period"
   },
   "register": {
     "title": "Agreements register",
-    "exportXlsx": "Export to Excel",
-    "print": "Print or save as PDF"
+    "subtitle": "{{name}}, from {{from}} to {{to}}",
+    "byCategory": "Totals per category",
+    "empty": "No active agreements in the period"
+  },
+  "columns": {
+    "agreement": "Agreement",
+    "agreements": "Agreements",
+    "category": "Category",
+    "conditions": "Conditions",
+    "bookings": "Bookings",
+    "spotDays": "Spot-days",
+    "people": "People",
+    "revenue": "Revenue",
+    "discount": "Discount granted",
+    "partner": "Partner",
+    "charged": "Charged",
+    "paid": "Paid"
   }
 }

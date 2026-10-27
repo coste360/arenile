@@ -111,6 +111,24 @@ describe('flowReducer', () => {
 });
 
 describe('toSelection', () => {
+  it('sends the agreement code of the link and keeps it across date changes (spec 30.2.2)', () => {
+    let s = initialFlowState({ from: '2099-07-10', to: '2099-07-12' }, 'MIRAMARE');
+    s = flowReducer(s, { type: 'formula', formula: 'multi_day' });
+    s = flowReducer(s, { type: 'toggleZone', zoneId: 'z3' });
+    s = flowReducer(s, { type: 'pack', key: 'z3', packId: 'p2' });
+    expect(toSelection(s)).toMatchObject({ agreement_code: 'MIRAMARE' });
+    s = flowReducer(s, {
+      type: 'dates',
+      dates: { from: '2099-07-11', to: '2099-07-12' },
+      formula: null,
+    });
+    expect(s.agreementCode).toBe('MIRAMARE');
+    s = flowReducer(s, { type: 'agreement', code: ' residenti ' });
+    expect(s.agreementCode).toBe('RESIDENTI');
+    s = flowReducer(s, { type: 'agreement', code: '' });
+    expect(s.agreementCode).toBe('');
+  });
+
   it('is null until every line has a pack', () => {
     let s = ready();
     expect(isWhenComplete(s)).toBe(true);

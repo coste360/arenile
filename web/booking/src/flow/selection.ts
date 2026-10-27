@@ -44,6 +44,8 @@ export interface FlowState {
   /** extra id → quantity (attach_to = booking). */
   bookingExtras: Record<string, number>;
   promoCode: string;
+  /** Agreement code (link `?c=` or typed, spec 30.2.2); '' = none. Outcome in `quote.agreement`. */
+  agreementCode: string;
   /** Set when chosen resources were dropped because they became unavailable. */
   dropped: boolean;
 }
@@ -59,10 +61,11 @@ export type FlowAction =
   | { type: 'lineExtra'; key: string; extraId: string; quantity: number }
   | { type: 'bookingExtra'; extraId: string; quantity: number }
   | { type: 'promo'; code: string }
+  | { type: 'agreement'; code: string }
   | { type: 'dropLines'; keys: readonly string[] }
   | { type: 'resetResources' };
 
-export function initialFlowState(dates?: StayDates): FlowState {
+export function initialFlowState(dates?: StayDates, agreementCode = ''): FlowState {
   return {
     dates,
     slots: 'FULL',
@@ -70,6 +73,7 @@ export function initialFlowState(dates?: StayDates): FlowState {
     lines: [],
     bookingExtras: {},
     promoCode: '',
+    agreementCode,
     dropped: false,
   };
 }
@@ -83,7 +87,7 @@ function setQty(map: Record<string, number>, id: string, qty: number): Record<st
 
 /**
  * The resources depend on dates, slot and formula: changing them clears the
- * chosen lines (availability and prices change) but keeps the promo code.
+ * chosen lines (availability and prices change) but keeps the promo and agreement codes.
  */
 export function flowReducer(state: FlowState, action: FlowAction): FlowState {
   switch (action.type) {
@@ -174,6 +178,8 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
       };
     case 'promo':
       return { ...state, promoCode: action.code.trim().toUpperCase() };
+    case 'agreement':
+      return { ...state, agreementCode: action.code.trim().toUpperCase() };
     case 'dropLines':
       return {
         ...state,
@@ -277,6 +283,7 @@ export function toSelection(s: FlowState): Schemas['PublicSelection'] | null {
     lines: lineInputs(s.lines),
     ...(extras.length ? { extras } : {}),
     ...(s.promoCode ? { promo_code: s.promoCode } : {}),
+    ...(s.agreementCode ? { agreement_code: s.agreementCode } : {}),
   };
 }
 

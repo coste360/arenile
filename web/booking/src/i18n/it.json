@@ -283,5 +283,20 @@
     "conflict": "Le condizioni sono state aggiornate: rileggile e accettale di nuovo.",
     "validation_failed": "Alcuni dati non sono validi: controlla i campi.",
     "payment_provider_test_mode": "Il pagamento online non è disponibile in questo momento: contatta lo stabilimento per prenotare."
+  },
+  "agreement": {
+    "label": "Codice convenzione",
+    "applied": "Convenzione {{name}} applicata.",
+    "requirement": "Da presentare in cassa: {{requirement}}.",
+    "notApplicable": "La convenzione {{code}} non si applica a questa selezione.",
+    "invalid": "Codice convenzione non valido.",
+    "quotaExhausted": "Posti in convenzione esauriti per queste date: il prezzo è quello normale.",
+    "unknown": "Il codice convenzione {{code}} non è valido o non è più attivo: puoi prenotare al prezzo normale.",
+    "title": "Convenzione {{name}}",
+    "titlePartner": "Convenzione {{name}} · {{partner}}",
+    "validity": "Valida dal {{from}} al {{to}}.",
+    "validUntil": "Valida fino al {{to}}.",
+    "applyAria": "Applica il codice convenzione",
+    "removeAria": "Rimuovi il codice convenzione"
   }
 }

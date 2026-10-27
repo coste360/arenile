@@ -50,12 +50,18 @@ export interface BookingLocation {
   preview: boolean;
   /** Forced colour scheme (`?theme=light|dark`, screenshots and host pages); null = system. */
   colorScheme: 'light' | 'dark' | null;
+  /**
+   * Agreement link `?c={code}` (spec 30.2.2): the partner publishes it or
+   * sends it to its guests; the code goes into the quote as `agreement_code`.
+   */
+  agreementCode: string | null;
 }
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 const TOKEN_RE = /^[A-Za-z0-9_-]{32,128}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const AGREEMENT_CODE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{1,39}$/;
 
 /** Absolute http(s) URL or null. */
 function httpUrl(value: string | null): string | null {
@@ -68,11 +74,17 @@ function httpUrl(value: string | null): string | null {
   }
 }
 
+/** Agreement code of `?c=` (case-insensitive, stored upper case), null when malformed. */
+function agreementCode(value: string | null): string | null {
+  const v = value?.trim() ?? '';
+  return AGREEMENT_CODE_RE.test(v) ? v.toUpperCase() : null;
+}
+
 function date(value: string | null): string | null {
   return value && DATE_RE.test(value) ? value : null;
 }
 
-/** Parses `/b/{slug}[/m/{token}]?embed=1&lang=..&from=..&to=..&pack=..&checkout=..&preview=1&theme=..`. */
+/** Parses `/b/{slug}[/m/{token}]?embed=1&lang=..&from=..&to=..&pack=..&checkout=..&preview=1&theme=..&c=..`. */
 export function parseBookingLocation(pathname: string, search: string): BookingLocation {
   const match = /^\/b\/([^/?#]+)/.exec(pathname);
   let slug: string | null = null;
@@ -107,5 +119,6 @@ export function parseBookingLocation(pathname: string, search: string): BookingL
     hostPage: embed === '1' || embed === 'true' ? httpUrl(q.get('return')) : null,
     preview: preview === '1' || preview === 'true',
     colorScheme: scheme === 'light' || scheme === 'dark' ? scheme : null,
+    agreementCode: agreementCode(q.get('c')),
   };
 }

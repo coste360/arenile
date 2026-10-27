@@ -23,7 +23,15 @@ describe('parseBookingLocation', () => {
       hostPage: null,
       preview: false,
       colorScheme: null,
+      agreementCode: null,
     });
+  });
+
+  it('reads the agreement link code (spec 30.2.2) and drops a malformed one', () => {
+    expect(parseBookingLocation('/b/lido', '?c=miramare26').agreementCode).toBe('MIRAMARE26');
+    expect(parseBookingLocation('/b/lido', '?c=%3Cscript%3E').agreementCode).toBeNull();
+    expect(parseBookingLocation('/b/lido', '?c=x').agreementCode).toBeNull();
+    expect(parseBookingLocation('/b/lido', '').agreementCode).toBeNull();
   });
 
   it.each([

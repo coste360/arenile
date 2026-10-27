@@ -50,6 +50,7 @@ import {
   type BookingDetail,
   type TransitionVars,
 } from './api';
+import { BookingAgreementCard } from './agreement/BookingAgreementCard';
 import { noteSchema, type NoteValues } from './booking.schema';
 import { CancelBookingDialog } from './detail/CancelBookingDialog';
 import { ChangeDatesDialog, MoveBookingDialog } from './detail/ChangeDialogs';
@@ -282,6 +283,13 @@ export function BookingDetailPage() {
           <AllocationsCard booking={b} spotLabel={(id) => inventory.spotById.get(id)?.label} />
         </div>
         <div className="min-w-0 space-y-6">
+          <BookingAgreementCard
+            establishmentId={establishmentId}
+            booking={b}
+            canWrite={perms.canWrite && active}
+            inventory={inventory}
+            onReload={reload}
+          />
           <NotesCard establishmentId={establishmentId} booking={b} canWrite={perms.canWrite} />
           <HistoryCard booking={b} />
         </div>

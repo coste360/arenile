@@ -29,6 +29,7 @@ import { HandshakeIcon, PlusIcon, TicketPercentIcon } from 'lucide-react';
 import { useForm, type Control, type FieldValues, type Path } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
+import { AgreementM8Fields } from './agreements/AgreementM8Fields';
 import { agreements, promoCodes, type Agreement, type PromoCode } from './api';
 import { ActionFields, ConditionFields } from './components';
 import { describeAction } from './format';
@@ -345,7 +346,7 @@ function AgreementSection(p: PricingTabProps) {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('fields.partner_name')} />
       ),
-      cell: ({ row }) => row.original.partner_name || '—',
+      cell: ({ row }) => row.original.partner?.name || row.original.partner_name || '—',
     },
     {
       id: 'action',
@@ -469,6 +470,7 @@ function AgreementForm(p: PricingTabProps & { item?: Agreement; onDone: () => vo
           <DescriptionField control={control} name="notes" label={t('fields.notes')} />
         </EditorSection>
         <ActionFields control={control} allowed={ACTIONS_BY_STAGE.discount} />
+        <AgreementM8Fields control={control} item={p.item} {...p} />
         <ConditionFields control={control} periods={p.periods} zones={p.zones} />
         <OptionsSection control={control} />
       </SheetForm>

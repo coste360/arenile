@@ -283,5 +283,20 @@
     "conflict": "The conditions have been updated: read and accept them again.",
     "validation_failed": "Some details are not valid: check the fields.",
     "payment_provider_test_mode": "Online payment is not available at the moment: please contact the beach club to book."
+  },
+  "agreement": {
+    "label": "Agreement code",
+    "applied": "Agreement {{name}} applied.",
+    "requirement": "To show at the desk: {{requirement}}.",
+    "notApplicable": "Agreement {{code}} does not apply to this selection.",
+    "invalid": "Invalid agreement code.",
+    "quotaExhausted": "No agreement places left for these dates: the regular price applies.",
+    "unknown": "Agreement code {{code}} is not valid or no longer active: you can book at the regular price.",
+    "title": "Agreement {{name}}",
+    "titlePartner": "Agreement {{name}} · {{partner}}",
+    "validity": "Valid from {{from}} to {{to}}.",
+    "validUntil": "Valid until {{to}}.",
+    "applyAria": "Apply the agreement code",
+    "removeAria": "Remove the agreement code"
   }
 }

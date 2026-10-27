@@ -35,6 +35,7 @@ import type { Customer } from '../customers/api';
 import { CustomerPicker, DuplicateHint } from '../customers/CustomerPicker';
 import { useDebounced } from '../customers/lib';
 import { OnlineOnlyNotice } from '../../offline/OnlineOnlyNotice';
+import { useNewBookingAgreement } from './agreement/useNewBookingAgreement';
 import { useBookingQuote, useCreateBooking, useRecordPayment } from './api';
 import {
   makeNewBookingSchema,
@@ -179,7 +180,13 @@ function NewBookingForm({
     holdId: defaults?.holdId,
   };
   const extraById = new Map((extraList.data ?? []).map((x) => [x.id, x]));
-  const selection = toSelection(values, lineCtx);
+  // Agreement, partner and group (spec 30.2.3, 30.3): the agreement re-prices the quote.
+  const agreement = useNewBookingAgreement(
+    establishmentId,
+    values.customer_mode === 'existing' ? customer : null,
+  );
+  const baseSelection = toSelection(values, lineCtx);
+  const selection = baseSelection && { ...baseSelection, ...agreement.quoteFields };
   const quoteBody = useDebounced(selection ? JSON.stringify(selection) : null, 350);
   const quote = useBookingQuote(establishmentId, quoteBody ? JSON.parse(quoteBody) : null);
   const quoteStale =
@@ -204,8 +211,9 @@ function NewBookingForm({
 
   const submitBooking = async (v: NewBookingValues) => {
     setFailure(null);
-    const body = toBookingCreate(v, lineCtx);
-    if (!body) return;
+    const base = toBookingCreate(v, lineCtx);
+    if (!base) return;
+    const body = { ...base, ...agreement.createFields };
     const serialized = JSON.stringify(body);
     if (keyRef.current?.body !== serialized) {
       keyRef.current = { body: serialized, key: newIdempotencyKey() };
@@ -528,6 +536,8 @@ function NewBookingForm({
             </div>
           )}
         </FormSection>
+
+        {agreement.section}
 
         <FormSection title={t('quote.title')}>
           <QuotePreview

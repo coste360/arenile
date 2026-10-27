@@ -1,16 +1,36 @@
 {
-  "title": "Rapports des conventions",
-  "description": "Rapport par partenaire et registre des conventions pour la concession, par saison ou période, en Excel et PDF.",
-  "placeholder": {
-    "title": "Disponible avec le jalon M8",
-    "description": "Ici, vous trouverez le rapport par partenaire et le registre des conventions pour la commune."
+  "title": "Comptes rendus des conventions",
+  "description": "Compte rendu par partenaire et registre des conventions pour l'appel d'offres, par saison ou période, en Excel et PDF.",
+  "forbidden": "Les comptes rendus nécessitent l'autorisation de consulter les rapports.",
+  "validity": "Valable du {{from}} au {{to}}",
+  "export": {
+    "label": "Exporter",
+    "xlsx": "Excel",
+    "csv": "CSV",
+    "html": "Imprimer ou enregistrer en PDF"
   },
   "partners": {
-    "title": "Rapport par partenaire"
+    "title": "Compte rendu par partenaire",
+    "empty": "Aucune réservation avec partenaire sur la période"
   },
   "register": {
     "title": "Registre des conventions",
-    "exportXlsx": "Exporter en Excel",
-    "print": "Imprimer ou enregistrer en PDF"
+    "subtitle": "{{name}}, du {{from}} au {{to}}",
+    "byCategory": "Totaux par catégorie",
+    "empty": "Aucune convention active sur la période"
+  },
+  "columns": {
+    "agreement": "Convention",
+    "agreements": "Conventions",
+    "category": "Catégorie",
+    "conditions": "Conditions",
+    "bookings": "Réservations",
+    "spotDays": "Jours-emplacement",
+    "people": "Personnes",
+    "revenue": "Recettes",
+    "discount": "Remise accordée",
+    "partner": "Partenaire",
+    "charged": "Facturé",
+    "paid": "Payé"
   }
 }
