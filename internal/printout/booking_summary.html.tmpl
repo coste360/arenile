@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}} · {{.BookingCode}} · {{.Establishment}}</title>
+<style>
+{{.PageCSS}}
+:root { color-scheme: light; --ink: #0f172a; --muted: #475569; --rule: #cbd5e1; --navy: #0b2542; }
+* { box-sizing: border-box; }
+html { background: #f8fafc; }
+body { margin: 0 auto; padding: 24px 16px; max-width: 210mm; color: var(--ink); background: #fff;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body.receipt { max-width: 80mm; padding: 12px 8px; font-size: 11px; }
+.hint { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; color: var(--muted); font-size: 12px; }
+header.doc { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--navy); }
+.receipt header.doc { flex-direction: column-reverse; align-items: center; text-align: center; gap: 6px; }
+header.doc h1 { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+.receipt header.doc h1 { font-size: 14px; }
+header.doc p { margin: 0; color: var(--muted); }
+.logo { height: 34px; width: auto; flex: none; }
+.receipt .logo { height: 22px; }
+.body { display: flex; gap: 24px; align-items: flex-start; margin-top: 16px; }
+.receipt .body { flex-direction: column; align-items: stretch; gap: 12px; }
+.rows { flex: 1; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 12px; }
+dt { color: var(--muted); }
+dd { margin: 0; font-weight: 600; }
+dl.totals { padding-top: 8px; border-top: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+dl.totals dd { text-align: right; }
+figure.qr { margin: 0; text-align: center; flex: none; }
+figure.qr img { width: 160px; height: 160px; }
+.receipt figure.qr img { width: 120px; height: 120px; }
+figure.qr figcaption { color: var(--muted); font-size: 11px; max-width: 160px; }
+.receipt figure.qr figcaption { max-width: none; }
+footer.doc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; }
+footer.doc p { margin: 0; }
+@media print { html, body { background: #fff; } body { padding: 0; max-width: none; } .hint { display: none; } }
+@media screen and (max-width: 480px) { .body { flex-direction: column; align-items: stretch; } }
+</style>
+</head>
+<body{{if .Receipt}} class="receipt"{{end}}>
+<p class="hint">{{.Hint}}</p>
+<header class="doc">
+  <div>
+    <h1>{{.Title}}</h1>
+    <p>{{.Establishment}} · {{.BookingCode}}</p>
+  </div>
+  <img class="logo" src="{{.Logo}}" alt="Arenile" width="106" height="34">
+</header>
+<div class="body">
+  <div class="rows">
+    <dl data-testid="summary">{{range .Summary}}<dt>{{.Label}}</dt><dd>{{.Value}}</dd>{{end}}</dl>
+    {{if .Totals}}<dl class="totals" data-testid="totals">{{range .Totals}}<dt>{{.Label}}</dt><dd>{{.Value}}</dd>{{end}}</dl>{{end}}
+  </div>
+  {{if .QR}}<figure class="qr"><img src="{{.QR}}" alt="QR {{.BookingCode}}"><figcaption>{{.QRNote}}</figcaption></figure>{{end}}
+</div>
+{{if .Contacts}}<footer class="doc">{{range .Contacts}}<p>{{.}}</p>{{end}}</footer>{{end}}
+</body>
+</html>

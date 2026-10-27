@@ -59,5 +59,11 @@
   "preview_first_name": "Mario",
   "preview_last_name": "Rossi",
   "preview_zone": "Prima fila",
-  "preview_pack": "Ombrellone e 2 lettini"
+  "preview_pack": "Ombrellone e 2 lettini",
+  "share_greeting": "Ciao {name}, ecco il riepilogo della tua prenotazione presso {establishment}.",
+  "share_greeting_anonymous": "Ecco il riepilogo della tua prenotazione presso {establishment}.",
+  "share_manage": "Per vedere o gestire la prenotazione:",
+  "summary_title": "Riepilogo della prenotazione",
+  "summary_qr": "Mostra questo codice all'arrivo.",
+  "summary_print_hint": "Usa la stampa del browser per stamparlo o salvarlo in PDF."
 }

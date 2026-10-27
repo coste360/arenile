@@ -59,5 +59,11 @@
   "preview_first_name": "Claire",
   "preview_last_name": "Martin",
   "preview_zone": "Premier rang",
-  "preview_pack": "Parasol et 2 transats"
+  "preview_pack": "Parasol et 2 transats",
+  "share_greeting": "Bonjour {name}, voici le récapitulatif de votre réservation chez {establishment}.",
+  "share_greeting_anonymous": "Voici le récapitulatif de votre réservation chez {establishment}.",
+  "share_manage": "Pour consulter ou gérer la réservation :",
+  "summary_title": "Récapitulatif de la réservation",
+  "summary_qr": "Présentez ce code à votre arrivée.",
+  "summary_print_hint": "Utilisez l'impression du navigateur pour l'imprimer ou l'enregistrer en PDF."
 }

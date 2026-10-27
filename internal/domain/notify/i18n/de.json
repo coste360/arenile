@@ -59,5 +59,11 @@
   "preview_first_name": "Anna",
   "preview_last_name": "Müller",
   "preview_zone": "Erste Reihe",
-  "preview_pack": "Sonnenschirm und 2 Liegen"
+  "preview_pack": "Sonnenschirm und 2 Liegen",
+  "share_greeting": "Hallo {name}, hier ist die Zusammenfassung Ihrer Buchung bei {establishment}.",
+  "share_greeting_anonymous": "Hier ist die Zusammenfassung Ihrer Buchung bei {establishment}.",
+  "share_manage": "Buchung ansehen oder verwalten:",
+  "summary_title": "Buchungsübersicht",
+  "summary_qr": "Zeigen Sie diesen Code bei der Ankunft vor.",
+  "summary_print_hint": "Drucken Sie mit der Druckfunktion des Browsers oder speichern Sie als PDF."
 }

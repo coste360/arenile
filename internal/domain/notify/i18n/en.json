@@ -59,5 +59,11 @@
   "preview_first_name": "Anna",
   "preview_last_name": "Smith",
   "preview_zone": "Front row",
-  "preview_pack": "Umbrella and 2 sunbeds"
+  "preview_pack": "Umbrella and 2 sunbeds",
+  "share_greeting": "Hi {name}, here is the summary of your booking at {establishment}.",
+  "share_greeting_anonymous": "Here is the summary of your booking at {establishment}.",
+  "share_manage": "To view or manage the booking:",
+  "summary_title": "Booking summary",
+  "summary_qr": "Show this code when you arrive.",
+  "summary_print_hint": "Use the browser's print to print it or save it as PDF."
 }
