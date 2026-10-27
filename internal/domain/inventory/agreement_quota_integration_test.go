@@ -44,7 +44,8 @@ func (f *fixture) addQuotaAgreement(t testing.TB, q quotaSpec) string {
 	}
 	raw, err := json.Marshal(cfg)
 	must(t, err)
-	code := "AG" + store.NewID()[:8]
+	id := store.NewID()
+	code := "AG" + id[len(id)-8:] // the random tail: two agreements in the same millisecond share the prefix
 	ag := &store.Agreement{
 		ID: store.NewID(), Code: &code, Name: "Residenti", Action: store.JSON(`{"type":"percent_off","percent":"10"}`),
 		Conditions: store.JSON(`{}`), Active: true, Quota: store.JSON(raw), Version: 1, CreatedAt: t0, UpdatedAt: t0,
@@ -212,5 +213,54 @@ func TestConcurrency_AgreementReservedQuota(t *testing.T) {
 			t.Fatalf("detail rows %d != 2 x %d", n, inside)
 		}
 		f.checkInvariants(t)
+	})
+}
+
+// TestAgreementQuota_CapEditedAfterFirstSale (INV-103): the cap compared is
+// the one of the agreement as configured now, not the one copied into the
+// counter row by the first sale of the half-day: a cap lowered to the units
+// already sold refuses the next sale, a cap added later is enforced, a cap
+// raised lets the sale through.
+func TestAgreementQuota_CapEditedAfterFirstSale(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		ctx := context.Background()
+		f := newFixture(t, db)
+		ag := f.addQuotaAgreement(t, quotaSpec{max: ptr(3)})
+		day := "2027-07-12"
+		setCap := func(cfg string) {
+			t.Helper()
+			_, err := db.NewUpdate().Table("agreements").Set("quota = ?", cfg).Where("id = ?", ag).Exec(ctx)
+			must(t, err)
+		}
+		if _, err := f.bookAs(t, ag, "A1", day); err != nil {
+			t.Fatalf("first: %v", err)
+		}
+		// Lowered to 1 after the first sale: the second is over the cap.
+		setCap(`{"max_per_day":1}`)
+		if _, err := f.bookAs(t, ag, "A2", day); quotaReason(err) != availability.ReasonAgreementQuota {
+			t.Fatalf("after lowering the cap: %v, want agreement_quota", err)
+		}
+		// Raised to 2: one more goes through, the next is refused.
+		setCap(`{"max_per_day":2}`)
+		if _, err := f.bookAs(t, ag, "A2", day); err != nil {
+			t.Fatalf("after raising the cap: %v", err)
+		}
+		if _, err := f.bookAs(t, ag, "A3", day); quotaReason(err) != availability.ReasonAgreementQuota {
+			t.Fatalf("third with cap 2: %v", err)
+		}
+		// A cap added on a half-day first sold without one.
+		ag2 := f.addQuotaAgreement(t, quotaSpec{reserved: ptr(0)})
+		day2 := "2027-07-13"
+		if _, err := f.bookAs(t, ag2, "A1", day2); err != nil {
+			t.Fatalf("no cap: %v", err)
+		}
+		_, err := db.NewUpdate().Table("agreements").Set("quota = ?", `{"max_per_day":1}`).Where("id = ?", ag2).Exec(ctx)
+		must(t, err)
+		if _, err := f.bookAs(t, ag2, "A2", day2); quotaReason(err) != availability.ReasonAgreementQuota {
+			t.Fatalf("cap added after the first sale: %v, want agreement_quota", err)
+		}
+		if used := f.quotaUsed(t, ag2, day2); used != 1 {
+			t.Fatalf("used = %d", used)
+		}
 	})
 }

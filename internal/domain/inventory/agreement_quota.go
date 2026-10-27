@@ -21,8 +21,10 @@ import (
 //
 //   - the cap of an agreement (max_per_day) is the counter
 //     agreement_quota_usage.used, incremented with a conditional UPDATE
-//     (used + n <= max_units, also a CHECK): a refusal is a conflict
-//     agreement_quota;
+//     against the cap of the agreement as configured now (the row is
+//     refreshed with it, and a CHECK used <= max_units holds): a refusal
+//     is a conflict agreement_quota, and a cap edited after the first sale
+//     of a half-day is enforced from the next sale on;
 //   - the capacity reserved to an agreement (reserved_per_day) is held
 //     back from every other sale until its release (release_days_before
 //     days before the date, default 3): with the agreements locked, the
@@ -204,7 +206,8 @@ func (s *Service) consumeAgreementQuota(ctx context.Context, tx bun.IDB, es stor
 	var conflicts []availability.Conflict
 	var detail []store.AgreementQuotaAllocation
 	for _, hd := range halfDays {
-		ok, err := store.ConsumeAgreementQuota(ctx, tx, es, store.QuotaKey{AgreementID: q.id, Date: hd.Date, Slot: hd.Slot}, n, now)
+		lim := store.QuotaLimits{MaxUnits: q.cfg.MaxPerDay, Reserved: q.reserved(), ReleaseOn: q.releaseOn(hd.Date)}
+		ok, err := store.ConsumeAgreementQuota(ctx, tx, es, store.QuotaKey{AgreementID: q.id, Date: hd.Date, Slot: hd.Slot}, n, lim, now)
 		if err != nil {
 			return nil, err
 		}

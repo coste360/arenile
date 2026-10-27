@@ -109,20 +109,35 @@ func EnsureAgreementQuotaRows(ctx context.Context, db bun.IDB, es EstablishmentS
 	return nil
 }
 
+// QuotaLimits is the current quota configuration of an agreement for one
+// half-day, as the loaded agreement says it now (not as the counter row
+// recorded it at the first sale).
+type QuotaLimits struct {
+	MaxUnits  *int
+	Reserved  int
+	ReleaseOn calendar.Date
+}
+
 // ConsumeAgreementQuota adds n to the counter of k with one conditional
-// UPDATE (used + n <= max_units when a cap is set) and reports whether the
-// row was updated. The row must exist (EnsureAgreementQuotaRows).
-// Concurrent consumers serialize on the row lock (INV-103).
-func ConsumeAgreementQuota(ctx context.Context, db bun.IDB, es EstablishmentScope, k QuotaKey, n int, now time.Time) (bool, error) {
+// UPDATE (used + n <= lim.MaxUnits when a cap is set) and reports whether
+// the row was updated; the row is refreshed with the current limits, so a
+// cap lowered, raised or added after the first sale of the half-day is
+// enforced from the next sale on. The row must exist
+// (EnsureAgreementQuotaRows). Concurrent consumers serialize on the row
+// lock (INV-103).
+func ConsumeAgreementQuota(ctx context.Context, db bun.IDB, es EstablishmentScope, k QuotaKey, n int, lim QuotaLimits, now time.Time) (bool, error) {
 	if err := es.mustBeValid(); err != nil {
 		return false, err
 	}
-	res, err := db.NewUpdate().TableExpr("agreement_quota_usage").
-		Set("used = used + ?", n).Set("updated_at = ?", now.UTC()).
+	q := db.NewUpdate().TableExpr("agreement_quota_usage").
+		Set("used = used + ?", n).Set("max_units = ?", lim.MaxUnits).Set("reserved = ?", lim.Reserved).
+		Set("release_on = ?", lim.ReleaseOn).Set("updated_at = ?", now.UTC()).
 		Where("establishment_id = ?", es.ID()).
-		Where("agreement_id = ?", k.AgreementID).Where("date = ?", k.Date).Where("slot = ?", k.Slot).
-		Where("(max_units IS NULL OR used + ? <= max_units)", n).
-		Exec(ctx)
+		Where("agreement_id = ?", k.AgreementID).Where("date = ?", k.Date).Where("slot = ?", k.Slot)
+	if lim.MaxUnits != nil {
+		q = q.Where("used + ? <= ?", n, *lim.MaxUnits)
+	}
+	res, err := q.Exec(ctx)
 	if err != nil {
 		return false, wrapWrite("consume agreement quota", err)
 	}
