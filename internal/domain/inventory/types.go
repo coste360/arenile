@@ -54,6 +54,10 @@ type AllocateRequest struct {
 	// AgreementID is the agreement of the booking (M8): its quota counts
 	// this sale; every other reserve is protected from it (INV-103).
 	AgreementID string
+	// Skip leaves these half-days out of the allocation: the days a season
+	// pass holder released stay free when the pass is moved or swapped
+	// (INV-10). Half-days outside the interval are ignored.
+	Skip []availability.DateSlot
 }
 
 // LineAllocation is the outcome for one line.

@@ -173,6 +173,13 @@ func buildPlan(req AllocateRequest, snap *snapshot, newID func() string, now tim
 	}
 	iv := availability.Interval{From: req.StartsOn, To: req.EndsOn, Slots: req.Slots}
 	p := &plan{halfDays: snap.closed.openHalfDays(iv)}
+	if len(req.Skip) > 0 {
+		skip := make(map[availability.DateSlot]bool, len(req.Skip))
+		for _, ds := range req.Skip {
+			skip[ds] = true
+		}
+		p.halfDays = slices.DeleteFunc(p.halfDays, func(ds availability.DateSlot) bool { return skip[ds] })
+	}
 	var (
 		conflicts []availability.Conflict
 		ve        configerr.ValidationError

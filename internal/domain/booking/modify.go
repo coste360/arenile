@@ -635,10 +635,17 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		// The first line also carries the booking-level components.
 		req := allocRequest(b, kind, b.HoldExpiresAt, rows[idx:idx+1], lineExtras(newExtras, rows[idx].ID, idx == 0), cat)
 		req.StartsOn = from
+		// A season pass keeps the days its holder released (INV-10).
+		if req.Skip, err = seasonSkips(ctx, tx, es, b, in.LineID, from, b.EndsOn); err != nil {
+			return nil, err
+		}
 		if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, req); err != nil {
 			return nil, err
 		}
 		if err := s.applyAllocation(ctx, tx, es, b, rows[idx:idx+1], allocated, kind, now); err != nil {
+			return nil, err
+		}
+		if err := s.moveSeasonReleases(ctx, tx, es, b, kind, in.LineID, []SegmentInput{{SpotID: in.SpotID, StartsOn: from, EndsOn: b.EndsOn}}); err != nil {
 			return nil, err
 		}
 	}

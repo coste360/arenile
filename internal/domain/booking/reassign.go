@@ -259,6 +259,10 @@ func (s *Service) reassignLocked(ctx context.Context, tx bun.IDB, p *auth.Princi
 		row.SpotID, row.ZoneID = &lines[i].SpotID, lines[i].ZoneID
 		// The first line also carries the booking-level components.
 		base := allocRequest(b, kind, b.HoldExpiresAt, []store.BookingLine{row}, lineExtras(extras, row.ID, i == 0), cat)
+		// A season pass keeps the days its holder released (INV-10).
+		if base.Skip, err = seasonSkips(ctx, tx, es, b, c.LineID, c.From, b.EndsOn); err != nil {
+			return nil, err
+		}
 		for _, sg := range c.Segments {
 			a, err := s.d.Inventory.Allocate(ctx, tx, es, cat.segmentRequest(base, base.Lines[0], sg))
 			if err != nil {
@@ -278,6 +282,9 @@ func (s *Service) reassignLocked(ctx context.Context, tx bun.IDB, p *auth.Princi
 			if err := s.markSegmentsResold(ctx, tx, es, c.LineID, segs[c.LineID], b.Slots); err != nil {
 				return nil, err
 			}
+		}
+		if err := s.moveSeasonReleases(ctx, tx, es, b, kind, c.LineID, c.Segments); err != nil {
+			return nil, err
 		}
 		moved = append(moved, map[string]any{
 			"line_id": c.LineID, "from": c.From.String(),

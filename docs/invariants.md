@@ -79,7 +79,12 @@ Per ogni `season_release` non revocata, non esiste un'allocazione `season` della
 data e fascia; `resold_booking_line_id` è valorizzato solo se esiste un'allocazione `booking` di quella riga.
 Rilascio e revoca avvengono sotto il lock della prenotazione dell'abbonamento (lo stesso di ogni cambio di stato),
 quindi una cancellazione concorrente non lascia mai un'allocazione `season` a un abbonamento cancellato (INV-20).
-Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices`, `TestConcurrency_RevokeVsCancel` (100 revoche contro cancellazioni con i servizi reali, `internal/domain/pass`), tag `integration`. Stato: implemented.
+Uno spostamento, uno scambio, uno spostamento di gruppo o un annulla (M8, spec 30.7) non riallocano mai le mezze
+giornate rilasciate: l'allocazione dei segmenti spostati le salta (`AllocateRequest.Skip`) e la riga del rilascio
+segue l'abbonamento sulla postazione del giorno (`spot_id` aggiornato), così la revoca ripristina il giorno dove
+l'abbonamento si trova in quella data; un rilascio su un abbonamento spostato da una data toglie ogni mezza giornata
+dalla postazione che occupa quel giorno.
+Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices`, `TestConcurrency_RevokeVsCancel` (100 revoche contro cancellazioni con i servizi reali, `internal/domain/pass`), `TestSwap_SeasonPassKeepsReleases`, `TestGroupMove_SeasonPassKeepsReleases` (anche `Move` da una data), `TestUndoMove_SeasonPassKeepsReleases`, `TestRelease_RangeOnMovedPass` (`internal/domain/pass`, servizi reali, SQLite e PostgreSQL), tag `integration`. Stato: implemented.
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 ## Prezzi (spec 8)
@@ -994,10 +999,14 @@ ciascuna prenotazione resta dov'era; audit ed evento `booking.modified` per entr
 Verificata da: `TestConcurrency_SwapBookings` (100 scambi paralleli e incrociati sulle stesse due righe: dopo, ogni
 mezza giornata ha una sola allocazione per postazione e una per riga, le due prenotazioni coprono le loro date),
 `TestSwap_CommonIntervalFromDate`, `TestGroupMove_AllOrNothing`, `TestUndoMove` (`internal/domain/booking`, tag
-`integration`, SQLite e PostgreSQL). Stato: implemented.
-Verifica di sistema: `TestConcurrency_AcceptanceM8Swaps` (`internal/acceptance`: 120 scambi, spostamenti da una data
-e vendite in parallelo sulla settimana piena, attraverso l'API) e `TestAcceptance_M8CashDeskAndAgreements` (scambio,
-anteprima e annulla) controllano INV-01 e INV-102 sul database.
+`integration`, SQLite e PostgreSQL); con gli abbonamenti `TestSwap_SeasonPassKeepsReleases`,
+`TestGroupMove_SeasonPassKeepsReleases`, `TestUndoMove_SeasonPassKeepsReleases` (`internal/domain/pass`, INV-10).
+Stato: implemented.
+Verifica di sistema: `TestConcurrency_AcceptanceM8Swaps` (`internal/acceptance`: 120 operazioni in parallelo
+attraverso l'API sulla settimana piena, cioè 60 scambi su sei coppie di prenotazioni, 30 spostamenti da una data e
+30 vendite, più 40 scambi incrociati sulla stessa coppia; su PostgreSQL uno stallo tra due transazioni che
+inseriscono le stesse chiavi in ordine diverso è `409`, mai `500`) e `TestAcceptance_M8CashDeskAndAgreements`
+(scambio, anteprima e annulla) controllano INV-01 e INV-102 sul database.
 
 **INV-102 — I segmenti di un soggiorno spezzato coprono il soggiorno esattamente una volta.**
 Per ogni riga con postazione e ogni mezza giornata del soggiorno c'è una e una sola allocazione (indice unico
