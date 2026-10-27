@@ -399,15 +399,24 @@ func TestAcceptance_M8CashDeskAndAgreements(t *testing.T) {
 	})
 }
 
-// TestConcurrency_AcceptanceM8Swaps: on the full week, 120 parallel swaps,
-// moves from a date and desk bookings race on the same spots; whatever the
+// TestConcurrency_AcceptanceM8Swaps: on the full week, 120 parallel swaps
+// (six pairs, the split booking in one), moves from a date onto taken spots
+// and desk bookings race on the same spots; whatever the
 // server accepts, no spot-day is ever allocated twice and every booking
 // keeps each day exactly once (INV-01, INV-101, INV-102).
 func TestConcurrency_AcceptanceM8Swaps(t *testing.T) {
 	eachDialect(t, func(t *testing.T, e *env) {
 		m := newM8(t, e)
 		split := m.fullWeek()
-		weeks := []api.BookingDetail{m.weekBookingOn(m.spots[2].ID), m.weekBookingOn(m.spots[3].ID)}
+		// Six pairs of bookings, the split one in the first: the 120
+		// operations race on shared spots and days, but no single booking
+		// queues all of them (under -race on a loaded PostgreSQL a long lock
+		// queue would only measure the driver's read timeout).
+		const pairs = 6
+		sides := []api.BookingDetail{split}
+		for k := 2; len(sides) < 2*pairs; k++ {
+			sides = append(sides, m.weekBookingOn(m.spots[k].ID))
+		}
 		const n = 120
 		var wg sync.WaitGroup
 		results := make([]result, n)
@@ -416,16 +425,18 @@ func TestConcurrency_AcceptanceM8Swaps(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				from := aug(10 + i%7)
-				w := weeks[i%2]
+				p := (i / 4) % pairs
+				a, b := sides[2*p], sides[2*p+1]
 				switch i % 4 {
 				case 0, 1:
 					results[i] = m.c.post("swapBookings(burst)", e.path("/bookings/swap"), api.BookingSwapRequest{
-						A: api.BookingSwapSide{BookingId: split.Id, LineId: split.Lines[0].Id},
-						B: api.BookingSwapSide{BookingId: w.Id, LineId: w.Lines[0].Id}, From: from,
+						A: api.BookingSwapSide{BookingId: a.Id, LineId: a.Lines[0].Id},
+						B: api.BookingSwapSide{BookingId: b.Id, LineId: b.Lines[0].Id}, From: from,
 					})
 				case 2:
-					results[i] = m.c.post("moveBooking(burst)", e.path("/bookings/"+w.Id+"/move"),
-						api.BookingMoveRequest{LineId: w.Lines[0].Id, SpotId: m.spots[i%len(m.spots)].ID, From: &from})
+					// Onto the spot of the other pair member: taken, refused.
+					results[i] = m.c.post("moveBooking(burst)", e.path("/bookings/"+b.Id+"/move"),
+						api.BookingMoveRequest{LineId: b.Lines[0].Id, SpotId: m.spots[2+(i%len(m.spots[2:]))].ID, From: &from})
 				default:
 					_, results[i] = m.book(m.spots[i%len(m.spots)].ID, from, from, "")
 				}
