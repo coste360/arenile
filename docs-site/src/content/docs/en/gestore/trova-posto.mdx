@@ -1,0 +1,54 @@
+---
+title: Find a spot
+description: Search availability by dates, slot and number of spots, also with one or more spot changes when no spot is free for the whole stay, with price and agreement, and book the proposal.
+sidebar:
+  order: 21.6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Map** → **Find a spot**, or from the **New booking** sheet. **Who:** whoever
+creates bookings (owner, manager, cashier).
+
+In August it happens that no spot is free for the whole week the customer asks for: the 15th is full, but one spot
+is free from the 10th to the 14th and another one on the 15th and 16th. **Find a spot** looks for these combinations
+and proposes the week on two spots, already priced.
+
+<Screenshot name="admin-find-spot" alt="Find spot: a week searched with one spot change allowed, and the proposals" />
+
+## Searching
+
+<Steps>
+
+1. Choose the **Dates** and the **Slot** (full day, morning or afternoon).
+2. Set how many **Spots** you need: for a group the proposals prefer spots close to each other.
+3. Choose the **spot changes allowed**: with **None** only spots free for the whole stay are searched; with 1, 2 or
+   3 the same booking may move from one spot to another during the stay.
+4. Optionally restrict the **Zones**, choose the **Pack** (needed to see the price and book) and the customer's
+   **Agreement**.
+5. **Search**.
+
+</Steps>
+
+Proposals are ranked: fewest spot changes first, then those staying longest on the same spot and the closest
+ones; for groups, adjacent spots count too. Each proposal shows its **segments** (for example *B11 from 10/08 to
+14/08, B12 from 15/08 to 16/08*) and the **total**, with the agreement applied if you chose one. From the map,
+**Show on the map** highlights the spots of the proposal.
+
+## Booking a proposal
+
+Press **Book**, choose the customer and confirm. The booking has **one single line** occupying the spots of the
+segments, each on its own days: one code, one balance and one manage link.
+
+- **Price:** each day is priced with the category of the spot occupied that day. If the proposal moves from a
+  front row to a second row, the days in the second row cost as the second row.
+- **No surprises:** if a colleague sold one of the spots meanwhile, the booking is not created and the search runs
+  again by itself; if the price changed the panel says so before confirming.
+
+<Aside type="note" title="No overbooking">
+Find a spot never sells a spot that is already taken: each segment is a normal allocation, checked by the database
+like any other (no half day can be sold twice).
+</Aside>
+
+See also: [Moves and swaps](/en/gestore/spostamenti-e-scambi/), [Spot calendar](/en/gestore/calendario-postazione/).

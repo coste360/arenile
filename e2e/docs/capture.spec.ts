@@ -127,8 +127,8 @@ const PREPARE: Record<string, Prepare> = {
     await expect(page.getByRole("dialog")).toBeVisible();
   },
   "admin-map-labels": async (page) => {
-    // Occupant labels (spec 11.3): "Entrambi", one zoom step so the names read in full.
-    await page.getByRole("radio", { name: "Entrambi" }).click();
+    // Occupant labels (spec 11.3): code and customer, one zoom step so the names read in full.
+    await labelParts(page, ["Codice", "Cliente"]);
     await page.getByRole("button", { name: "Ingrandisci" }).first().click();
     await page.getByTestId("beach-map").scrollIntoViewIfNeeded();
     await expect(page.locator('[data-map-label="caption"]').first()).toBeVisible();
@@ -191,7 +191,89 @@ const PREPARE: Record<string, Prepare> = {
     await expect(page.getByRole("button", { name: "Conferma ingresso" })).toBeEnabled();
   },
   "admin-printers-desktop": printersDesktop,
+  // ---- M8, cash desk and agreements (data: support/m8.ts) ----------------
+  "admin-map-m8": async (page) => {
+    await labelParts(page, ["Codice", "Cliente", "Fine"]);
+    await page.getByRole("radiogroup", { name: "Filtri rapidi" }).getByRole("radio", { name: "Arrivi" }).click();
+    await page.getByTestId("beach-map").scrollIntoViewIfNeeded();
+  },
+  "admin-spot-calendar": async (page) => {
+    await m8Spot(page, "Neri").click();
+    await page.getByRole("dialog", { name: /^Postazione / }).getByRole("button", { name: "Calendario" }).click();
+    await expect(page.getByTestId("spot-calendar").last()).toBeVisible();
+  },
+  "admin-find-spot": async (page, ctx) => {
+    const dmy = (iso: string) => iso.split("-").reverse().join("/");
+    const end = new Date(`${ctx.date}T12:00:00Z`);
+    end.setUTCDate(end.getUTCDate() + 6);
+    await page.getByRole("button", { name: /^Date:/ }).click();
+    await page.getByRole("textbox", { name: "Dal", exact: true }).fill(dmy(ctx.date));
+    await page.getByRole("textbox", { name: "Al", exact: true }).fill(dmy(end.toISOString().slice(0, 10)));
+    await page.keyboard.press("Escape");
+    await page.getByRole("radiogroup", { name: "Cambi di posto ammessi" }).getByRole("radio", { name: "1" }).click();
+    await page.getByRole("combobox", { name: "Pack o allestimento" }).click();
+    await page.getByRole("option", { name: "Base", exact: true }).click();
+    await page.getByRole("form", { name: "Ricerca" }).getByRole("button", { name: "Cerca", exact: true }).click();
+    await expect(page.getByTestId("findspot-proposal").first()).toBeVisible();
+  },
+  "admin-map-swap": async (page) => {
+    await m8Spot(page, "Esposito").click();
+    await page.getByRole("dialog", { name: /^Postazione / }).getByRole("button", { name: "Sposta" }).click();
+    await m8Spot(page, "Galli").click();
+    await expect(page.getByRole("alertdialog", { name: /^Scambiare / })).toBeVisible();
+  },
+  "admin-map-move-from": async (page) => {
+    await m8Spot(page, "Esposito").click();
+    await page.getByRole("dialog", { name: /^Postazione / }).getByRole("button", { name: "Sposta" }).click();
+    await page.getByRole("button", { name: /^Postazione F\d+[,:] .*Libero/ }).first().click();
+    const move = page.getByRole("alertdialog", { name: /^Spostare da / });
+    await move.getByRole("radio", { name: "Da una data" }).click();
+    await expect(move.getByRole("radio", { name: "Da una data" })).toBeChecked();
+  },
+  "admin-map-print": async (page) => {
+    await page.getByRole("button", { name: "Stampa" }).click();
+    await expect(page.getByRole("menuitem", { name: "Lista per i bagnini" })).toBeVisible();
+  },
+  "admin-partners": async (page) => {
+    await expect(page.getByRole("table", { name: "Partner" }).getByText("Hotel Belvedere")).toBeVisible();
+  },
+  "admin-partner-account": async (page) => {
+    await expect(page.getByRole("table", { name: "Prenotazioni a carico del partner" })).toBeVisible();
+  },
+  "admin-agreements-register": async (page) => {
+    await expect(page.getByText("Residenti di Gaeta").first()).toBeVisible();
+  },
+  "admin-booking-agreement": async (page) => {
+    await page.getByRole("button", { name: "Nuova prenotazione" }).first().click();
+    const sheet = page.getByRole("dialog", { name: "Nuova prenotazione" });
+    await sheet.getByRole("combobox", { name: "Pack" }).click();
+    await page.getByRole("option", { name: "Base", exact: true }).click();
+    await sheet.getByRole("button", { name: /^Postazione \S+, fila \S+: Libero/ }).first().click();
+    await sheet.getByRole("combobox", { name: "Convenzione" }).click();
+    await page.getByRole("option", { name: /Residenti di Gaeta/ }).click();
+    await expect(sheet.getByRole("checkbox", { name: "Requisito verificato" })).toBeVisible();
+    await sheet.getByRole("heading", { name: "Convenzione e ospiti" }).evaluate((el) => el.scrollIntoView({ block: "start" }));
+  },
+  "public-agreement-link": async (page) => {
+    await expect(page.getByRole("status").filter({ hasText: "Ospiti Hotel Belvedere" })).toBeVisible();
+  },
 };
+
+/** Sets the "Etichette" toggles of the operational map to exactly `parts` (spec 30.4). */
+async function labelParts(page: Page, parts: string[]) {
+  const bar = page.getByRole("toolbar", { name: "Etichette" });
+  for (const name of ["Codice", "Cliente", "Fine", "Allestimento"]) {
+    const button = bar.getByRole("button", { name, exact: true });
+    if (!(await button.count())) continue;
+    const pressed = (await button.getAttribute("aria-pressed")) === "true";
+    if (pressed !== parts.includes(name)) await button.click();
+  }
+}
+
+/** The spot of the M8 booking of `surname` on the demo day (support/m8.ts). */
+function m8Spot(page: Page, surname: string) {
+  return page.getByRole("button", { name: new RegExp(`^Postazione D\\d+[,:].*${surname}`) }).first();
+}
 
 /**
  * ESC/POS printing runs on the desktop edition only (ADR 0021), and the

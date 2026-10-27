@@ -1,0 +1,68 @@
+---
+title: Moves and swaps
+description: Moving a booking from a date, swapping two bookings with a price preview, moving a group keeping its arrangement, undoing the last move within 5 minutes and duplicating a booking.
+sidebar:
+  order: 21.7
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Map** (spot sheet → **Move**) and booking detail → **More actions**. **Who:** whoever may
+move bookings (owner, manager, cashier).
+
+## Moving from a date
+
+<Steps>
+
+1. On the day map tap the spot and press **Move**.
+2. Tap the free target spot.
+3. In **From when** choose **Whole stay**, **From today**, **From tomorrow** or **From a date**.
+4. Check the price difference and press **Move**.
+
+</Steps>
+
+<Screenshot name="admin-map-move-from" alt="Move from D3 to F1 with the From when choice" />
+
+With a later date the booking stays on the first spot until the day before and moves to the new one from that
+date: "from 15 August it moves to A7". Past days do not change. If the two spots have different price categories,
+each day is priced with the spot occupied that day.
+
+## Swapping two bookings
+
+If in **Move** mode you tap an **occupied** spot, the panel proposes a **swap**: the two bookings exchange their
+spots on the days they share, from the day shown onwards; on the other days each stays where it was.
+
+<Screenshot name="admin-map-swap" alt="Preview of the swap between D3 and D6 with the price difference of both" />
+
+The preview shows the period of the swap and the **price difference of each booking**. Press **Swap** to confirm.
+The swap is one single operation: at no moment is a spot taken twice, and if one of the two bookings was changed
+meanwhile nothing changes.
+
+## Moving a group
+
+For bookings with the same **group name** the spot sheet has **Move the group**: tap the new position of the chosen
+spot and the others follow it keeping the arrangement (the distances between the spots). You see the new spots
+before confirming; the move is all or nothing.
+
+## Undoing the last move
+
+After a move, a swap or a group move, a notice with **Undo** stays for **5 minutes**, and the map shows **Undo last
+move**. You can undo only your own move, only if the bookings did not change afterwards and the original spots are
+still free.
+
+## Duplicate and other actions
+
+In the booking detail, **More actions** contains:
+
+- **Duplicate**: same spot, customer, extras, agreement and group data on new dates, re-priced, with a warning if the
+  spots are not free;
+- **Change customer**, with a preview of the price difference;
+- **Summary via WhatsApp**: the text ready in the customer's language (dates, spots, amount, balance and a new manage
+  link), with **Copy text** and **Open WhatsApp** on the customer's number; only when the customer has a phone.
+  Arenile sends nothing: you confirm the message from your own app;
+- **Print summary**: a summary for the customer with the booking QR code, on A4 or an 80 mm receipt.
+
+<Aside type="note" title="History">
+Every move, swap and undo appears in the booking history with the operator and the time.
+</Aside>

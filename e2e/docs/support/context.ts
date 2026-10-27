@@ -14,6 +14,8 @@ export interface RunContext {
   customerId: string;
   /** Path of a fresh magic link of bookingId ("" until the endpoint is implemented). */
   manageUrl: string;
+  /** Partner of the M8 data (support/m8.ts). */
+  partnerId?: string;
 }
 
 export function loadContext(): RunContext {

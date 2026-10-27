@@ -1,0 +1,97 @@
+---
+title: Convenzioni e partner
+description: Partner (hotel, enti, aziende, associazioni), categorie di clienti, convenzioni con prezzi fissi, contingente riservato, requisito e link per il partner, convenzione in cassa e online, conto del partner e registro delle convenzioni per il bando.
+sidebar:
+  order: 24.7
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Partner e convenzioni**; le condizioni della convenzione in Configurazione → **Prezzi** →
+**Codici e convenzioni**. **Chi:** titolare e gestore per partner, convenzioni e rendiconti; la cassa sceglie la
+convenzione sulla prenotazione.
+
+Una convenzione è un accordo del lido con un **partner** (l'hotel vicino, un'associazione, un'azienda, un ente) o
+con una **categoria di clienti** (residenti, categorie tutelate). Arenile la applica in cassa e online, tiene il
+**conto del partner** e prepara il **registro delle convenzioni** da presentare al Comune per il bando di
+concessione.
+
+## Partner e categorie di clienti
+
+<Screenshot name="admin-partners" alt="Partner e convenzioni: elenco dei partner con tipo, comune, convenzioni e saldo" />
+
+- **Nuovo partner**: tipo (struttura ricettiva, ente, azienda, associazione, altro), referente e contatti, partita
+  IVA o codice fiscale. Un partner usato da convenzioni o prenotazioni non si cancella: si disattiva.
+- **Categorie di clienti**: gruppi come *Residenti* o *Soci CRAL*, con la categoria del registro e, se serve, il
+  requisito da verificare. I clienti si aggiungono alla categoria dalla loro scheda.
+
+## La convenzione
+
+In **Prezzi → Codici e convenzioni** ogni convenzione ha, oltre allo sconto:
+
+- **Destinatari**: un partner, una categoria di clienti o singoli clienti, e la **Categoria del registro**;
+- **Prezzi fissi per pack**: per esempio *giornaliero residenti 12 €*, al posto del prezzo del pack;
+- **Ambito e validità**: pack, extra e stagioni a cui si applica;
+- **Contingente**: massimo di postazioni al giorno in convenzione e postazioni **riservate**; le riservate non usate
+  tornano in vendita alcuni giorni prima (predefinito 3). Il limite è garantito dal database: nessuna vendita lo
+  supera, anche con più casse insieme;
+- **Requisito da verificare** (per esempio la conferma dell'hotel o la tessera associativa) e **Canali**: cassa,
+  codice online, **link della convenzione** da dare al partner.
+
+Ogni modifica crea una nuova versione: le prenotazioni già fatte tengono le condizioni con cui sono state vendute.
+
+## In cassa
+
+<Screenshot name="admin-booking-agreement" alt="Nuova prenotazione con la convenzione Residenti scelta, il requisito da verificare e i dati del gruppo" />
+
+<Steps>
+
+1. In **Nuova prenotazione**, sezione **Convenzione e ospiti**, scegli la **Convenzione**: se il cliente ne ha una
+   predefinita è già proposta. Il prezzo si ricalcola subito.
+2. Se la convenzione ha un requisito, spunta **Requisito verificato**: si registrano solo data e operatore, mai una
+   copia del documento.
+3. Indica, se serve, il partner di provenienza (**Ospite di**), il **Nome del gruppo**, adulti e bambini e i nomi
+   degli ospiti, e la quota **a carico del partner**.
+
+</Steps>
+
+Sulla mappa le prenotazioni in convenzione hanno il glifo **Convenzione o partner**, e il filtro rapido mostra
+solo quelle di una convenzione. Dal dettaglio della prenotazione puoi cambiare convenzione vedendo prima la
+differenza di prezzo.
+
+## Online: codice e link per il partner
+
+Con il canale online la convenzione ha un link come `/b/<stabilimento>?c=BELVEDERE` da dare al partner (per
+esempio sul sito dell'hotel): chi lo apre vede il riquadro della convenzione e lo sconto è già applicato al
+preventivo. Il cliente può anche scrivere il codice nel passo **Cosa**. Un codice sconosciuto, scaduto o riservato
+alla cassa non viene mai rivelato.
+
+<Screenshot name="public-agreement-link" alt="Pagina pubblica aperta dal link della convenzione con il riquadro della convenzione e lo sconto" />
+
+## Conto del partner
+
+<Screenshot name="admin-partner-account" alt="Conto del partner con saldo iniziale, addebitato, pagato e saldo finale" />
+
+Nella pagina del partner, per una stagione o un periodo: **saldo iniziale**, **addebitato** (la quota a carico del
+partner delle sue prenotazioni), **pagato** e **saldo finale** (saldo iniziale + addebitato − pagato). Con
+**Registra pagamento** segni i bonifici ricevuti; un pagamento sbagliato si **annulla** con il motivo, non si
+cancella. Le prenotazioni cancellate, scadute o rifiutate non addebitano nulla al partner. **Esporta** produce
+l'estratto conto in Excel o una pagina da stampare o salvare in PDF.
+
+## Rendiconti e registro per il bando
+
+<Screenshot name="admin-agreements-register" alt="Registro delle convenzioni con convenzioni, prenotazioni, giorni-postazione, persone e sconto concesso" />
+
+**Rendiconti** (dalla pagina Partner e convenzioni) ha due viste per stagione o periodo:
+
+- **Registro delle convenzioni**: per ogni convenzione le condizioni in italiano, prenotazioni, giorni-postazione,
+  persone, incasso e **sconto concesso**, con i totali per categoria (residenti, strutture ricettive, categorie
+  tutelate…) e il totale generale. **Esporta** in Excel o in una pagina stampabile con lo spazio per data e firma,
+  pensata per dimostrare al Comune gli impegni presi nell'offerta;
+- **Rendiconto per partner**: prenotazioni, giorni, persone, totale e quota del partner, in Excel o CSV.
+
+<Aside type="note" title="Stessi numeri della cassa">
+Registro e rendiconti usano gli stessi importi dei report di cassa (le prenotazioni di prova sono escluse): a fine
+stagione l'incasso del registro coincide con il venduto e l'incassato delle stesse prenotazioni.
+</Aside>

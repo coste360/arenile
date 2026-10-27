@@ -1,0 +1,41 @@
+---
+title: Stampa della mappa
+description: Stampare la mappa del giorno su A4 o A3 orizzontale e la lista per i bagnini, con etichette, filtri e glifi della mappa operativa.
+sidebar:
+  order: 21.9
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Mappa** → **Stampa**. **Chi:** chi vede la mappa.
+
+<Screenshot name="admin-map-print" alt="Menu Stampa della mappa del giorno" />
+
+## Mappa del giorno
+
+<Steps>
+
+1. Imposta sulla mappa il giorno, la fascia, le **Etichette** (Codice, Cliente, Fine, Allestimento) e, se serve,
+   un filtro rapido: la stampa riporta quello che vedi.
+2. Premi **Stampa** e scegli **Mappa A4 orizzontale** o **Mappa A3 orizzontale**.
+3. Nella finestra di stampa del browser scegli la stampante, il formato e l'orientamento orizzontale, oppure
+   **Salva come PDF**.
+
+</Steps>
+
+La mappa stampata ha la legenda degli stati e dei glifi: arrivo, partenza, convenzione o partner, gruppo, extra, nota.
+
+## Lista per i bagnini
+
+**Lista per i bagnini** prepara una pagina A4 con le postazioni occupate fila per fila: il cognome di chi la
+occupa, l'allestimento (per esempio *2L 1S*), arrivi e partenze del giorno e chi ha ancora un saldo da pagare. Non
+contiene telefoni né email.
+
+<Aside type="tip" title="Etichette e filtri">
+Le **Etichette** si combinano (per esempio codice e data di fine) e restano salvate per il tuo utente. I **filtri
+rapidi** (Arrivi, Partenze, Da saldare, Presenti, una convenzione, un gruppo) evidenziano le postazioni che
+corrispondono e attenuano le altre.
+</Aside>
+
+<Screenshot name="admin-map-m8" alt="Mappa del giorno con le etichette Codice, Cliente e Fine e il filtro Arrivi" />
