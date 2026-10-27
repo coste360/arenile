@@ -8,8 +8,8 @@ import nameWhiteUrl from '../../brand/arenile-name-white.svg';
 import symbolUrl from '../../brand/arenile-symbol-color.svg';
 import symbolNavyUrl from '../../brand/arenile-symbol-navy.svg';
 import symbolWhiteUrl from '../../brand/arenile-symbol-white.svg';
-import coste360PrimaryUrl from '../../brand/coste360-logo-primary.png';
-import coste360WhiteUrl from '../../brand/coste360-logo-white.png';
+import coste360PrimaryUrl from '../../brand/coste360-logo-primary.svg';
+import coste360WhiteUrl from '../../brand/coste360-logo-white.svg';
 import { cn } from '../../lib/utils';
 
 /**
@@ -141,7 +141,7 @@ export function Coste360Logo({ className }: BrandProps) {
       light={coste360PrimaryUrl}
       dark={coste360WhiteUrl}
       alt="Coste360.it"
-      className={cn('h-12', className)}
+      className={cn('h-7', className)}
     />
   );
 }
@@ -160,7 +160,7 @@ export function MadeByCoste360({ className }: BrandProps) {
       )}
     >
       <span>{t('brand.madeBy')}</span>
-      <Coste360Logo className="h-10" />
+      <Coste360Logo className="h-6" />
     </a>
   );
 }
@@ -206,7 +206,7 @@ export function Coste360Signature({ className }: BrandProps) {
         className,
       )}
     >
-      <Coste360Logo className="h-8" />
+      <Coste360Logo className="h-5" />
     </a>
   );
 }

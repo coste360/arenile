@@ -75,6 +75,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   spento o scaduto.
 - PostgreSQL: il blocco delle prenotazioni da modificare aspetta al massimo 5 s. Una modifica in coda troppo a lungo
   sulla stessa prenotazione (molte casse sulle stesse righe) risponde 409 (riprova) invece di un errore interno 500.
+- Pannello: il logo Coste360 (barra laterale sotto l'account, login, primo avvio) usa il file vettoriale
+  fornito dall'azienda al posto dell'immagine PNG, nitido a ogni zoom e su schermi ad alta densità.
 
 ## [1.0.6] - 2026-10-26
 

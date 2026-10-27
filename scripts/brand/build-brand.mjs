@@ -124,8 +124,8 @@ for (const [variant, fill] of [
   );
 }
 
-// 3. Coste360 lockup: the company's original raster logo (assets/brand/coste360/logo-*.png) is used as
-// is; it is never redrawn here.
+// 3. Coste360 lockup: not generated here. The panel uses the supplied assets/brand/coste360/logo.svg
+// (recoloured copies logo-{primary,white}.svg), the docs site the original logo-*.png.
 
 // 4. Raster exports.
 /** The drawing of a kit SVG without the root element, the title and the tile. */
