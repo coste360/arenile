@@ -36,7 +36,7 @@ func TestBookingSummaryHTTP_ShareAndPrint(t *testing.T) {
 		id := d.Booking.ID
 
 		share := func(p *auth.Principal) (int, http.Header, map[string]any) {
-			return bkCall(t, p, nil, "", func(w http.ResponseWriter, r *http.Request) { h.GetBookingShareSummary(w, r, est, id) })
+			return bkCall(t, p, nil, "", func(w http.ResponseWriter, r *http.Request) { h.CreateBookingShareSummary(w, r, est, id) })
 		}
 		status, hd, body := share(f.Cashier)
 		bkExpect(t, "share", status, body, 200, "")

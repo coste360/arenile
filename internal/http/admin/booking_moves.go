@@ -126,9 +126,10 @@ func (h *Handlers) DuplicateBooking(w http.ResponseWriter, r *http.Request, esta
 	writeVersioned(w, http.StatusCreated, res.Detail.Booking.Version, out)
 }
 
-// GetBookingShareSummary implements GET /bookings/{bookingId}/share-summary.
-// The text carries a new manage link: no-store, never replayed, never logged.
-func (h *Handlers) GetBookingShareSummary(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, bookingID api.BookingID) {
+// CreateBookingShareSummary implements POST /bookings/{bookingId}/share-summary
+// (a POST because it rotates the manage link). The text carries the new
+// link: no-store, never replayed, never logged.
+func (h *Handlers) CreateBookingShareSummary(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, bookingID api.BookingID) {
 	w.Header().Set("Cache-Control", "no-store")
 	if h.Notify == nil {
 		notImplemented(w, r)

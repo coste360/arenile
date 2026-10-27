@@ -4839,13 +4839,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
         /**
          * Riepilogo della prenotazione da inviare al cliente (WhatsApp)
-         * @description Spec 30.9: testo pronto nella lingua del cliente (date, postazioni, importo, saldo, link di gestione) e link `wa.me` al numero del cliente, solo se ha un telefono. Arenile non invia nulla a terzi: l'operatore conferma l'invio dalla propria app. Il link di gestione è nuovo a ogni chiamata (come il link magico). Permesso bookings.write.
+         * @description Spec 30.9: testo pronto nella lingua del cliente (date, postazioni, importo, saldo, link di gestione) e link `wa.me` al numero del cliente, solo se ha un telefono. Arenile non invia nulla a terzi: l'operatore conferma l'invio dalla propria app. Il link di gestione è nuovo a ogni chiamata e i precedenti sono revocati (come il link magico): per questo è un `POST` senza corpo, mai un `GET` (nessun prefetch o link può revocare il link del cliente). Permesso bookings.write.
          */
-        get: operations["getBookingShareSummary"];
-        put?: never;
-        post?: never;
+        post: operations["createBookingShareSummary"];
         delete?: never;
         options?: never;
         head?: never;
@@ -24690,7 +24690,7 @@ export interface operations {
             501: components["responses"]["NotImplemented"];
         };
     };
-    getBookingShareSummary: {
+    createBookingShareSummary: {
         parameters: {
             query?: never;
             header?: never;

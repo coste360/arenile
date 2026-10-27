@@ -22,7 +22,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   (`GET /moves/last`, `POST /moves/{moveId}/undo`); duplica su nuove date e cambio del cliente con anteprima del
   prezzo. Ogni operazione è una transazione sola con audit ed evento per ogni prenotazione.
 - **Riepilogo per il cliente:** testo pronto per WhatsApp nella lingua del cliente con un link di gestione nuovo e
-  link `wa.me` solo se il cliente ha un telefono (`GET /bookings/{bookingId}/share-summary`; Arenile non invia
+  link `wa.me` solo se il cliente ha un telefono (`POST /bookings/{bookingId}/share-summary`, un `POST` perché
+  rinnova il link di gestione; Arenile non invia
   nulla), e riepilogo stampabile con il QR della prenotazione su A4 o scontrino 80 mm
   (`GET /bookings/{bookingId}/summary-print`).
 - **Mappa operativa:** glifi di arrivo, partenza, convenzione o partner e gruppo; etichette combinabili Codice,

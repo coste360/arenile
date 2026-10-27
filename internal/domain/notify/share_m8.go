@@ -51,11 +51,15 @@ func (s *Service) ShareSummary(ctx context.Context, p *auth.Principal, establish
 	if err != nil {
 		return nil, err
 	}
-	link, _, err := s.RegenerateLink(ctx, p, establishmentID, bookingID, false)
+	// Everything that can fail is done before the link is rotated, so that
+	// an error never revokes the customer's link without handing out a new
+	// one; the text is then rebuilt with the URL (pure).
+	cat, err := catalogFor(d.messageLocale())
 	if err != nil {
 		return nil, err
 	}
-	cat, err := catalogFor(d.messageLocale())
+	_ = shareText(cat, d, bookingContent(cat, d, contentOptions{}))
+	link, _, err := s.RegenerateLink(ctx, p, establishmentID, bookingID, false)
 	if err != nil {
 		return nil, err
 	}

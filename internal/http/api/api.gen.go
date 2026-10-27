@@ -16894,9 +16894,9 @@ type ServerInterface interface {
 	// ResendBookingConfirmation Reinvia l'email di conferma (con un nuovo link di gestione)
 	// (POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation)
 	ResendBookingConfirmation(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID, params ResendBookingConfirmationParams)
-	// GetBookingShareSummary Riepilogo della prenotazione da inviare al cliente (WhatsApp)
-	// (GET /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary)
-	GetBookingShareSummary(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID)
+	// CreateBookingShareSummary Riepilogo della prenotazione da inviare al cliente (WhatsApp)
+	// (POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary)
+	CreateBookingShareSummary(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID)
 	// GetBookingSummaryPrint Riepilogo stampabile per il cliente con QR
 	// (GET /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/summary-print)
 	GetBookingSummaryPrint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID, params GetBookingSummaryPrintParams)
@@ -18127,9 +18127,9 @@ func (_ Unimplemented) ResendBookingConfirmation(w http.ResponseWriter, r *http.
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// GetBookingShareSummary Riepilogo della prenotazione da inviare al cliente (WhatsApp)
-// (GET /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary)
-func (_ Unimplemented) GetBookingShareSummary(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID) {
+// CreateBookingShareSummary Riepilogo della prenotazione da inviare al cliente (WhatsApp)
+// (POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary)
+func (_ Unimplemented) CreateBookingShareSummary(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -22925,8 +22925,8 @@ func (siw *ServerInterfaceWrapper) ResendBookingConfirmation(w http.ResponseWrit
 	handler.ServeHTTP(w, r)
 }
 
-// GetBookingShareSummary operation middleware
-func (siw *ServerInterfaceWrapper) GetBookingShareSummary(w http.ResponseWriter, r *http.Request) {
+// CreateBookingShareSummary operation middleware
+func (siw *ServerInterfaceWrapper) CreateBookingShareSummary(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	_ = err
@@ -22950,7 +22950,7 @@ func (siw *ServerInterfaceWrapper) GetBookingShareSummary(w http.ResponseWriter,
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetBookingShareSummary(w, r, establishmentId, bookingId)
+		siw.Handler.CreateBookingShareSummary(w, r, establishmentId, bookingId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -43462,7 +43462,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/duplicate", wrapper.DuplicateBooking)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary", wrapper.GetBookingShareSummary)
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary", wrapper.CreateBookingShareSummary)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/summary-print", wrapper.GetBookingSummaryPrint)

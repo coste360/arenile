@@ -83,7 +83,7 @@ describe('BookingDeskActions', () => {
     renderApp(
       `/e/${EST_ID}/prenotazioni/${detail.id}`,
       routes({
-        [`GET ${estPath(`/bookings/${detail.id}/share-summary`)}`]: () =>
+        [`POST ${estPath(`/bookings/${detail.id}/share-summary`)}`]: () =>
           json(200, {
             text: 'Prenotazione AR-7K3Q9 dal 14/07 al 16/07',
             locale: 'it',

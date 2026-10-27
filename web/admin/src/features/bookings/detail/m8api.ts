@@ -49,15 +49,16 @@ export function useDuplicateBooking(establishmentId: string) {
 }
 
 /**
- * Ready text and wa.me link of a booking (a new manage link each call, so
- * it is fetched on demand and never cached).
+ * Ready text and wa.me link of a booking (a POST: each call issues a new
+ * manage link and revokes the previous ones, so it runs on demand only and
+ * is never cached or prefetched).
  */
 export function useShareSummary(establishmentId: string) {
   const client = useApiClient();
   return useMutation<BookingShareSummary, ApiProblem, { bookingId: string }>({
     mutationFn: ({ bookingId }) =>
       call(() =>
-        client.GET(`${EST}/bookings/{bookingId}/share-summary`, {
+        client.POST(`${EST}/bookings/{bookingId}/share-summary`, {
           params: { path: { establishmentId, bookingId } },
         }),
       ),
