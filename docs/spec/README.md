@@ -39,5 +39,6 @@ La specifica è divisa in un file per sezione, così un task può richiamare sol
 27. [Sviluppo con agenti AI](27-sviluppo-con-agenti-ai.md)
 28. [Roadmap e criteri di accettazione](28-roadmap-e-criteri-di-accettazione.md)
 29. [Edizione desktop e app mobile](29-edizione-desktop-e-app-mobile.md)
+30. [Cassa avanzata e convenzioni](30-cassa-avanzata-e-convenzioni.md)
 
 Documenti collegati: [architettura](../architecture.md), [glossario](../domain-glossary.md), [invarianti](../invariants.md), [ADR](../adr/README.md).
