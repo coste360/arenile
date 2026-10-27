@@ -115,6 +115,7 @@ func (h *Handlers) CreateSeasonPassReleases(w http.ResponseWriter, r *http.Reque
 	if req.Slots != nil {
 		in.Slots = calendar.Slots(*req.Slots)
 	}
+	in.Range = releaseRangeFromAPI(req.From, req.To, req.Weekdays)
 	rows, err := h.Passes.Release(r.Context(), principalOf(r), customerClientIP(r), establishmentID, id, in)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)

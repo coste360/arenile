@@ -224,6 +224,13 @@ func buildPlan(req AllocateRequest, snap *snapshot, newID func() string, now tim
 					continue
 				}
 				la.AssignmentStatus = store.AssignmentAssigned
+				// Spots excluded from online sale (spec 30.11) refuse the
+				// online channel like a taken spot; the desk sells them all.
+				if sp := snap.spots[l.SpotID]; sp != nil && sp.OnlineExcluded && req.Channel == store.ChannelOnline {
+					for _, ds := range p.halfDays {
+						conflicts = append(conflicts, availability.Conflict{SpotID: sp.ID, Date: ds.Date, Slot: ds.Slot, Reason: availability.ReasonSpotUnavailable})
+					}
+				}
 				if quotaBound(req.Channel) && z.OnlineQuota != nil && !quotaSeen[z.ID] {
 					quotaSeen[z.ID] = true
 					p.seatQuotaZones = append(p.seatQuotaZones, z.ID)

@@ -46,6 +46,11 @@ type SpotAvailability struct {
 	Label     string
 	Available bool
 	Conflicts []availability.Conflict
+	// FreeDates are the dates of the range on which the spot is free for
+	// every requested slot, TotalDays the open dates (spec 30.4 range view:
+	// "libero in parte", N days out of M; operations_m8.go).
+	FreeDates []calendar.Date
+	TotalDays int
 }
 
 // ZoneAvailability aggregates one zone.
@@ -315,6 +320,11 @@ func (s *Service) availability(ctx context.Context, es store.EstablishmentScope,
 			quota = &availability.OnlineQuota{Type: availability.QuotaType(z.OnlineQuota.Type), Value: z.OnlineQuota.Value}
 		}
 		zs := spotsByZone[z.ID]
+		// Spots not sold online (spec 30.11) never appear nor count on the
+		// online channel; the zone capacity of the quota stays the whole zone.
+		hidden := func(sp *store.Spot) bool {
+			return z.AssignmentMode == modeSeat && q.Channel == store.ChannelOnline && sp.OnlineExcluded
+		}
 		// perHalfDay: units the channel may book on each open half-day.
 		perHalfDay := map[availability.DateSlot]int{}
 		switch z.AssignmentMode {
@@ -323,7 +333,7 @@ func (s *Service) availability(ctx context.Context, es store.EstablishmentScope,
 			for _, ds := range open {
 				n := 0
 				for _, sp := range zs {
-					if free.IsFree(ids[sp.ID], ds.Date, ds.Slot) {
+					if !hidden(sp) && free.IsFree(ids[sp.ID], ds.Date, ds.Slot) {
 						n++
 					}
 				}
@@ -367,7 +377,7 @@ func (s *Service) availability(ctx context.Context, es store.EstablishmentScope,
 			for i := range za.Daily {
 				n := 0
 				for _, sp := range zs {
-					whole := true
+					whole := !hidden(sp)
 					for _, ds := range open {
 						if ds.Date == za.Daily[i].Date && !free.IsFree(ids[sp.ID], ds.Date, ds.Slot) {
 							whole = false
@@ -384,7 +394,13 @@ func (s *Service) availability(ctx context.Context, es store.EstablishmentScope,
 			za.Spots = make([]SpotAvailability, 0, len(zs))
 			wholeFree := 0
 			for _, sp := range zs {
+				if hidden(sp) {
+					continue
+				}
 				sa := SpotAvailability{SpotID: sp.ID, Label: sp.Label, Available: len(open) > 0}
+				sa.FreeDates, sa.TotalDays = freeDays(open, func(ds availability.DateSlot) bool {
+					return free.IsFree(ids[sp.ID], ds.Date, ds.Slot) && perHalfDay[ds] > 0
+				})
 				for _, ds := range open {
 					switch {
 					case !free.IsFree(ids[sp.ID], ds.Date, ds.Slot):

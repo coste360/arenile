@@ -361,6 +361,7 @@ func extraInputFromAPI(in api.ExtraInput) catalog.ExtraInput {
 	if in.SortOrder != nil {
 		out.SortOrder = *in.SortOrder
 	}
+	out.ShowOnMap, out.MapLabel = in.ShowOnMap, in.MapLabel
 	return out
 }
 
@@ -375,6 +376,10 @@ func ExtraToAPI(x *store.Extra) api.Extra {
 	}
 	for _, c := range x.Channels {
 		out.Channels = append(out.Channels, api.Channel(c))
+	}
+	out.ShowOnMap = &x.ShowOnMap
+	if x.MapLabel != "" {
+		out.MapLabel = &x.MapLabel
 	}
 	return out
 }

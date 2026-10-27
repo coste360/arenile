@@ -72,6 +72,8 @@ type OperationalBooking struct {
 	// Ticket is the daily-sale ticket of the booking, nil when none
 	// (operations_tickets.go).
 	Ticket *OperationalTicket
+	// M8 additions (operations_m8.go, spec 30.4).
+	OperationalMarks
 }
 
 // OperationalSpot is the state of a spot on the requested slot(s).
@@ -343,6 +345,9 @@ func (s *Service) operationsDay(ctx context.Context, es store.EstablishmentScope
 	}
 	day.Totals.PendingAssignments = len(day.PendingAssignments)
 	if err := s.applyTicketMarks(ctx, es, day); err != nil {
+		return nil, err
+	}
+	if err := s.applyMarks(ctx, es, day); err != nil {
 		return nil, err
 	}
 	mv, err := store.DayMovementsOn(ctx, s.d.DB, es, q.Date, ActiveStatuses)

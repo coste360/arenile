@@ -67,9 +67,12 @@ func (s *Service) releaseAs(ctx context.Context, actor audit.Actor, es store.Est
 		if err != nil {
 			return err
 		}
-		days, err := planRelease(&v.Booking, in.Dates, in.Slots, today)
+		days, err := s.planReleaseDays(ctx, tx, es, v, in, today)
 		if err != nil {
 			return err
+		}
+		if len(days) == 0 {
+			return nil // the range is already released: nothing to do
 		}
 		active, err := store.ActiveSeasonReleases(ctx, tx, es, v.LineID, uniqueDates(days))
 		if err != nil {

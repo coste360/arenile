@@ -334,10 +334,16 @@ func (s *Service) ManageRelease(ctx context.Context, slug, token string, in Rele
 	if !d.Booking.IsSeasonPass || s.d.Passes == nil {
 		return nil, pass.ErrCustomerReleaseNotAllowed
 	}
-	if len(in.Days) == 0 || len(in.Days) > 120 {
+	if (len(in.Days) == 0 && in.Range == nil) || len(in.Days) > 120 {
 		return nil, configerr.Invalid("days", "Indica da 1 a 120 giorni.")
 	}
-	slots := in.Days[0].Slots
+	slots := in.RangeSlots
+	if len(in.Days) > 0 {
+		slots = in.Days[0].Slots
+		if in.Range != nil && in.RangeSlots != "" && in.RangeSlots != slots {
+			return nil, configerr.Invalid("range.slots", "Usa la stessa fascia per tutti i giorni della richiesta.")
+		}
+	}
 	dates := make([]calendar.Date, 0, len(in.Days))
 	for i, day := range in.Days {
 		if day.Slots != slots {
@@ -345,7 +351,7 @@ func (s *Service) ManageRelease(ctx context.Context, slug, token string, in Rele
 		}
 		dates = append(dates, day.Date)
 	}
-	pin := pass.ReleaseInput{Dates: dates, Slots: slots}
+	pin := pass.ReleaseInput{Dates: dates, Slots: slots, Range: in.Range}
 	var rows []store.SeasonRelease
 	if in.DryRun {
 		rows, err = s.d.Passes.PreviewReleaseAsCustomer(ctx, actor(ctx, l.ID), pe.Scope, d.Booking.ID, pin)

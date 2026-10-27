@@ -100,6 +100,7 @@ func (h *Handlers) GetAvailability(w http.ResponseWriter, r *http.Request, estab
 					st = api.SpotAvailabilityStatusAvailable
 				}
 				spots[k] = api.SpotAvailability{SpotId: sp.SpotID, Label: sp.Label, Status: st}
+				spotAvailabilityDays(&z.Spots[k], &spots[k])
 				if len(sp.Conflicts) > 0 {
 					cs := invConflictsToAPI(sp.Conflicts)
 					spots[k].Conflicts = &cs
@@ -160,6 +161,7 @@ func (h *Handlers) GetOperationsDay(w http.ResponseWriter, r *http.Request, esta
 			if b.Test {
 				os.Booking.Test = &b.Test
 			}
+			operationalMarksToAPI(&b.OperationalMarks, os.Booking)
 		}
 		out.Spots[i] = os
 	}

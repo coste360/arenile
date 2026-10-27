@@ -22,6 +22,9 @@ type ReleaseInput struct {
 	Dates []calendar.Date
 	Slots calendar.Slots
 	Note  string
+	// Range adds the days of a range, optionally on some weekdays only
+	// (spec 30.8, release_range.go); its days already released are skipped.
+	Range *ReleaseRange
 }
 
 // ListReleases returns every release of a pass (active, resold, revoked).
@@ -67,9 +70,12 @@ func (s *Service) Release(ctx context.Context, p *auth.Principal, ip, establishm
 		if err != nil {
 			return err
 		}
-		days, err := planRelease(&v.Booking, in.Dates, in.Slots, today)
+		days, err := s.planReleaseDays(ctx, tx, es, v, in, today)
 		if err != nil {
 			return err
+		}
+		if len(days) == 0 {
+			return nil // the range is already released: nothing to do
 		}
 		active, err := store.ActiveSeasonReleases(ctx, tx, es, v.LineID, uniqueDates(days))
 		if err != nil {

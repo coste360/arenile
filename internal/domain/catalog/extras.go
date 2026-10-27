@@ -71,6 +71,7 @@ func applyExtra(dst *store.Extra, f extraFields) {
 	if f.Active != nil {
 		dst.Active = *f.Active
 	}
+	applyMapSetup(dst, f)
 }
 
 func extraChange(x *store.Extra, change string) *ChangeData {
