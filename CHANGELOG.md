@@ -57,8 +57,9 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - **GDPR:** l'esportazione del cliente include categorie, verifiche dei requisiti e nomi degli ospiti;
   l'anonimizzazione li cancella insieme al nome del gruppo.
 - Accettazione di M8 (`internal/acceptance`): con il 15 agosto pieno la settimana 10-16 agosto si vende su due
-  postazioni, nessun percorso di overbooking, 120 scambi e spostamenti in parallelo senza doppie allocazioni, a
-  fine stagione il registro delle convenzioni coincide con i report di cassa. Test end-to-end in
+  postazioni, nessun percorso di overbooking, 160 operazioni in parallelo (scambi, spostamenti da una data e
+  vendite, 40 scambi incrociati sulla stessa coppia) senza doppie allocazioni né errori del server, a fine stagione
+  il registro delle convenzioni coincide con i report di cassa. Test end-to-end in
   `e2e/tests/m8.spec.ts`.
 - Documentazione: guide "Convenzioni e partner", "Trova posto", "Spostamenti e scambi", "Calendario della
   postazione" e "Stampa della mappa" (italiano e inglese).

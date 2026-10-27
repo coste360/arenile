@@ -29,7 +29,7 @@ import (
 //   - At season end the agreements register totals match the cash reports
 //     (booked and collected revenue of the same bookings).
 //
-// TestConcurrency_AcceptanceM8Swaps adds a burst of 120 parallel swaps,
+// TestConcurrency_AcceptanceM8Swaps adds a burst of 160 parallel swaps,
 // moves and bookings on the full week (run with -race by make test-race).
 
 // m8 is the M8 scenario on an env.
@@ -399,25 +399,25 @@ func TestAcceptance_M8CashDeskAndAgreements(t *testing.T) {
 	})
 }
 
-// TestConcurrency_AcceptanceM8Swaps: on the full week, 120 parallel swaps
-// (six pairs, the split booking in one), moves from a date onto taken spots
-// and desk bookings race on the same spots; whatever the
-// server accepts, no spot-day is ever allocated twice and every booking
-// keeps each day exactly once (INV-01, INV-101, INV-102).
+// TestConcurrency_AcceptanceM8Swaps: on the full week, 160 parallel
+// operations race on the same spots: 60 swaps spread over six pairs of
+// bookings (the split one in the first), 30 moves from a date onto taken
+// spots, 30 desk bookings and 40 crossed swaps on one contended pair.
+// Whatever the server accepts, no spot-day is ever allocated twice and
+// every booking keeps each day exactly once (INV-01, INV-101, INV-102); a
+// transaction that loses a race (unique key, or a deadlock between two
+// inserts of the same keys on PostgreSQL) is 409, never 500.
 func TestConcurrency_AcceptanceM8Swaps(t *testing.T) {
 	eachDialect(t, func(t *testing.T, e *env) {
 		m := newM8(t, e)
 		split := m.fullWeek()
-		// Six pairs of bookings, the split one in the first: the 120
-		// operations race on shared spots and days, but no single booking
-		// queues all of them (under -race on a loaded PostgreSQL a long lock
-		// queue would only measure the driver's read timeout).
 		const pairs = 6
 		sides := []api.BookingDetail{split}
 		for k := 2; len(sides) < 2*pairs; k++ {
 			sides = append(sides, m.weekBookingOn(m.spots[k].ID))
 		}
-		const n = 120
+		const spread, contended = 120, 40
+		const n = spread + contended
 		var wg sync.WaitGroup
 		results := make([]result, n)
 		for i := range n {
@@ -426,6 +426,9 @@ func TestConcurrency_AcceptanceM8Swaps(t *testing.T) {
 				defer wg.Done()
 				from := aug(10 + i%7)
 				p := (i / 4) % pairs
+				if i >= spread {
+					p = 0 // the crossed swaps all queue on the first pair
+				}
 				a, b := sides[2*p], sides[2*p+1]
 				switch i % 4 {
 				case 0, 1:
@@ -434,10 +437,25 @@ func TestConcurrency_AcceptanceM8Swaps(t *testing.T) {
 						B: api.BookingSwapSide{BookingId: b.Id, LineId: b.Lines[0].Id}, From: from,
 					})
 				case 2:
+					if i >= spread {
+						// Crossed: the same pair, sides reversed.
+						results[i] = m.c.post("swapBookings(burst)", e.path("/bookings/swap"), api.BookingSwapRequest{
+							A: api.BookingSwapSide{BookingId: b.Id, LineId: b.Lines[0].Id},
+							B: api.BookingSwapSide{BookingId: a.Id, LineId: a.Lines[0].Id}, From: from,
+						})
+						return
+					}
 					// Onto the spot of the other pair member: taken, refused.
 					results[i] = m.c.post("moveBooking(burst)", e.path("/bookings/"+b.Id+"/move"),
 						api.BookingMoveRequest{LineId: b.Lines[0].Id, SpotId: m.spots[2+(i%len(m.spots[2:]))].ID, From: &from})
 				default:
+					if i >= spread {
+						results[i] = m.c.post("swapBookings(burst)", e.path("/bookings/swap"), api.BookingSwapRequest{
+							A: api.BookingSwapSide{BookingId: a.Id, LineId: a.Lines[0].Id},
+							B: api.BookingSwapSide{BookingId: b.Id, LineId: b.Lines[0].Id}, From: from,
+						})
+						return
+					}
 					_, results[i] = m.book(m.spots[i%len(m.spots)].ID, from, from, "")
 				}
 			}()

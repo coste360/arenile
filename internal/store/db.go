@@ -147,6 +147,11 @@ func (db *DB) Migrator() (*migrations.Runner, error) {
 // back otherwise (including on panic, which is re-raised).
 func RunInTx(ctx context.Context, db bun.IDB, fn func(ctx context.Context, tx bun.Tx) error) error {
 	if err := db.RunInTx(ctx, nil, fn); err != nil {
+		if IsSerializationFailure(err) {
+			// The transaction lost a race with another one (deadlock or
+			// serialization failure): a conflict, not a server error.
+			return fmt.Errorf("%w: transaction aborted by a concurrent one: %w", ErrConflict, err)
+		}
 		return err
 	}
 	return nil
