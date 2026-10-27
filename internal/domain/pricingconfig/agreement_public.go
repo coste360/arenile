@@ -15,9 +15,9 @@ import (
 
 // Agreement link and code on the public page (spec 30.2.2, ADR 0028): an
 // agreement is visible online only when it is active, valid today and sold
-// with its code online (online_code or online_link, or no channel
-// restriction). Anything else is "not found", so the codes are never
-// revealed.
+// with its code online (an explicit online_code or online_link channel; an
+// agreement without channels is desk only). Anything else is "not found",
+// so the codes are never revealed.
 
 // ErrAgreementCodeUnknown: no agreement sold online with this code.
 var ErrAgreementCodeUnknown = errors.New("pricingconfig: agreement code unknown")

@@ -66,11 +66,12 @@ func (s *Service) quoteAgreement(ctx context.Context, db bun.IDB, pe *online.Pub
 	st := &AgreementStatus{Code: in.AgreementCode, Status: AgreementApplied}
 	a, err := pricingconfig.OnlineAgreement(ctx, db, pe.Scope, in.AgreementCode, s.today(pe.Establishment))
 	switch {
-	case errors.Is(err, pricingconfig.ErrAgreementCodeUnknown):
+	case errors.Is(err, pricingconfig.ErrAgreementCodeUnknown), errors.Is(err, pricingconfig.ErrAgreementNotApplicable):
+		// Unknown, desk-only, inactive or expired codes are all "invalid"
+		// without a name: the public quote never confirms that a code
+		// exists (ADR 0028). not_applicable is kept for the pricing refusals
+		// of a valid online agreement (season, scope): priceWithAgreement.
 		st.Status = AgreementInvalid
-		return "", st, nil
-	case errors.Is(err, pricingconfig.ErrAgreementNotApplicable):
-		st.Name, st.Status = a.Name, AgreementNotApplicable
 		return "", st, nil
 	case err != nil:
 		return "", nil, err

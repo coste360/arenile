@@ -41,8 +41,11 @@ func (notApplicableError) Error() string { return "booking: agreement not applic
 // Is makes errors.Is(err, configerr.ErrValidation) succeed.
 func (notApplicableError) Is(target error) bool { return target == configerr.ErrValidation }
 
-// Agreement channels (agreements.channels; empty = every channel, the
-// behaviour before M8).
+// Agreement channels (agreements.channels). An empty list means desk only:
+// before M8 an agreement was applied by the cash desk alone, so the
+// agreements left with channels NULL by migration 00013 (and any created
+// without channels) are never redeemable with their code on the public
+// page. Online redemption needs an explicit online_code or online_link.
 const (
 	ChannelDesk       = "desk"
 	ChannelOnlineCode = "online_code"
@@ -123,13 +126,16 @@ type AgreementM8 struct {
 }
 
 // HasChannel reports whether the agreement is sold on ch (no channels =
-// every channel).
+// desk only).
 func (m AgreementM8) HasChannel(ch string) bool {
-	return len(m.Channels) == 0 || slices.Contains(m.Channels, ch)
+	if len(m.Channels) == 0 {
+		return ch == ChannelDesk
+	}
+	return slices.Contains(m.Channels, ch)
 }
 
 // OnlineChannel reports whether the agreement can be applied online with
-// its code (online_code or online_link, or no channel restriction).
+// its code: only with an explicit online_code or online_link channel.
 func (m AgreementM8) OnlineChannel() bool {
 	return m.HasChannel(ChannelOnlineCode) || m.HasChannel(ChannelOnlineLink)
 }

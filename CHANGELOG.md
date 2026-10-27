@@ -66,6 +66,10 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 ### Modificato
 - Mappa operativa: le etichette sono pulsanti combinabili (prima Codice / Cliente / Entrambi) anche sul telefono; su
   telefono Trova posto, annulla e stampa sono pulsanti con la sola icona e i filtri rapidi scorrono su una riga.
+- **Convenzioni senza canali = solo cassa.** Le convenzioni esistenti prima di M8 (e quelle create senza `channels`)
+  restano applicabili solo dalla cassa: il loro codice non vale sulla pagina pubblica finché non si attiva "Codice
+  online" o "Link". Il preventivo pubblico risponde `invalid` senza nome per ogni codice sconosciuto, solo cassa,
+  spento o scaduto.
 
 ## [1.0.6] - 2026-10-26
 

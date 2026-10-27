@@ -40,14 +40,36 @@ func TestCheckout_AgreementCode(t *testing.T) {
 		link := mk("Ospiti Miramare", "MIRAMARE", []string{pricingconfig.ChannelOnlineLink}, true, &one)
 		mk("Solo cassa", "CASSA", []string{pricingconfig.ChannelDesk}, true, nil)
 		mk("Spenta", "SPENTA", nil, false, nil)
+		// An agreement from before M8: a code and channels NULL (as
+		// migration 00013 leaves every existing row). Desk only.
+		legacy := mk("Residenti", "RESIDENTI", nil, true, nil)
+		if _, err := db.NewUpdate().TableExpr("agreements").Set("channels = NULL").Where("id = ?", legacy.ID).Exec(e.Ctx); err != nil {
+			t.Fatal(err)
+		}
+		// Valid online, but expired: the public page must not tell it
+		// apart from an unknown code.
+		expired := mk("Scaduta", "SCADUTA", []string{pricingconfig.ChannelOnlineCode}, true, nil)
+		if _, err := db.NewUpdate().TableExpr("agreements").Set("valid_to = ?", "2020-01-01").Where("id = ?", expired.ID).Exec(e.Ctx); err != nil {
+			t.Fatal(err)
+		}
 
 		got, err := e.Svc.GetAgreement(e.Ctx, checkouttest.Slug, "miramare")
 		if err != nil || got.ID != link.ID || got.M8.Requirement != "conferma dell'hotel" || got.Summary != "-10%" {
 			t.Fatalf("public agreement: %v %+v", err, got)
 		}
-		for _, code := range []string{"CASSA", "SPENTA", "NESSUNO", "a b"} {
+		for _, code := range []string{"CASSA", "SPENTA", "RESIDENTI", "SCADUTA", "NESSUNO", "a b"} {
 			if _, err := e.Svc.GetAgreement(e.Ctx, checkouttest.Slug, code); !errors.Is(err, checkout.ErrAgreementNotFound) {
 				t.Fatalf("code %q: %v (must be 404)", code, err)
+			}
+		}
+		// The quote is not an oracle either: every refused code is
+		// "invalid" without a name (ADR 0028).
+		for _, code := range []string{"CASSA", "SPENTA", "RESIDENTI", "SCADUTA", "NESSUNO"} {
+			sel := e.Seat(f.Spots[0], "2027-07-10")
+			sel.AgreementCode = code
+			q, err := e.Svc.Quote(e.Ctx, checkouttest.Slug, sel)
+			if err != nil || q.Agreement == nil || q.Agreement.Status != checkout.AgreementInvalid || q.Agreement.Name != "" || q.Total != 2000 {
+				t.Fatalf("quote with code %q: %v %+v total %d (must be invalid, no name, full price)", code, err, q.Agreement, q.Total)
 			}
 		}
 
