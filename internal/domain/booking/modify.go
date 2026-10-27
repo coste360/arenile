@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -215,17 +216,51 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 	replace := in.Lines != nil
 	if replace {
 		lineIn = in.Lines
+		for i, l := range lineIn {
+			if len(l.Segments) > 0 {
+				if msg := coverError(l.Segments, newStay.StartsOn, newStay.EndsOn); msg != "" {
+					return nil, configerr.Invalid(fmt.Sprintf("lines[%d].segments", i), msg)
+				}
+			}
+		}
 	}
 	if in.ExtrasSet {
 		bookingExtras = in.Extras
 	}
-	cat, err := loadCatalog(ctx, tx, es, lineIn, bookingExtras)
+	// Split stays and scheduled moves (INV-102, INV-106): the lines that are
+	// kept keep their segments, fitted to the new dates when these change;
+	// each day stays priced with the spot of that day and the allocations
+	// before a scheduled move are never rewritten onto the destination.
+	var kept map[string][]SegmentInput
+	spotsIn := lineIn
+	if !replace && st.OccupiesResources() {
+		cur, err := allocSegments(ctx, tx, es, b)
+		if err != nil {
+			return nil, err
+		}
+		kept = map[string][]SegmentInput{}
+		spotsIn = slices.Clone(lineIn)
+		for _, r := range rows {
+			sg := fitSegments(cur[r.ID], newStay.StartsOn, newStay.EndsOn)
+			if len(sg) == 0 {
+				continue
+			}
+			kept[r.ID] = sg
+			for _, x := range sg {
+				spotsIn = append(spotsIn, LineInput{SpotID: x.SpotID})
+			}
+		}
+	}
+	cat, err := loadCatalog(ctx, tx, es, spotsIn, bookingExtras)
 	if err != nil {
 		return nil, err
 	}
 	lines, err := cat.resolve(lineIn, "lines")
 	if err != nil {
 		return nil, err
+	}
+	if kept != nil {
+		withSegments(lines, rows, kept)
 	}
 	pr, err := s.repriceAs(ctx, tx, es, b, newStay, lines, bookingExtras, cat)
 	if err != nil {
@@ -283,11 +318,19 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 		if err != nil {
 			return nil, err
 		}
-		if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, allocRequest(b, kind, exp, rows, newExtras, cat)); err != nil {
-			return nil, err
-		}
-		if err := s.applyAllocation(ctx, tx, es, b, rows, allocated, kind, now); err != nil {
-			return nil, err
+		if hasSegments(pr.lines) {
+			// One allocation per segment (the kept ones, or those of the
+			// replaced lines), the plain lines in one request.
+			if allocated, err = s.allocateSplit(ctx, tx, es, b, kind, exp, rows, newExtras, cat, pr.lines, now); err != nil {
+				return nil, err
+			}
+		} else {
+			if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, allocRequest(b, kind, exp, rows, newExtras, cat)); err != nil {
+				return nil, err
+			}
+			if err := s.applyAllocation(ctx, tx, es, b, rows, allocated, kind, now); err != nil {
+				return nil, err
+			}
 		}
 	}
 	if err := s.applyTotals(b, pr, now, diff); err != nil {
@@ -310,6 +353,20 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 		diff["new_breakdown"] = pr.res.Breakdown
 	}
 	return &outcome{action: eventModified, diff: diff, alloc: mergeAlloc(released, allocated)}, nil
+}
+
+// fitSegments fits the segments of a line to a (possibly new) stay from..to:
+// the days outside are dropped, the first segment starts with the stay and
+// the last one ends with it (a stay extended on either side extends the
+// spot of that side). nil when segs is empty or lies entirely outside.
+func fitSegments(segs []SegmentInput, from, to calendar.Date) []SegmentInput {
+	out := clipBefore(clipFrom(segs, from), to.AddDays(1))
+	if len(out) == 0 {
+		return nil
+	}
+	out[0].StartsOn = from
+	out[len(out)-1].EndsOn = to
+	return out
 }
 
 func diffDates(b *store.Booking, st stay) bool {

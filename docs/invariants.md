@@ -1051,3 +1051,15 @@ Verificata da: `TestOnlineBookable_Spot` (`internal/domain/inventory`), `TestChe
 (`internal/domain/checkout`, attraverso il checkout pubblico), tag `integration`, SQLite e PostgreSQL. Stato:
 implemented.
 
+**INV-106 — Una modifica che non sostituisce le righe conserva i segmenti.**
+Un `PATCH` della prenotazione che non invia `lines` (note, cliente, extra, convenzione, gruppo, date) conserva i
+segmenti di ogni riga ricavati dalle allocazioni: le mezze giornate prima di uno spostamento programmato non
+vengono mai riscritte sulla postazione di destinazione e un soggiorno spezzato non viene riportato su una sola
+postazione; ogni giorno resta prezzato con la postazione di quel giorno (INV-102). Se cambiano le date, i segmenti
+sono adattati al nuovo soggiorno (giorni fuori eliminati, primo e ultimo segmento estesi); se il nuovo soggiorno è
+tutto fuori dai segmenti, la riga va sulla sua postazione. Sostituire `lines` è una scelta esplicita: le righe nuove
+occupano la postazione (o i segmenti) indicati e i vincoli unici decidono (`409`).
+Verificata da: `TestModify_KeepsSegments` (`internal/domain/booking`, tag `integration`, SQLite e PostgreSQL:
+note, extra e date su un soggiorno spezzato e dopo uno spostamento programmato, con l'altra postazione occupata).
+Stato: implemented.
+

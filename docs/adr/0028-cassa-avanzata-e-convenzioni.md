@@ -111,8 +111,9 @@ lavorare in parallelo su cinque filoni senza conflitti.
 - Limiti noti, da chiudere dopo M8: un hold del pannello convertito in prenotazione (`ConvertHold`) non conta il
   contingente della convenzione; la disponibilità pubblica non sottrae la capacità riservata (la prenotazione è
   rifiutata con `409`, ma il preventivo può mostrarla libera); il requisito non verificato è registrato e mostrato,
-  non blocca; l'appartenenza alla categoria di clienti non è richiesta per usarne la convenzione; cambiare date o
-  righe di un soggiorno spezzato lo riporta su una postazione sola.
+  non blocca; l'appartenenza alla categoria di clienti non è richiesta per usarne la convenzione; sostituire le
+  righe (`lines`) di un soggiorno spezzato lo riporta sulle postazioni indicate (una modifica che non le sostituisce
+  conserva i segmenti, INV-106).
 - Verifiche: `TestMigration00013_ModelsRoundtrip` (`internal/store`, SQLite e PostgreSQL), `TestError_M8Mapping`
   (`internal/http/problem`), `TestResetEstablishment_EveryTableClassified`; i test di INV-101..INV-105 in
   `docs/invariants.md`; l'accettazione di M8 `TestAcceptance_M8CashDeskAndAgreements` e
