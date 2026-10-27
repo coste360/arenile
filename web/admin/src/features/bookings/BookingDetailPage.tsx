@@ -52,6 +52,7 @@ import {
 } from './api';
 import { BookingAgreementCard } from './agreement/BookingAgreementCard';
 import { noteSchema, type NoteValues } from './booking.schema';
+import { BookingDeskActions, LastMoveNotice } from './detail/BookingDeskActions';
 import { CancelBookingDialog } from './detail/CancelBookingDialog';
 import { ChangeDatesDialog, MoveBookingDialog } from './detail/ChangeDialogs';
 import { RecordPaymentDialog, RefundDialog } from './detail/PaymentDialogs';
@@ -220,22 +221,27 @@ export function BookingDetailPage() {
         </>
       }
       actions={
-        (actions.length > 0 || canChangeDates) && (
-          <>
-            {actions.filter((a) => actionRank(a) < 2).map(actionButton)}
-            {canChangeDates && (
-              <Button variant="outline" onClick={() => setDialog('dates')}>
-                <CalendarRangeIcon aria-hidden="true" />
-                {t('actions.dates')}
-              </Button>
-            )}
-            {actions.filter((a) => actionRank(a) === 2).map(actionButton)}
-          </>
-        )
+        <>
+          {actions.filter((a) => actionRank(a) < 2).map(actionButton)}
+          {canChangeDates && (
+            <Button variant="outline" onClick={() => setDialog('dates')}>
+              <CalendarRangeIcon aria-hidden="true" />
+              {t('actions.dates')}
+            </Button>
+          )}
+          {/* Spec 30.9: duplicate, change customer, WhatsApp summary, printable summary. */}
+          <BookingDeskActions
+            establishmentId={establishmentId}
+            booking={b}
+            canWrite={perms.canWrite}
+          />
+          {actions.filter((a) => actionRank(a) === 2).map(actionButton)}
+        </>
       }
       notice={
         <>
           <ProblemAlert problem={failure} onReload={reload} />
+          <LastMoveNotice establishmentId={establishmentId} booking={b} canWrite={perms.canWrite} />
           {b.hold_expires_at && (
             <p className="text-sm text-muted-foreground">
               {t('detail.holdExpires', {

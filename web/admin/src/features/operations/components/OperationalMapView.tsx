@@ -1,16 +1,15 @@
 import {
   BeachMap,
   INDICATOR_CLASSES,
+  INDICATOR_ICONS,
   MapLegend,
   SPOT_INDICATORS,
   SpotList,
-  MAP_LABEL_MODES,
   EMPTY_SELECTION,
   pruneSelection,
   selectLasso,
   selectSpot,
   type MapGeometry,
-  type MapLabelMode,
   type MapSpot,
   type Selection,
   type SpotActivateModifiers,
@@ -27,8 +26,16 @@ import {
 import { useMe } from '@arenile/shared/api';
 import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Toggle } from '@arenile/shared/ui/toggle';
-import { ResponsiveTabsList, SegmentedControl } from '@arenile/shared/ui/patterns';
-import { ArrowRightLeftIcon, ListChecksIcon, SearchIcon, XIcon } from 'lucide-react';
+import { ResponsiveTabsList } from '@arenile/shared/ui/patterns';
+import {
+  ArrowRightLeftIcon,
+  CalendarCheckIcon,
+  ListChecksIcon,
+  MapPinnedIcon,
+  SearchIcon,
+  UsersRoundIcon,
+  XIcon,
+} from 'lucide-react';
 import {
   lazy,
   Suspense,
@@ -41,7 +48,30 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { occupantCaptions, occupantFullName, useLabelMode } from '../lib/occupant';
+import { useCurrentEstablishment } from '../../../establishment';
+import {
+  FindSpotBookDialog,
+  FindSpotSheet,
+  segmentsText,
+  type FindSpotProposal,
+  type FindSpotRequest,
+} from '../../findspot';
+import {
+  bookingEnd,
+  labelCaptions,
+  labelModeOf,
+  mapIndicators,
+  shortDate,
+  useLabelParts,
+} from '../lib/mapLabels';
+import { occupantFullName } from '../lib/occupant';
+import {
+  agreementOptions,
+  combineHighlights,
+  filterSpots,
+  groupOptions,
+  type QuickFilter,
+} from '../lib/quickFilters';
 import type { OperationsPermissions } from '../lib/permissions';
 import { canMultiSelect, selectableSpotIds, selectionActions } from '../lib/multiSelect';
 import {
@@ -57,9 +87,18 @@ import {
 } from '../lib/status';
 import { BlockSpotsDialog } from './BlockSpotsDialog';
 import { useTicketAssignment } from '../../daily-sale';
+import type { MapPaper } from './DayMapSheet';
+import { useDayMapPrint } from './useDayMapPrint';
+import { GroupMoveDialog } from './GroupMoveDialog';
+import { LifeguardListDialog } from './LifeguardListDialog';
+import { MapLabelSelector } from './MapLabelSelector';
+import { MapTools } from './MapTools';
 import { MoveDialog } from './MoveDialog';
+import { QuickFilters } from './QuickFilters';
 import { SelectionBar } from './SelectionBar';
 import { SpotSheet } from './SpotSheet';
+import { SpotSheetExtras } from './SpotSheetExtras';
+import { SwapDialog } from './SwapDialog';
 
 // The booking sheet belongs to the bookings feature: load it on first use.
 const NewBookingSheet = lazy(() =>
@@ -79,6 +118,8 @@ export interface OperationalMapViewProps {
   permissions: OperationsPermissions;
   /** CSS height of the drawing (default 65vh). */
   height?: string;
+  /** Map filter of the day query (lifeguard list of the same map). */
+  mapId?: string;
   className?: string;
 }
 
@@ -89,6 +130,12 @@ interface NewBookingDefaults {
   slots: SlotChoice;
   /** Opened from the multi-selection: one booking with a line per spot. */
   group?: boolean;
+}
+
+/** A Trova posto proposal shown on the map (spec 30.6). */
+interface ShownProposal {
+  proposal: FindSpotProposal;
+  request: FindSpotRequest;
 }
 
 /**
@@ -115,6 +162,7 @@ export function OperationalMapView({
   slot,
   permissions,
   height = '65vh',
+  mapId,
   className,
 }: OperationalMapViewProps) {
   const { t } = useTranslation('operations');
@@ -131,20 +179,51 @@ export function OperationalMapView({
   const [rawSelection, setSelection] = useState<Selection>(EMPTY_SELECTION);
   const [blockSpots, setBlockSpots] = useState<{ id: string; label: string }[] | null>(null);
   const [dailySaleSpot, setDailySaleSpot] = useState<string | null>(null);
+  // M8 (spec 30.4-30.10): quick filters, swap, group move, find spot, printing.
+  const [filter, setFilter] = useState<QuickFilter | null>(null);
+  const [swapTarget, setSwapTarget] = useState<OperationalSpot | null>(null);
+  const [groupSource, setGroupSource] = useState<OperationalSpot | null>(null);
+  const [groupTarget, setGroupTarget] = useState<string | null>(null);
+  const [findSpot, setFindSpot] = useState(false);
+  const [shown, setShown] = useState<ShownProposal | null>(null);
+  const [bookShown, setBookShown] = useState(false);
+  const [lifeguard, setLifeguard] = useState(false);
+  const { establishment } = useCurrentEstablishment();
+  const dayPrint = useDayMapPrint();
 
   const spots = useMemo(() => day?.spots ?? [], [day]);
   const byId = useMemo(() => new Map(spots.map((s) => [s.spot_id, s])), [spots]);
   const statuses = useMemo(() => statusesBySpot(spots, slot), [spots, slot]);
   const indicators = useMemo(() => indicatorsBySpot(spots), [spots]);
-  // Who occupies each spot (spec 11.3), only for users who may see customers.
+  // The art shows at most four dots; the accessible name lists them all.
+  const drawnIndicators = useMemo(() => mapIndicators(indicators), [indicators]);
+  // Labels (spec 11.3, 30.4): code, customer (bookings.read only), end date, setup.
   const canSeeCustomers = permissions.canSeeCustomers;
-  const captions = useMemo(
-    () => occupantCaptions(spots, slot, t, canSeeCustomers),
-    [spots, slot, t, canSeeCustomers],
-  );
   const me = useMe();
-  const [labelMode, setLabelMode] = useLabelMode(me.data?.user?.id);
-  const matches = useMemo(() => searchSpots(spots, deferredQuery), [spots, deferredQuery]);
+  const [labelParts, setLabelParts] = useLabelParts(me.data?.user?.id);
+  const labelMode = labelModeOf(labelParts);
+  const captions = useMemo(
+    () => labelCaptions(spots, slot, labelParts, t, canSeeCustomers),
+    [spots, slot, labelParts, t, canSeeCustomers],
+  );
+  const searchMatches = useMemo(() => searchSpots(spots, deferredQuery), [spots, deferredQuery]);
+  const filterMatches = useMemo(() => filterSpots(spots, slot, filter), [spots, slot, filter]);
+  const matches = useMemo(
+    () =>
+      combineHighlights(deferredQuery.trim() ? searchMatches : null, filter ? filterMatches : null),
+    [deferredQuery, searchMatches, filter, filterMatches],
+  );
+  const agreements = useMemo(() => agreementOptions(spots), [spots]);
+  const groups = useMemo(() => groupOptions(spots), [spots]);
+  const groupSpots = useCallback(
+    (name: string | undefined) =>
+      name
+        ? spots.filter(
+            (s) => s.booking?.group_name === name && s.booking.line_id && !s.booking.ticket,
+          )
+        : [],
+    [spots],
+  );
   const selectable = useMemo(() => selectableSpotIds(spots, slot), [spots, slot]);
   const isSelectable = useCallback((id: string) => selectable.has(id), [selectable]);
   // Derived, not an effect: a spot booked meanwhile (SSE) leaves the selection at once.
@@ -197,6 +276,9 @@ export function OperationalMapView({
       const name = canSeeCustomers ? occupantFullName(b, t) : undefined;
       if (name) parts.push(captions[spot.id] ? t('occupant.aria', { name }) : name);
       for (const kind of indicators[spot.id] ?? []) parts.push(t(`indicator.${kind}`));
+      // Spec 30.4: end of the stay and setup, also when the labels do not show them.
+      parts.push(t('labels.endAria', { date: shortDate(bookingEnd(b)) }));
+      if (b.setup_label) parts.push(t('labels.setupAria', { setup: b.setup_label }));
       return parts.join(', ');
     },
     [byId, indicators, t, canSeeCustomers, captions],
@@ -205,11 +287,27 @@ export function OperationalMapView({
   const activate = useCallback(
     (spot: MapSpot, mods?: SpotActivateModifiers) => {
       const op = byId.get(spot.id);
+      if (groupSource) {
+        // Group move: the tapped spot is the new place of the picked one.
+        if (spot.id !== groupSource.spot_id) setGroupTarget(spot.id);
+        return;
+      }
       if (!moveSource && assignment.handleSpot(spot.id)) return;
       if (moveSource) {
         if (spot.id === moveSource.spot_id) return;
-        if (!op || !isBookable(slotStatus(op, slot))) return;
-        setMoveTarget({ spotId: spot.id, label: spot.label });
+        if (!op) return;
+        if (isBookable(slotStatus(op, slot))) {
+          setMoveTarget({ spotId: spot.id, label: spot.label });
+          return;
+        }
+        // Dropped on an occupied spot: propose the swap (spec 30.7).
+        const canSwap =
+          permissions.canWriteBookings &&
+          !!op.booking?.line_id &&
+          !op.booking.ticket &&
+          !moveSource.booking?.ticket &&
+          op.booking.booking_id !== moveSource.booking?.booking_id;
+        if (canSwap) setSwapTarget(op);
         return;
       }
       // Shift/Ctrl-click on a selectable spot starts the selection directly.
@@ -226,7 +324,18 @@ export function OperationalMapView({
       setSelectedId(spot.id);
       setSheetOpen(true);
     },
-    [byId, moveSource, slot, selecting, multi, isSelectable, spotOrder, assignment],
+    [
+      byId,
+      moveSource,
+      slot,
+      selecting,
+      multi,
+      isSelectable,
+      spotOrder,
+      assignment,
+      groupSource,
+      permissions.canWriteBookings,
+    ],
   );
 
   const onLassoSelect = useCallback(
@@ -265,6 +374,36 @@ export function OperationalMapView({
   const endMove = () => {
     setMoveSource(null);
     setMoveTarget(null);
+    setSwapTarget(null);
+  };
+  const startGroupMove = (spot: OperationalSpot) => {
+    setSheetOpen(false);
+    endMove();
+    setGroupSource(spot);
+  };
+  const endGroupMove = () => {
+    setGroupSource(null);
+    setGroupTarget(null);
+  };
+  const printMap = (paper: MapPaper) => {
+    if (!day) return;
+    dayPrint.print({
+      paper,
+      geometry,
+      day,
+      date,
+      slot,
+      statuses,
+      indicators: drawnIndicators,
+      captions,
+      labelMode,
+      establishmentName: establishment?.name,
+    });
+  };
+  const showProposal = (proposal: FindSpotProposal, request: FindSpotRequest) => {
+    setFindSpot(false);
+    setShown({ proposal, request });
+    mapRef.current?.scrollIntoView({ block: 'start' });
   };
   const openDailySale = (spot: OperationalSpot) => {
     setSheetOpen(false);
@@ -280,13 +419,19 @@ export function OperationalMapView({
   };
 
   const selected = selectedId ? (byId.get(selectedId) ?? null) : null;
-  const searching = deferredQuery.trim().length > 0;
+  const searching = deferredQuery.trim().length > 0 || !!filter;
+  const highlighted = assignment.active
+    ? assignment.highlightIds
+    : shown
+      ? shown.proposal.spot_ids
+      : matches;
 
   return (
     <div
       className={cn('space-y-3', className)}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && selecting && !newBooking && !blockSpots) exitSelection();
+        if (e.key === 'Escape' && groupSource && !groupTarget) endGroupMove();
       }}
     >
       <div className="flex flex-wrap items-center gap-3">
@@ -334,7 +479,62 @@ export function OperationalMapView({
         <p role="status" aria-live="polite" className="text-sm text-muted-foreground">
           {searching ? t('search.results', { count: matches.length }) : ''}
         </p>
+        <MapTools
+          establishmentId={establishmentId}
+          onFindSpot={permissions.canWriteBookings ? () => setFindSpot(true) : undefined}
+          onPrintMap={printMap}
+          onLifeguardList={() => setLifeguard(true)}
+          canUndo={permissions.canWriteBookings}
+        />
       </div>
+
+      <QuickFilters value={filter} onChange={setFilter} agreements={agreements} groups={groups} />
+
+      {shown && (
+        <Alert data-testid="shown-proposal">
+          <MapPinnedIcon aria-hidden="true" />
+          <AlertTitle>{t('findSpot.shownTitle', { rank: shown.proposal.rank })}</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            <span>
+              {shown.proposal.lines
+                .map((l) => segmentsText(l.segments, (k, o) => t(`findspot:${k}`, o)))
+                .join(' · ')}
+            </span>
+            {permissions.canWriteBookings && shown.request.pack_id && (
+              <Button size="sm" onClick={() => setBookShown(true)}>
+                <CalendarCheckIcon aria-hidden="true" />
+                {t('findSpot.book')}
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => setFindSpot(true)}>
+              <SearchIcon aria-hidden="true" />
+              {t('findSpot.again')}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setShown(null)}>
+              <XIcon aria-hidden="true" />
+              {t('findSpot.hide')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {groupSource && (
+        <Alert>
+          <UsersRoundIcon aria-hidden="true" />
+          <AlertTitle>
+            {t('groupMove.pickTitle', {
+              group: groupSource.booking?.group_name ?? '',
+              label: groupSource.label,
+            })}
+          </AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            <span>{t('groupMove.pickDescription', { label: groupSource.label })}</span>
+            <Button size="sm" variant="outline" onClick={endGroupMove}>
+              {t('actions.cancel')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {selecting && (
         <SelectionBar
@@ -352,7 +552,7 @@ export function OperationalMapView({
           <ArrowRightLeftIcon aria-hidden="true" />
           <AlertTitle>{t('move.pickTitle', { label: moveSource.label })}</AlertTitle>
           <AlertDescription className="flex flex-wrap items-center gap-3">
-            <span>{t('move.pickDescription')}</span>
+            <span>{t('move.pickDescriptionSwap')}</span>
             <Button size="sm" variant="outline" onClick={endMove}>
               {t('actions.cancel')}
             </Button>
@@ -390,19 +590,28 @@ export function OperationalMapView({
                   {t('indicator.legend')}
                 </p>
                 <ul className="flex flex-wrap gap-3 text-xs" aria-labelledby={indicatorLegendId}>
-                  {SPOT_INDICATORS.map((kind) => (
-                    <li
-                      key={kind}
-                      className="flex items-center gap-1.5"
-                      data-indicator-legend={kind}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={cn('size-2.5 rounded-full', INDICATOR_CLASSES[kind].bg)}
-                      />
-                      {t(`indicator.${kind}`)}
-                    </li>
-                  ))}
+                  {SPOT_INDICATORS.map((kind) => {
+                    const Icon = INDICATOR_ICONS[kind];
+                    return (
+                      <li
+                        key={kind}
+                        className="flex items-center gap-1.5"
+                        data-indicator-legend={kind}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'flex size-4 items-center justify-center rounded-full',
+                            INDICATOR_CLASSES[kind].bg,
+                            INDICATOR_CLASSES[kind].fg,
+                          )}
+                        >
+                          <Icon className="size-3" />
+                        </span>
+                        {t(`indicator.${kind}`)}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
@@ -412,31 +621,21 @@ export function OperationalMapView({
               geometry={geometry}
               statuses={statuses}
               selectedIds={selectedIds}
-              highlightedIds={assignment.active ? assignment.highlightIds : matches}
-              spotIndicators={indicators}
+              highlightedIds={highlighted}
+              spotIndicators={drawnIndicators}
               onSpotActivate={activate}
               lasso={selecting}
               onLassoSelect={onLassoSelect}
               minTapTargetPx={assignment.active ? 44 : undefined}
               spotDescription={spotDescription}
-              spotCaptions={canSeeCustomers ? captions : undefined}
+              spotCaptions={captions}
               labelMode={labelMode}
               toolbar={
-                canSeeCustomers ? (
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
-                      {t('labels.label')}
-                    </span>
-                    <SegmentedControl
-                      label={t('labels.label')}
-                      value={labelMode}
-                      onValueChange={(v) => setLabelMode(v as MapLabelMode)}
-                      options={MAP_LABEL_MODES.map((m) => ({ value: m, label: t(`labels.${m}`) }))}
-                      collapseOnNarrow
-                      className="sm:w-auto"
-                    />
-                  </div>
-                ) : undefined
+                <MapLabelSelector
+                  value={labelParts}
+                  onChange={setLabelParts}
+                  canSeeCustomers={canSeeCustomers}
+                />
               }
               legendStatuses={OPERATIONAL_LEGEND}
               showLegend={false}
@@ -469,6 +668,25 @@ export function OperationalMapView({
         onStartMove={startMove}
         onBlock={blockFromSheet}
         onDailySale={openDailySale}
+        extras={(spot) => (
+          <SpotSheetExtras
+            establishmentId={establishmentId}
+            spot={spot}
+            slot={slot}
+            permissions={permissions}
+            groupSize={groupSpots(spot.booking?.group_name).length}
+            onClose={() => setSheetOpen(false)}
+            onNewBooking={(stay) =>
+              setNewBooking({
+                spotIds: [stay.spotId],
+                startsOn: stay.startsOn,
+                endsOn: stay.endsOn,
+                slots: stay.slots,
+              })
+            }
+            onGroupMove={startGroupMove}
+          />
+        )}
       />
       {blockSpots && (
         <BlockSpotsDialog
@@ -495,6 +713,72 @@ export function OperationalMapView({
           onDone={endMove}
         />
       )}
+      {moveSource && swapTarget && (
+        <SwapDialog
+          establishmentId={establishmentId}
+          source={moveSource}
+          target={swapTarget}
+          date={date}
+          open
+          onOpenChange={(v) => !v && setSwapTarget(null)}
+          onDone={endMove}
+        />
+      )}
+      {groupSource && groupTarget && (
+        <GroupMoveDialog
+          establishmentId={establishmentId}
+          geometry={geometry}
+          sources={groupSpots(groupSource.booking?.group_name)}
+          anchorId={groupSource.spot_id}
+          anchorTarget={groupTarget}
+          date={date}
+          open
+          onOpenChange={(v) => !v && setGroupTarget(null)}
+          onDone={endGroupMove}
+        />
+      )}
+      {lifeguard && (
+        <LifeguardListDialog
+          establishmentId={establishmentId}
+          date={date}
+          slot={slot}
+          mapId={mapId}
+          open
+          onOpenChange={setLifeguard}
+        />
+      )}
+      {findSpot && (
+        <FindSpotSheet
+          establishmentId={establishmentId}
+          open
+          onOpenChange={setFindSpot}
+          defaults={{ startsOn: date, endsOn: date, slots: slot }}
+          onShowOnMap={showProposal}
+          onBooked={() => {
+            setFindSpot(false);
+            setShown(null);
+          }}
+        />
+      )}
+      {shown && bookShown && (
+        <FindSpotBookDialog
+          establishmentId={establishmentId}
+          request={shown.request}
+          proposal={shown.proposal}
+          open
+          onOpenChange={setBookShown}
+          onConflict={() => {
+            setBookShown(false);
+            setShown(null);
+            setFindSpot(true);
+          }}
+          onBooked={() => {
+            setBookShown(false);
+            setShown(null);
+          }}
+        />
+      )}
+      {dayPrint.area}
       {dailySaleSpot && (
         <Suspense fallback={null}>
           <VenditaGiornalieraSheet

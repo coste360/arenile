@@ -1,9 +1,63 @@
 {
   "title": "Trouver une place",
   "description": "Recherchez la disponibilité par dates, créneau, nombre de places et changements de place admis, avec le prix estimé.",
-  "placeholder": {
-    "title": "Disponible avec le jalon M8",
-    "description": "Ici, la caisse trouvera les propositions classées, avec les segments et le prix avec la convention."
+  "open": "Trouver une place",
+  "form": {
+    "label": "Recherche",
+    "dates": "Dates",
+    "slots": "Créneau",
+    "count": "Emplacements",
+    "countHint": "Pour les groupes, les propositions privilégient des emplacements proches.",
+    "maxChanges": "Changements d'emplacement admis",
+    "changes": {
+      "0": "Aucun",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
+    "maxChangesHint": "Avec un ou plusieurs changements, la même réservation passe d'un emplacement à l'autre pendant le séjour.",
+    "zones": "Zones",
+    "anyZone": "Toutes les zones",
+    "pack": "Pack ou équipement",
+    "noPack": "Aucun pack (sans prix)",
+    "packHint": "Un pack est nécessaire pour voir le prix et réserver.",
+    "attributes": "Attributs",
+    "anyAttribute": "Indifférent",
+    "agreement": "Convention",
+    "noAgreement": "Aucune",
+    "search": "Rechercher",
+    "again": "Relancer la recherche"
   },
-  "open": "Trouver une place"
+  "results": {
+    "title": "Propositions",
+    "empty": "Aucune proposition",
+    "emptyHint": "Essayez d'autres dates, plus de changements ou moins d'emplacements.",
+    "count_one": "{{count}} proposition",
+    "count_other": "{{count}} propositions",
+    "truncated": "Il y en a d'autres : affinez la recherche.",
+    "proposal": "Proposition {{rank}}",
+    "noChanges": "Aucun changement d'emplacement",
+    "changes_one": "{{count}} changement d'emplacement",
+    "changes_other": "{{count}} changements d'emplacement",
+    "adjacent": "Proches",
+    "agreementApplied": "Convention appliquée",
+    "showOnMap": "Voir sur le plan",
+    "book": "Réserver",
+    "packToBook": "Pour réserver, choisissez un pack et relancez la recherche."
+  },
+  "segment": {
+    "day": "{{spot}} le {{date}}",
+    "range": "{{spot}} du {{from}} au {{to}}"
+  },
+  "book": {
+    "title": "Réserver la proposition {{rank}}",
+    "description": "Du {{from}} au {{to}} : choisissez le client et confirmez.",
+    "segments": "Emplacements",
+    "total": "Total estimé :",
+    "customer": "Client",
+    "cancel": "Annuler",
+    "confirm": "Réserver",
+    "done": "Réservation {{code}} créée.",
+    "taken": "Entre-temps une date a été prise : voici les nouvelles propositions."
+  }
 }

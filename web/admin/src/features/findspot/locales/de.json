@@ -1,9 +1,63 @@
 {
   "title": "Platz finden",
   "description": "Verfügbarkeit nach Datum, Tageszeit, Anzahl der Plätze und erlaubten Platzwechseln suchen, mit geschätztem Preis.",
-  "placeholder": {
-    "title": "Kommt mit Meilenstein M8",
-    "description": "Hier findet die Kasse sortierte Vorschläge mit Abschnitten und dem Preis mit Vereinbarung."
+  "open": "Platz finden",
+  "form": {
+    "label": "Suche",
+    "dates": "Daten",
+    "slots": "Zeitfenster",
+    "count": "Plätze",
+    "countHint": "Für Gruppen bevorzugen die Vorschläge nahe beieinander liegende Plätze.",
+    "maxChanges": "Erlaubte Platzwechsel",
+    "changes": {
+      "0": "Keine",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
+    "maxChangesHint": "Mit einem oder mehr Wechseln wechselt dieselbe Buchung während des Aufenthalts den Platz.",
+    "zones": "Zonen",
+    "anyZone": "Alle Zonen",
+    "pack": "Paket oder Ausstattung",
+    "noPack": "Kein Paket (ohne Preis)",
+    "packHint": "Für Preis und Buchung wird ein Paket benötigt.",
+    "attributes": "Merkmale",
+    "anyAttribute": "Beliebig",
+    "agreement": "Vereinbarung",
+    "noAgreement": "Keine",
+    "search": "Suchen",
+    "again": "Erneut suchen"
   },
-  "open": "Platz finden"
+  "results": {
+    "title": "Vorschläge",
+    "empty": "Keine Vorschläge",
+    "emptyHint": "Versuchen Sie andere Daten, mehr Platzwechsel oder weniger Plätze.",
+    "count_one": "{{count}} Vorschlag",
+    "count_other": "{{count}} Vorschläge",
+    "truncated": "Es gibt weitere: Grenzen Sie die Suche ein.",
+    "proposal": "Vorschlag {{rank}}",
+    "noChanges": "Kein Platzwechsel",
+    "changes_one": "{{count}} Platzwechsel",
+    "changes_other": "{{count}} Platzwechsel",
+    "adjacent": "Nebeneinander",
+    "agreementApplied": "Vereinbarung angewendet",
+    "showOnMap": "Auf der Karte zeigen",
+    "book": "Buchen",
+    "packToBook": "Wählen Sie zum Buchen ein Paket und suchen Sie erneut."
+  },
+  "segment": {
+    "day": "{{spot}} am {{date}}",
+    "range": "{{spot}} vom {{from}} bis {{to}}"
+  },
+  "book": {
+    "title": "Vorschlag {{rank}} buchen",
+    "description": "Vom {{from}} bis {{to}}: Wählen Sie den Kunden und bestätigen Sie.",
+    "segments": "Plätze",
+    "total": "Geschätzter Gesamtbetrag:",
+    "customer": "Kunde",
+    "cancel": "Abbrechen",
+    "confirm": "Buchen",
+    "done": "Buchung {{code}} erstellt.",
+    "taken": "Inzwischen wurde ein Datum vergeben: Hier sind die neuen Vorschläge."
+  }
 }

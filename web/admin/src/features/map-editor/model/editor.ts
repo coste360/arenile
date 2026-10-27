@@ -486,6 +486,7 @@ function spotProps(s: DraftSpot) {
     s.price_category_override,
     [...s.attributes].sort(),
     s.active,
+    s.online_bookable !== false,
   ];
 }
 

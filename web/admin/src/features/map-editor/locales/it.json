@@ -69,7 +69,8 @@
     "capacity": "Capienza",
     "max_extra": "Extra max",
     "illustration": "Illustrazione",
-    "flagColour": "Colore della bandiera"
+    "flagColour": "Colore della bandiera",
+    "onlineBookable": "Vendibile online"
   },
   "seaSides": {
     "top": "In alto",
@@ -155,7 +156,8 @@
     "useDefault": "Usa l'illustrazione predefinita",
     "illustrationHint": "L'illustrazione determina il tipo di postazione; cambiando il tipo, un'illustrazione di un altro tipo torna a quella predefinita.",
     "kindChanged": "Tipo aggiornato a {{kind}}: i pacchetti che richiedono un altro tipo non saranno più assegnati a questa postazione.",
-    "tileHint": "Le tessere delle passerelle misurano 60 unità: i tratti dritti sono lunghi un numero intero di tessere e, con un passo griglia che divide 60, si agganciano alla griglia delle tessere."
+    "tileHint": "Le tessere delle passerelle misurano 60 unità: i tratti dritti sono lunghi un numero intero di tessere e, con un passo griglia che divide 60, si agganciano alla griglia delle tessere.",
+    "onlineBookableHint": "Spenta: la pagina pubblica non mostra né vende la postazione; la cassa la vede sempre. Vale insieme alla quota online della zona."
   },
   "tools": {
     "label": "Strumenti dell'editor",

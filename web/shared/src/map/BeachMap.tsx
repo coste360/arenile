@@ -50,7 +50,7 @@ import {
   quantiseUnitsPerPixel,
   useUnitsPerPixel,
 } from './labels';
-import { INDICATOR_CLASSES, type SpotIndicator } from './indicators';
+import { INDICATOR_CLASSES, INDICATOR_ICONS, type SpotIndicator } from './indicators';
 import {
   captionsLegible,
   layoutCaption,
@@ -128,6 +128,11 @@ export interface BeachMapProps {
   spotDescription?: (spot: MapSpot) => string | undefined;
   /** Colour overrides (hex), e.g. from the panel theme; default: the --status-* theme tokens. */
   statusColors?: Partial<Record<SpotStatus, string>>;
+  /**
+   * Names of the statuses in the spots' accessible names when a view gives
+   * the palette another meaning (operational range view: "Libero in parte").
+   */
+  statusLabels?: Partial<Record<SpotStatus, string>>;
   /** Statuses listed in the legend; defaults to those present on the map. */
   legendStatuses?: readonly SpotStatus[];
   showLegend?: boolean;
@@ -330,19 +335,34 @@ const Spot = memo(function Spot({
           color={color}
         />
       )}
-      {indicators?.map((kind, i) => (
-        <circle
-          key={kind}
-          cx={spot.x - S * 0.36 + i * dotR * 2.3}
-          cy={spot.y - S * 0.36}
-          r={dotR}
-          data-indicator={kind}
-          className={cn(INDICATOR_CLASSES[kind].fill, 'stroke-background')}
-          strokeWidth={dotR * 0.35}
-          pointerEvents="none"
-          aria-hidden="true"
-        />
-      ))}
+      {indicators?.map((kind, i) => {
+        const cx = spot.x - S * 0.36 + i * dotR * 2.3;
+        const cy = spot.y - S * 0.36;
+        // The glyph is drawn only when the dot is large enough on screen to read it.
+        const glyph = dotR / unitsPerPixel >= 6;
+        return (
+          <g key={kind} pointerEvents="none" aria-hidden="true">
+            <circle
+              cx={cx}
+              cy={cy}
+              r={dotR}
+              data-indicator={kind}
+              className={cn(INDICATOR_CLASSES[kind].fill, 'stroke-background')}
+              strokeWidth={dotR * 0.35}
+              aria-hidden="true"
+            />
+            {glyph && (
+              <MapGlyph
+                icon={INDICATOR_ICONS[kind]}
+                x={cx}
+                y={cy}
+                size={dotR * 1.3}
+                className={INDICATOR_CLASSES[kind].fg}
+              />
+            )}
+          </g>
+        );
+      })}
       {showCode && fontSize > 0 && (
         <MapLabel
           x={spot.x}
@@ -506,6 +526,7 @@ export function BeachMap({
   spotDescription,
   zoneNames,
   spotCaptions,
+  statusLabels,
   labelMode = 'both',
   toolbar,
   statusColors,
@@ -803,7 +824,7 @@ export function BeachMap({
               const aria = t(place ? 'map.spotAriaPlaced' : 'map.spotAria', {
                 label: spot.label,
                 place,
-                status: t(`map.status.${status}`),
+                status: statusLabels?.[status] ?? t(`map.status.${status}`),
               });
               const caption = showCaptions ? captions.out.get(spot.id) : undefined;
               const ariaLabel = extra ? `${aria}, ${extra}` : aria;

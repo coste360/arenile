@@ -27,8 +27,13 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { OnlineOnlyNotice } from '../../../offline/OnlineOnlyNotice';
 import { useMoveTicket } from '../../daily-sale';
+import { useCurrentEstablishment } from '../../../establishment';
 import { moveLine, useMoveLine } from '../api/operations';
+import { todayIn } from '../lib/dates';
+import { defaultMoveFrom, moveFromDate } from '../lib/moveFrom';
 import type { OperationalSpot } from '../lib/status';
+import { MoveFromField, type MoveFromValue } from './MoveFromField';
+import { useUndoToast } from './useUndoToast';
 
 type BookingChangeResult = Schemas['BookingChangeResult'];
 
@@ -68,11 +73,20 @@ export function MoveDialog({
   // booking move is refused for it (ticket_owned) and its price never
   // changes, so there is no preview to run.
   const ticket = booking?.ticket;
+  const { establishment } = useCurrentEstablishment();
+  const today = todayIn(establishment?.timezone);
+  // The stay on this spot (a segment of a split stay) bounds "da quando" (spec 30.7).
+  const stay = {
+    starts_on: booking?.segment_starts_on ?? booking?.starts_on ?? date,
+    ends_on: booking?.segment_ends_on ?? booking?.ends_on ?? date,
+  };
+  const [from, setFrom] = useState<MoveFromValue>(() => defaultMoveFrom(stay, today, date));
+  const undoToast = useUndoToast(establishmentId);
   const vars = {
     bookingId: booking?.booking_id ?? '',
     lineId: booking?.line_id ?? '',
     spotId: target.spotId,
-    from: date > (booking?.starts_on ?? date) ? date : undefined,
+    from: moveFromDate(from.choice, stay, today, from.date),
     version: booking?.version ?? 0,
   };
   const preview = useQuery<BookingChangeResult, ApiProblem>({
@@ -90,21 +104,31 @@ export function MoveDialog({
   const [error, setError] = useState<string | null>(null);
   const confirm = () => {
     setError(null);
-    const callbacks = {
-      onSuccess: () => {
-        toast.success(t('move.done', { code: booking?.code ?? '', to: target.label }));
-        onDone();
-      },
-      onError: (e: ApiProblem) => setError(problemText(e)),
-    };
+    const onError = (e: ApiProblem) => setError(problemText(e));
+    const message = t('move.done', { code: booking?.code ?? '', to: target.label });
     if (ticket) {
       moveTicket.mutate(
         { ticketId: ticket.id, spotId: target.spotId, version: ticket.version },
-        callbacks,
+        {
+          onSuccess: () => {
+            toast.success(message);
+            onDone();
+          },
+          onError,
+        },
       );
       return;
     }
-    move.mutate({ ...vars, dryRun: false }, callbacks);
+    move.mutate(
+      { ...vars, dryRun: false },
+      {
+        onSuccess: (res) => {
+          undoToast(message, res.undo);
+          onDone();
+        },
+        onError,
+      },
+    );
   };
 
   return (
@@ -126,6 +150,15 @@ export function MoveDialog({
         </AlertDialogHeader>
         <div className="space-y-3">
           <OnlineOnlyNotice />
+          {!ticket && (
+            <MoveFromField
+              stay={stay}
+              today={today}
+              value={from}
+              onChange={setFrom}
+              disabled={pending}
+            />
+          )}
           {preview.isLoading && (
             <div role="status">
               <span className="sr-only">{t('move.previewing')}</span>

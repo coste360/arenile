@@ -80,8 +80,9 @@ export function statusesBySpot(
 }
 
 /**
- * Overlay indicators (extra, note, VIP, ticket still to assign) per spot
- * id; spots without any are omitted. `to_assign` marks a daily ticket parked
+ * Overlay indicators (extra, note, VIP, ticket still to assign, arrival,
+ * departure, agreement or partner, group) per spot id; spots without any
+ * are omitted. `to_assign` marks a daily ticket parked
  * on a provisional spot of a seat zone (ADR 0020): the guest is not there.
  */
 export function indicatorsBySpot(
@@ -96,6 +97,11 @@ export function indicatorsBySpot(
     if (b.has_extras) list.push('extra');
     if (b.has_notes) list.push('note');
     if (b.customer_tags.some((tag) => tag.toLowerCase() === VIP_TAG)) list.push('vip');
+    // Spec 30.4: arrival and departure day, agreement or partner, group.
+    if (b.is_first_day) list.push('arrival');
+    if (b.is_last_day) list.push('departure');
+    if (b.agreement || b.partner) list.push('agreement');
+    if (b.group_name) list.push('group');
     if (list.length > 0) out[s.spot_id] = list;
   }
   return out;

@@ -219,7 +219,7 @@ describe('OperationalMapPage', () => {
     const user = userEvent.setup();
     setup();
     const a2 = await screen.findByRole('button', {
-      name: 'Postazione A2, fila A: Prenotato in cassa, occupato da Rossi M., Nota, VIP',
+      name: 'Postazione A2, fila A: Prenotato in cassa, occupato da Rossi M., Nota, VIP, fine 14/7',
     });
     const a3 = screen.getByRole('button', {
       name: /Postazione A3, fila A: Abbonato, occupato da Verdi L\./,
@@ -241,15 +241,27 @@ describe('OperationalMapPage', () => {
     const a1 = screen.getByRole('button', { name: /Postazione A1, fila A: Libero$/ });
     expect(text(a1, 'caption')).toEqual([]);
 
-    const toggle = screen.getByRole('radiogroup', { name: 'Etichette' });
-    await user.click(within(toggle).getByRole('radio', { name: 'Codice' }));
+    // Spec 30.4: Codice / Cliente / Fine / Allestimento, combinable.
+    const toggle = screen.getByRole('toolbar', { name: 'Etichette' });
+    const part = (name: string) => within(toggle).getByRole('button', { name });
+    await user.click(part('Cliente'));
     expect(text(a2, 'caption')).toEqual([]);
     expect(text(a2, 'code')).toEqual(['A2']);
-    await user.click(within(toggle).getByRole('radio', { name: 'Cliente' }));
+    // The last part cannot be switched off.
+    await user.click(part('Codice'));
+    expect(part('Codice')).toHaveAttribute('aria-pressed', 'true');
+    await user.click(part('Cliente'));
+    await user.click(part('Codice'));
     expect(text(a2, 'caption')).toEqual(['Rossi']);
     expect(text(a2, 'code')).toEqual([]);
+    await user.click(part('Fine'));
+    // "Rossi · 14/7", truncated to the room on the map (the full text is in the name).
+    expect(text(a2, 'caption')[0]).toMatch(/^Rossi ·/);
     // Remembered for this user.
-    expect(localStorage.getItem('arenile.map.labelMode.u-self')).toBe('customer');
+    expect(JSON.parse(localStorage.getItem('arenile.map.labelParts.u-self') ?? '[]')).toEqual([
+      'customer',
+      'end',
+    ]);
 
     // The list view names the occupant too.
     await user.click(screen.getByRole('tab', { name: 'Elenco' }));
@@ -285,7 +297,9 @@ describe('OperationalMapPage', () => {
     });
     expect(a2).not.toHaveAccessibleName(/Rossi/);
     expect(document.querySelector('[data-map-label="caption"]')).toBeNull();
-    expect(screen.queryByRole('radiogroup', { name: 'Etichette' })).toBeNull();
+    // The labels selector has no "Cliente" part.
+    const toggle = screen.getByRole('toolbar', { name: 'Etichette' });
+    expect(within(toggle).queryByRole('button', { name: 'Cliente' })).toBeNull();
   });
 });
 

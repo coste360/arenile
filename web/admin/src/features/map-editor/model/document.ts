@@ -42,6 +42,7 @@ export function spotFromApi(s: ApiSpot): DraftSpot {
     price_category_override: s.price_category_override ?? '',
     attributes: [...(s.attributes ?? [])],
     active: s.active,
+    online_bookable: s.online_bookable ?? true,
   };
 }
 
@@ -131,6 +132,8 @@ export function spotToInput(s: DraftSpot): ApiSpotInput {
   if (s.price_category_override) out.price_category_override = s.price_category_override;
   // Nullable lists: absent means "none", never an empty list.
   if (s.attributes.length) out.attributes = s.attributes;
+  // Spec 30.11: always explicit, so switching it back on is saved too.
+  out.online_bookable = s.online_bookable !== false;
   return out;
 }
 

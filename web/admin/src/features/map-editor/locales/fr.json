@@ -69,7 +69,8 @@
     "capacity": "Capacité",
     "max_extra": "Extras max",
     "illustration": "Illustration",
-    "flagColour": "Couleur du drapeau"
+    "flagColour": "Couleur du drapeau",
+    "onlineBookable": "Vendable en ligne"
   },
   "seaSides": {
     "top": "En haut",
@@ -155,7 +156,8 @@
     "useDefault": "Utiliser l'illustration par défaut",
     "illustrationHint": "L'illustration détermine le type d'emplacement ; en changeant de type, une illustration d'un autre type revient à celle par défaut.",
     "kindChanged": "Type changé en {{kind}} : les forfaits qui exigent un autre type ne seront plus affectés à cet emplacement.",
-    "tileHint": "Les dalles de passerelle font 60 unités : les tronçons droits mesurent un nombre entier de dalles et, avec un pas de grille qui divise 60, s'alignent sur la grille des dalles."
+    "tileHint": "Les dalles de passerelle font 60 unités : les tronçons droits mesurent un nombre entier de dalles et, avec un pas de grille qui divise 60, s'alignent sur la grille des dalles.",
+    "onlineBookableHint": "Désactivé : la page publique n'affiche ni ne vend l'emplacement ; la caisse le voit toujours. S'applique avec le quota en ligne de la zone."
   },
   "tools": {
     "label": "Outils de l'éditeur",

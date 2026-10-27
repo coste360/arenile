@@ -114,5 +114,16 @@
       "amount": "Indiquez un montant entre 0 et 1 000 000 €.",
       "reason": "Indiquez le motif (de 3 à 500 caractères)."
     }
+  },
+  "releaseRange": {
+    "title": "Libérer une période",
+    "period": "Période",
+    "weekdays": "Seulement ces jours de la semaine",
+    "weekdaysHint": "Aucun jour choisi = tous les jours de la période (ex. chaque lundi de juillet).",
+    "count_one": "{{count}} jour à libérer",
+    "count_other": "{{count}} jours à libérer",
+    "submit": "Libérer la période",
+    "done_one": "{{count}} jour libéré : l'emplacement est réservable.",
+    "done_other": "{{count}} jours libérés : l'emplacement est réservable."
   }
 }

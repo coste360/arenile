@@ -114,5 +114,16 @@
       "amount": "Geben Sie einen Betrag zwischen 0 und 1.000.000 € ein.",
       "reason": "Geben Sie den Grund an (3 bis 500 Zeichen)."
     }
+  },
+  "releaseRange": {
+    "title": "Zeitraum freigeben",
+    "period": "Zeitraum",
+    "weekdays": "Nur diese Wochentage",
+    "weekdaysHint": "Kein Tag gewählt = alle Tage des Zeitraums (z. B. jeden Montag im Juli).",
+    "count_one": "{{count}} Tag freizugeben",
+    "count_other": "{{count}} Tage freizugeben",
+    "submit": "Zeitraum freigeben",
+    "done_one": "{{count}} Tag freigegeben: Der Platz ist buchbar.",
+    "done_other": "{{count}} Tage freigegeben: Der Platz ist buchbar."
   }
 }

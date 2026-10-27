@@ -84,7 +84,11 @@
     "extra": "Extra",
     "note": "Nota",
     "vip": "VIP",
-    "to_assign": "Da assegnare"
+    "to_assign": "Da assegnare",
+    "arrival": "Arrivo",
+    "departure": "Partenza",
+    "agreement": "Convenzione o partner",
+    "group": "Gruppo"
   },
   "sheet": {
     "empty": "Postazione",
@@ -105,7 +109,14 @@
     "free": "Nessuna allocazione per questa fascia.",
     "checkedIn": "Check-in registrato per {{code}}.",
     "readOnly": "Accesso in sola lettura.",
-    "ticket": "Biglietto"
+    "ticket": "Biglietto",
+    "agreement": "Convenzione",
+    "partner": "Partner",
+    "group": "Gruppo",
+    "party": "Persone",
+    "setup": "Allestimento",
+    "segment": "Su questa postazione",
+    "segmentDates": "dal {{from}} al {{to}}"
   },
   "actions": {
     "checkIn": "Check-in",
@@ -118,12 +129,18 @@
     "cancel": "Annulla",
     "block": "Blocca postazione",
     "unblock": "Sblocca",
-    "dailySale": "Vendi giornata"
+    "dailySale": "Vendi giornata",
+    "releaseRange": "Rilascia un periodo",
+    "groupMove_one": "Sposta il gruppo ({{count}})",
+    "groupMove_other": "Sposta il gruppo ({{count}})",
+    "close": "Chiudi"
   },
   "release": {
     "title": "Rilasciare la postazione {{label}}?",
     "description": "{{customer}} non verrà il {{date}} ({{slot}}): la postazione diventa prenotabile. Se viene rivenduta, l'abbonato riceve il credito previsto.",
-    "done": "Postazione {{label}} rilasciata."
+    "done": "Postazione {{label}} rilasciata.",
+    "rangeTitle": "Rilascia un periodo di {{label}}",
+    "rangeDescription": "Giorni in cui {{customer}} non userà la postazione: diventano subito prenotabili."
   },
   "revoke": {
     "title": "Revocare il rilascio di {{label}}?",
@@ -144,14 +161,17 @@
     "toRefund": "Differenza da rimborsare: {{amount}}",
     "done": "{{code}} spostata su {{to}}.",
     "blocked": "Spostamento non possibile.",
-    "ticketPriceKept": "Biglietto {{number}}: il totale già incassato non cambia."
+    "ticketPriceKept": "Biglietto {{number}}: il totale già incassato non cambia.",
+    "pickDescriptionSwap": "Tocca una postazione libera per spostarla, oppure una occupata per scambiarle."
   },
   "conflict": {
     "spot_unavailable": "postazione occupata",
     "pool_exhausted": "quantità esaurita",
     "quota_exceeded": "quota online esaurita",
     "closed": "stabilimento chiuso",
-    "inactive": "postazione non attiva"
+    "inactive": "postazione non attiva",
+    "agreement_reserved": "riservata a una convenzione",
+    "agreement_quota": "contingente della convenzione esaurito"
   },
   "quick": {
     "map": "Mappa",
@@ -179,7 +199,11 @@
     "label": "Etichette",
     "code": "Codice",
     "customer": "Cliente",
-    "both": "Entrambi"
+    "both": "Entrambi",
+    "end": "Fine",
+    "setup": "Allestimento",
+    "endAria": "fine {{date}}",
+    "setupAria": "allestimento {{setup}}"
   },
   "occupant": {
     "anonymous": "Cliente anonimo",
@@ -224,5 +248,140 @@
     "exit": "Esci dalla selezione",
     "groupTitle_one": "Prenotazione di gruppo ({{count}} postazione)",
     "groupTitle_other": "Prenotazione di gruppo ({{count}} postazioni)"
+  },
+  "filters": {
+    "label": "Filtri rapidi",
+    "arrivals": "Arrivi",
+    "departures": "Partenze",
+    "to_collect": "Da saldare",
+    "present": "Presenti",
+    "agreement": "Convenzione",
+    "anyAgreement": "Tutte le convenzioni",
+    "group": "Gruppo",
+    "anyGroup": "Tutti i gruppi",
+    "clear": "Togli il filtro"
+  },
+  "calendar": {
+    "open": "Calendario",
+    "title": "Calendario di {{label}}",
+    "description": "Stato di ogni giorno della stagione: un giorno libero avvia una prenotazione, un giorno occupato apre la sua prenotazione.",
+    "caption": "Calendario della stagione di {{label}}",
+    "month": "Mese",
+    "halves": "Ogni giorno: a sinistra la mattina, a destra il pomeriggio."
+  },
+  "undo": {
+    "hint": "Puoi annullarlo entro 5 minuti.",
+    "action": "Annulla",
+    "done": "Spostamento annullato.",
+    "last": "Annulla ultimo spostamento",
+    "notice": "Questa prenotazione è stata appena spostata: puoi ancora annullare lo spostamento."
+  },
+  "moveFrom": {
+    "label": "Da quando",
+    "whole": "Tutto il soggiorno",
+    "today": "Da oggi",
+    "tomorrow": "Da domani",
+    "date": "Da una data",
+    "dateLabel": "Primo giorno sulla nuova postazione"
+  },
+  "swap": {
+    "title": "Scambiare {{a}} e {{b}}?",
+    "description": "{{a}} passa su {{to}} e {{b}} su {{from}} nei giorni in comune; negli altri giorni ciascuna resta dov'era.",
+    "noOverlap": "Le due prenotazioni non hanno giorni in comune: lo scambio non è possibile.",
+    "period": "Scambio dal {{from}} al {{to}}",
+    "confirm": "Scambia",
+    "done": "Scambio fatto: {{a}} ↔ {{b}}."
+  },
+  "groupMove": {
+    "title_one": "Sposta {{count}} postazione del gruppo",
+    "title_other": "Sposta {{count}} postazioni del gruppo",
+    "description": "Le postazioni si spostano insieme mantenendo la disposizione.",
+    "plan": "Nuove postazioni",
+    "to": "verso",
+    "noPlace": "nessuna postazione in quel punto",
+    "unresolved": "Alcune postazioni non hanno una destinazione: scegli un altro punto.",
+    "confirm": "Sposta il gruppo",
+    "done_one": "{{count}} postazione spostata.",
+    "done_other": "{{count}} postazioni spostate.",
+    "pickTitle": "Sposta il gruppo {{group}} ({{label}})",
+    "pickDescription": "Tocca la nuova posizione di {{label}}: le altre postazioni del gruppo la seguono."
+  },
+  "tools": {
+    "findSpot": "Trova posto",
+    "print": "Stampa",
+    "printMap": "Mappa del giorno",
+    "printA4": "Mappa A4 orizzontale",
+    "printA3": "Mappa A3 orizzontale",
+    "lifeguard": "Lista per i bagnini"
+  },
+  "print": {
+    "mapTitle": "Mappa {{name}}",
+    "totals": "Totali",
+    "occupied": "Occupate",
+    "free": "Libere",
+    "arrivals": "Arrivi",
+    "departures": "Partenze"
+  },
+  "lifeguard": {
+    "title": "Lista per i bagnini",
+    "description": "{{date}} · {{slot}}: per fila, postazione, cognome, allestimento, arrivi e partenze, da saldare.",
+    "row": "Fila {{row}}",
+    "print": "Stampa",
+    "spot": "Postazione",
+    "surname": "Cognome",
+    "setup": "Allestimento",
+    "arrivalDeparture": "Arrivo o partenza",
+    "balance": "Saldo",
+    "toCollect": "Da saldare"
+  },
+  "range": {
+    "mode": "Vista",
+    "modeDay": "Giorno",
+    "modeRange": "Intervallo",
+    "period": "Periodo",
+    "legend": "Legenda dell'intervallo",
+    "state": {
+      "free": "Libero",
+      "partial": "Libero in parte",
+      "taken": "Occupato",
+      "unavailable": "Non vendibile"
+    },
+    "partialShort": "{{free}}/{{total}}",
+    "partialAria": "libero {{free}} giorni su {{total}}",
+    "aria": "Mappa {{name}} dal {{from}} al {{to}}",
+    "spotTitle": "Postazione {{label}}",
+    "freeDays": "Giorni liberi"
+  },
+  "findSpot": {
+    "shownTitle": "Proposta {{rank}} evidenziata sulla mappa",
+    "book": "Prenota",
+    "again": "Altre proposte",
+    "hide": "Nascondi"
+  },
+  "bookingActions": {
+    "more": "Altre azioni",
+    "duplicate": "Duplica",
+    "changeCustomer": "Cambia cliente",
+    "share": "Riepilogo via WhatsApp",
+    "printSummary": "Stampa riepilogo",
+    "duplicateTitle": "Duplica {{code}}",
+    "duplicateDescription": "Stessa postazione, cliente, extra e convenzione su nuove date; il prezzo viene ricalcolato.",
+    "newDates": "Nuove date",
+    "newTotal": "Nuovo totale:",
+    "duplicateConfirm": "Crea la prenotazione",
+    "check": "Verifica",
+    "duplicated": "Prenotazione {{code}} creata.",
+    "changeCustomerTitle": "Cambia il cliente di {{code}}",
+    "changeCustomerDescription": "Cliente attuale: {{name}}. Il prezzo può cambiare (convenzione, etichette del cliente).",
+    "newCustomer": "Nuovo cliente",
+    "changeCustomerConfirm": "Cambia cliente",
+    "customerChanged": "Cliente cambiato: {{name}}.",
+    "shareTitle": "Riepilogo di {{code}}",
+    "shareDescription": "Il testo si apre in WhatsApp con il numero del cliente: l'invio lo confermi dalla tua app. Arenile non invia nulla.",
+    "shareText": "Testo",
+    "copy": "Copia testo",
+    "copied": "Testo copiato.",
+    "copyFailed": "Copia non riuscita: seleziona il testo e copialo a mano.",
+    "openWhatsApp": "Apri WhatsApp"
   }
 }

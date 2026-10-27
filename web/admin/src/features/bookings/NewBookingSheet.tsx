@@ -53,6 +53,7 @@ import { describeProblem, type ConflictGroup, type ProblemText } from './problem
 import { ProblemAlert } from './ProblemAlert';
 import { QuotePreview } from './QuotePreview';
 import { SpotPicker } from './SpotPicker';
+import { FindSpotLauncher } from '../findspot/FindSpotLauncher';
 import { useEstablishmentSpots } from './spots';
 
 export interface NewBookingSheetProps {
@@ -339,6 +340,24 @@ function NewBookingForm({
         </FormSection>
 
         <FormSection title={t('new.where')}>
+          {/* Spec 30.6: search the availability, also with spot changes, and book a proposal. */}
+          <FindSpotLauncher
+            establishmentId={establishmentId}
+            defaults={() => ({
+              startsOn: form.getValues('starts_on'),
+              endsOn: form.getValues('ends_on'),
+              slots: form.getValues('slots') as 'FULL' | 'AM' | 'PM',
+            })}
+            onBooked={(id) => {
+              onClose();
+              if (onCreated) onCreated(id);
+              else
+                void navigate({
+                  to: '/e/$establishmentId/prenotazioni/$bookingId',
+                  params: { establishmentId, bookingId: id },
+                });
+            }}
+          />
           <FieldRow control={form.control} name="pack_id" label={t('fields.pack')}>
             {(field) => (
               <OptionSelect

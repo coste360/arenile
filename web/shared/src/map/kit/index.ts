@@ -14,7 +14,7 @@ export {
 } from './generated/manifest';
 export * from './assets';
 export * from './geometry';
-export { STATUS_BADGES, type BadgeGlyph } from './status';
+export { BADGE_GLYPHS, STATUS_BADGES, badgeGlyphStroke, type BadgeGlyph } from './status';
 export { loadKitSymbols } from './symbols';
 export { MapKitProvider, isMapKitKey, mapKitInfo, resolveMapKit, useMapKit } from './context';
 export { MapKitDefs, type MapKitDefsProps } from './MapKitDefs';

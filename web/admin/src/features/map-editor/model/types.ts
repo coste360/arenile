@@ -69,6 +69,8 @@ export interface DraftSpot {
   price_category_override: string;
   attributes: string[];
   active: boolean;
+  /** Sold on the public page (spec 30.11); undefined = true (the default). */
+  online_bookable?: boolean;
 }
 
 export interface DraftDecoration {

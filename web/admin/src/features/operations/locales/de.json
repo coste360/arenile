@@ -84,7 +84,11 @@
     "extra": "Extras",
     "note": "Notiz",
     "vip": "VIP",
-    "to_assign": "Zuzuweisen"
+    "to_assign": "Zuzuweisen",
+    "arrival": "Anreise",
+    "departure": "Abreise",
+    "agreement": "Vereinbarung oder Partner",
+    "group": "Gruppe"
   },
   "sheet": {
     "empty": "Platz",
@@ -105,7 +109,14 @@
     "free": "Keine Belegung zu dieser Tageszeit.",
     "checkedIn": "{{code}} eingecheckt.",
     "readOnly": "Nur Lesezugriff.",
-    "ticket": "Ticket"
+    "ticket": "Ticket",
+    "agreement": "Vereinbarung",
+    "partner": "Partner",
+    "group": "Gruppe",
+    "party": "Personen",
+    "setup": "Ausstattung",
+    "segment": "Auf diesem Platz",
+    "segmentDates": "vom {{from}} bis {{to}}"
   },
   "actions": {
     "checkIn": "Einchecken",
@@ -118,12 +129,18 @@
     "cancel": "Abbrechen",
     "block": "Platz sperren",
     "unblock": "Entsperren",
-    "dailySale": "Tagesticket verkaufen"
+    "dailySale": "Tagesticket verkaufen",
+    "releaseRange": "Zeitraum freigeben",
+    "groupMove_one": "Gruppe umsetzen ({{count}})",
+    "groupMove_other": "Gruppe umsetzen ({{count}})",
+    "close": "Schließen"
   },
   "release": {
     "title": "Platz {{label}} freigeben?",
     "description": "{{customer}} kommt am {{date}} ({{slot}}) nicht: Der Platz wird buchbar. Wird er weiterverkauft, erhält der Abonnent die vorgesehene Gutschrift.",
-    "done": "Platz {{label}} freigegeben."
+    "done": "Platz {{label}} freigegeben.",
+    "rangeTitle": "Zeitraum von {{label}} freigeben",
+    "rangeDescription": "Tage, an denen {{customer}} den Platz nicht nutzt: Sie sind sofort buchbar."
   },
   "revoke": {
     "title": "Freigabe von {{label}} widerrufen?",
@@ -144,14 +161,17 @@
     "toRefund": "Zu erstattende Differenz: {{amount}}",
     "done": "{{code}} nach {{to}} verschoben.",
     "blocked": "Verschieben nicht möglich.",
-    "ticketPriceKept": "Ticket {{number}}: der bereits kassierte Betrag ändert sich nicht."
+    "ticketPriceKept": "Ticket {{number}}: der bereits kassierte Betrag ändert sich nicht.",
+    "pickDescriptionSwap": "Tippen Sie auf einen freien Platz zum Umsetzen oder auf einen belegten zum Tauschen."
   },
   "conflict": {
     "spot_unavailable": "Platz belegt",
     "pool_exhausted": "Bestand erschöpft",
     "quota_exceeded": "Online-Kontingent erschöpft",
     "closed": "Betrieb geschlossen",
-    "inactive": "Platz inaktiv"
+    "inactive": "Platz inaktiv",
+    "agreement_reserved": "für eine Vereinbarung reserviert",
+    "agreement_quota": "Kontingent der Vereinbarung erschöpft"
   },
   "quick": {
     "map": "Plan",
@@ -179,7 +199,11 @@
     "label": "Beschriftung",
     "code": "Code",
     "customer": "Gast",
-    "both": "Beides"
+    "both": "Beides",
+    "end": "Ende",
+    "setup": "Ausstattung",
+    "endAria": "Ende {{date}}",
+    "setupAria": "Ausstattung {{setup}}"
   },
   "occupant": {
     "anonymous": "Anonymer Gast",
@@ -224,5 +248,140 @@
     "exit": "Auswahl beenden",
     "groupTitle_one": "Gruppenbuchung ({{count}} Platz)",
     "groupTitle_other": "Gruppenbuchung ({{count}} Plätze)"
+  },
+  "filters": {
+    "label": "Schnellfilter",
+    "arrivals": "Anreisen",
+    "departures": "Abreisen",
+    "to_collect": "Offener Betrag",
+    "present": "Anwesend",
+    "agreement": "Vereinbarung",
+    "anyAgreement": "Alle Vereinbarungen",
+    "group": "Gruppe",
+    "anyGroup": "Alle Gruppen",
+    "clear": "Filter entfernen"
+  },
+  "calendar": {
+    "open": "Kalender",
+    "title": "Kalender von {{label}}",
+    "description": "Status jedes Saisontags: Ein freier Tag startet eine Buchung, ein belegter Tag öffnet seine Buchung.",
+    "caption": "Saisonkalender von {{label}}",
+    "month": "Monat",
+    "halves": "Jeder Tag: links der Vormittag, rechts der Nachmittag."
+  },
+  "undo": {
+    "hint": "Sie können es innerhalb von 5 Minuten rückgängig machen.",
+    "action": "Rückgängig",
+    "done": "Umzug rückgängig gemacht.",
+    "last": "Letzten Umzug rückgängig machen",
+    "notice": "Diese Buchung wurde gerade umgesetzt: Sie können den Umzug noch rückgängig machen."
+  },
+  "moveFrom": {
+    "label": "Ab wann",
+    "whole": "Ganzer Aufenthalt",
+    "today": "Ab heute",
+    "tomorrow": "Ab morgen",
+    "date": "Ab einem Datum",
+    "dateLabel": "Erster Tag auf dem neuen Platz"
+  },
+  "swap": {
+    "title": "{{a}} und {{b}} tauschen?",
+    "description": "{{a}} wechselt auf {{to}} und {{b}} auf {{from}} an den gemeinsamen Tagen; an den anderen Tagen bleibt jede, wo sie war.",
+    "noOverlap": "Die beiden Buchungen haben keine gemeinsamen Tage: Ein Tausch ist nicht möglich.",
+    "period": "Tausch vom {{from}} bis {{to}}",
+    "confirm": "Tauschen",
+    "done": "Getauscht: {{a}} ↔ {{b}}."
+  },
+  "groupMove": {
+    "title_one": "{{count}} Platz der Gruppe umsetzen",
+    "title_other": "{{count}} Plätze der Gruppe umsetzen",
+    "description": "Die Plätze werden gemeinsam umgesetzt und behalten ihre Anordnung.",
+    "plan": "Neue Plätze",
+    "to": "nach",
+    "noPlace": "kein Platz an dieser Stelle",
+    "unresolved": "Einige Plätze haben kein Ziel: Wählen Sie eine andere Stelle.",
+    "confirm": "Gruppe umsetzen",
+    "done_one": "{{count}} Platz umgesetzt.",
+    "done_other": "{{count}} Plätze umgesetzt.",
+    "pickTitle": "Gruppe {{group}} umsetzen ({{label}})",
+    "pickDescription": "Tippen Sie auf die neue Position von {{label}}: Die anderen Plätze der Gruppe folgen."
+  },
+  "tools": {
+    "findSpot": "Platz finden",
+    "print": "Drucken",
+    "printMap": "Tageskarte",
+    "printA4": "Karte A4 quer",
+    "printA3": "Karte A3 quer",
+    "lifeguard": "Liste für die Rettungsschwimmer"
+  },
+  "print": {
+    "mapTitle": "Karte {{name}}",
+    "totals": "Summen",
+    "occupied": "Belegt",
+    "free": "Frei",
+    "arrivals": "Anreisen",
+    "departures": "Abreisen"
+  },
+  "lifeguard": {
+    "title": "Liste für die Rettungsschwimmer",
+    "description": "{{date}} · {{slot}}: nach Reihe, Platz, Nachname, Ausstattung, Anreisen und Abreisen, offene Beträge.",
+    "row": "Reihe {{row}}",
+    "print": "Drucken",
+    "spot": "Platz",
+    "surname": "Nachname",
+    "setup": "Ausstattung",
+    "arrivalDeparture": "Anreise oder Abreise",
+    "balance": "Saldo",
+    "toCollect": "Offener Betrag"
+  },
+  "range": {
+    "mode": "Ansicht",
+    "modeDay": "Tag",
+    "modeRange": "Zeitraum",
+    "period": "Zeitraum",
+    "legend": "Legende des Zeitraums",
+    "state": {
+      "free": "Frei",
+      "partial": "Teilweise frei",
+      "taken": "Belegt",
+      "unavailable": "Nicht verkäuflich"
+    },
+    "partialShort": "{{free}}/{{total}}",
+    "partialAria": "frei an {{free}} von {{total}} Tagen",
+    "aria": "Karte {{name}} vom {{from}} bis {{to}}",
+    "spotTitle": "Platz {{label}}",
+    "freeDays": "Freie Tage"
+  },
+  "findSpot": {
+    "shownTitle": "Vorschlag {{rank}} auf der Karte hervorgehoben",
+    "book": "Buchen",
+    "again": "Weitere Vorschläge",
+    "hide": "Ausblenden"
+  },
+  "bookingActions": {
+    "more": "Weitere Aktionen",
+    "duplicate": "Duplizieren",
+    "changeCustomer": "Kunde ändern",
+    "share": "Zusammenfassung per WhatsApp",
+    "printSummary": "Zusammenfassung drucken",
+    "duplicateTitle": "{{code}} duplizieren",
+    "duplicateDescription": "Gleicher Platz, Kunde, Extras und Vereinbarung an neuen Daten; der Preis wird neu berechnet.",
+    "newDates": "Neue Daten",
+    "newTotal": "Neuer Gesamtbetrag:",
+    "duplicateConfirm": "Buchung erstellen",
+    "check": "Prüfen",
+    "duplicated": "Buchung {{code}} erstellt.",
+    "changeCustomerTitle": "Kunde von {{code}} ändern",
+    "changeCustomerDescription": "Aktueller Kunde: {{name}}. Der Preis kann sich ändern (Vereinbarung, Kundenmerkmale).",
+    "newCustomer": "Neuer Kunde",
+    "changeCustomerConfirm": "Kunde ändern",
+    "customerChanged": "Kunde geändert: {{name}}.",
+    "shareTitle": "Zusammenfassung von {{code}}",
+    "shareDescription": "Der Text öffnet sich in WhatsApp mit der Nummer des Kunden: Den Versand bestätigen Sie in Ihrer App. Arenile versendet nichts.",
+    "shareText": "Text",
+    "copy": "Text kopieren",
+    "copied": "Text kopiert.",
+    "copyFailed": "Kopieren fehlgeschlagen: Markieren Sie den Text und kopieren Sie ihn von Hand.",
+    "openWhatsApp": "WhatsApp öffnen"
   }
 }

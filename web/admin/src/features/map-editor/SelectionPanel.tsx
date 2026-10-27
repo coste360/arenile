@@ -483,6 +483,20 @@ export function SelectionPanel(p: SelectionPanelProps) {
               <FieldDescription className="text-xs">{t('panel.deactivateHint')}</FieldDescription>
             </div>
           </Field>
+          <Field orientation="horizontal" className="items-start">
+            <Switch
+              id="spot-online"
+              disabled={readOnly}
+              checked={spots.every((s) => s.online_bookable !== false)}
+              onCheckedChange={(v) => p.onSpotPatch({ online_bookable: v })}
+            />
+            <div className="space-y-1">
+              <FieldLabel htmlFor="spot-online">{t('fields.onlineBookable')}</FieldLabel>
+              <FieldDescription className="text-xs">
+                {t('panel.onlineBookableHint')}
+              </FieldDescription>
+            </div>
+          </Field>
           {single && isSpot(single) && (
             <QuantitiesEditor
               spot={single}

@@ -69,7 +69,8 @@
     "capacity": "Kapazität",
     "max_extra": "Max. Extras",
     "illustration": "Illustration",
-    "flagColour": "Flaggenfarbe"
+    "flagColour": "Flaggenfarbe",
+    "onlineBookable": "Online verkäuflich"
   },
   "seaSides": {
     "top": "Oben",
@@ -155,7 +156,8 @@
     "useDefault": "Standardillustration verwenden",
     "illustrationHint": "Die Illustration bestimmt den Platztyp; beim Typwechsel fällt eine Illustration eines anderen Typs auf die Vorgabe zurück.",
     "kindChanged": "Typ auf {{kind}} geändert: Pakete, die einen anderen Typ verlangen, werden diesem Platz nicht mehr zugewiesen.",
-    "tileHint": "Stegplatten sind 60 Einheiten groß: gerade Stücke sind eine ganze Zahl von Platten lang und rasten bei einem Rasterschritt, der 60 teilt, am Plattenraster ein."
+    "tileHint": "Stegplatten sind 60 Einheiten groß: gerade Stücke sind eine ganze Zahl von Platten lang und rasten bei einem Rasterschritt, der 60 teilt, am Plattenraster ein.",
+    "onlineBookableHint": "Aus: Die öffentliche Seite zeigt und verkauft den Platz nicht; die Kasse sieht ihn immer. Gilt zusammen mit dem Online-Kontingent der Zone."
   },
   "tools": {
     "label": "Editor-Werkzeuge",
