@@ -341,6 +341,12 @@ type Agreement struct {
 	Conditions Conditions `json:"conditions"`
 	Stackable  bool       `json:"stackable"`
 	Active     bool       `json:"active"`
+	// PackPrices are fixed prices per pack (M8, spec 30.2.2): see
+	// agreement.go. They replace Action on the units of their packs.
+	PackPrices []AgreementPackPrice `json:"pack_prices,omitempty"`
+	// Scope restricts the packs and extras the agreement applies to
+	// (nil = every pack and extra, the behaviour before M8).
+	Scope *AgreementScope `json:"scope,omitempty"`
 }
 
 // ExtraInput is a requested extra.
@@ -356,6 +362,10 @@ type LineInput struct {
 	ZoneID string       `json:"zone_id"`
 	SpotID string       `json:"spot_id,omitempty"`
 	Extras []ExtraInput `json:"extras,omitempty"`
+	// Segments split the stay over several spots (spec 30.6, ADR 0028):
+	// each day is priced with the spot of the segment covering it (its
+	// price category, zone and attributes); days not covered use SpotID.
+	Segments []LineSegment `json:"segments,omitempty"`
 }
 
 // CustomerInput carries the customer data relevant to pricing.

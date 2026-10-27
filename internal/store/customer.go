@@ -26,6 +26,8 @@ type CustomerFilter struct {
 	Terms             []string
 	Tag               string
 	IncludeAnonymized bool
+	// CategoryID keeps the members of a customer category (M8).
+	CategoryID string
 }
 
 // customerCursor is the keyset position of the customer list, ordered by
@@ -120,6 +122,9 @@ func ListCustomers(ctx context.Context, db bun.IDB, es EstablishmentScope, f Cus
 	}
 	if f.Tag != "" {
 		q = q.Where(`cu.search_text LIKE ? ESCAPE '\'`, "%|"+EscapeLike(f.Tag)+"|%")
+	}
+	if f.CategoryID != "" {
+		q = q.Where("EXISTS (SELECT 1 FROM customer_category_members AS ccm WHERE ccm.customer_id = cu.id AND ccm.category_id = ?)", f.CategoryID)
 	}
 	if after != nil {
 		q = q.Where("(cu.search_text > ? OR (cu.search_text = ? AND cu.id > ?))", after.S, after.S, after.ID)

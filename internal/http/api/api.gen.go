@@ -5316,8 +5316,11 @@ type BookingSummary struct {
 	EndsOn Date `json:"ends_on"`
 
 	// Formula Formula di durata.
-	Formula       Formula    `json:"formula"`
-	GroupName     *string    `json:"group_name,omitempty"`
+	Formula   Formula `json:"formula"`
+	GroupName *string `json:"group_name,omitempty"`
+
+	// GuestNames Nomi degli ospiti (solo nell'esportazione GDPR del cliente, spec 23).
+	GuestNames    *[]string  `json:"guest_names,omitempty"`
 	HoldExpiresAt *time.Time `json:"hold_expires_at,omitempty"`
 	Id            string     `json:"id"`
 	IsSeasonPass  bool       `json:"is_season_pass"`
@@ -6070,6 +6073,9 @@ type CustomerExport struct {
 	Customer   Customer         `json:"customer"`
 	ExportedAt time.Time        `json:"exported_at"`
 	Payments   []Payment        `json:"payments"`
+
+	// RequirementVerifications Verifiche dei requisiti delle convenzioni sul cliente e sulle sue prenotazioni (M8, spec 30.2.2); solo data, operatore, requisito e nota.
+	RequirementVerifications *[]RequirementVerification `json:"requirement_verifications,omitempty"`
 }
 
 // CustomerInput Dati minimi per una prenotazione dal pannello: solo il cognome è obbligatorio. Email lowercase; telefono E.164 facoltativo (ADR 0020), usato per la deduplica solo se presente.

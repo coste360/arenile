@@ -1,6 +1,10 @@
 package booking
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/coste360/arenile/internal/domain/pricingconfig"
+)
 
 // M8 sentinel errors (spec 30, ADR 0028), mapped to problem types in
 // internal/http/problem/m8.go.
@@ -15,7 +19,7 @@ var (
 	ErrMoveUndoConflict = errors.New("booking: move cannot be undone")
 	// ErrAgreementNotApplicable: the agreement is inactive, outside its
 	// validity, not for this channel or customer -> 422.
-	ErrAgreementNotApplicable = errors.New("booking: agreement not applicable")
+	ErrAgreementNotApplicable = pricingconfig.ErrAgreementNotApplicable
 	// ErrRequirementNotVerified: the agreement requires a verification that
 	// was not recorded (only where a flow demands it) -> 422.
 	ErrRequirementNotVerified = errors.New("booking: agreement requirement not verified")

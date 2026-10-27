@@ -42,6 +42,7 @@ func normalizeBooking(b *Booking) {
 	if b.Version == 0 {
 		b.Version = 1
 	}
+	b.PartnerAmount = PartnerAmountOf(b) // INV-104: follows the total in the same write
 }
 
 // GetBooking loads a booking of es (ErrNotFound otherwise).
@@ -86,6 +87,10 @@ var bookingMutableColumns = []string{
 	// service, cleared by a re-pricing modification of the booking service.
 	"price_override_amount", "price_override_engine_amount", "price_override_reason",
 	"price_override_by_user_id", "price_override_at",
+	// M8 (00013, spec 30.2.4, 30.3): partner, group and party, guest names
+	// and the partner share; partner_amount is resolved by normalizeBooking.
+	"partner_id", "group_name", "group_origin", "party_adults", "party_children", "guest_names",
+	"partner_share_type", "partner_share_value", "partner_amount", "partner_stay_from", "partner_stay_to",
 }
 
 // UpdateBookingVersioned writes the mutable columns of b only when the stored
@@ -350,6 +355,10 @@ type BookingFilter struct {
 	Test *bool
 	// Q matches the code prefix or the customer search text (name, phone, email).
 	Q string
+	// M8 (spec 30.2-30.3): agreement, partner and group name (case-insensitive).
+	AgreementID string
+	PartnerID   string
+	GroupName   string
 }
 
 // BookingRow is a booking with the fields the list shows.
@@ -358,6 +367,9 @@ type BookingRow struct {
 	CustomerFirstName string   `bun:"customer_first_name"`
 	CustomerLastName  string   `bun:"customer_last_name"`
 	SpotLabels        []string `bun:"-"`
+	// M8: names of the agreement and of the partner (list badges).
+	AgreementName *string `bun:"agreement_name,scanonly"`
+	PartnerName   *string `bun:"partner_name,scanonly"`
 }
 
 // ListBookings lists the bookings of es matching f, ordered by starts_on then
@@ -377,6 +389,8 @@ func ListBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, f Book
 	q := db.NewSelect().Model(&items).
 		ColumnExpr("bk.*").
 		ColumnExpr("cu.first_name AS customer_first_name, cu.last_name AS customer_last_name").
+		ColumnExpr("(SELECT ag.name FROM agreements AS ag WHERE ag.id = bk.agreement_id) AS agreement_name").
+		ColumnExpr("(SELECT pa.name FROM partners AS pa WHERE pa.id = bk.partner_id) AS partner_name").
 		Join("JOIN customers AS cu ON cu.id = bk.customer_id").
 		Where("bk.establishment_id = ?", es.ID()).
 		OrderExpr("bk.starts_on ASC, bk.id ASC").
@@ -419,6 +433,15 @@ func ListBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, f Book
 	}
 	if f.Test != nil {
 		q = q.Where("bk.test = ?", *f.Test)
+	}
+	if f.AgreementID != "" {
+		q = q.Where("bk.agreement_id = ?", f.AgreementID)
+	}
+	if f.PartnerID != "" {
+		q = q.Where("bk.partner_id = ?", f.PartnerID)
+	}
+	if g := strings.ToLower(strings.TrimSpace(f.GroupName)); g != "" {
+		q = q.Where("LOWER(bk.group_name) = ?", g)
 	}
 	if s := strings.ToLower(strings.TrimSpace(escapeLike(f.Q))); s != "" {
 		q = q.Where("(LOWER(bk.code) LIKE ? OR cu.search_text LIKE ?)", s+"%", "%"+s+"%")

@@ -44,6 +44,9 @@ type Customer struct {
 	Version          int64             `bun:"version,notnull"`
 	CreatedAt        time.Time         `bun:"created_at,notnull"`
 	UpdatedAt        time.Time         `bun:"updated_at,notnull"`
+	// CategoryIDs are the customer categories (M8, customer_category_members),
+	// filled by the customer service on reads; not a column.
+	CategoryIDs []string `bun:"-"`
 }
 
 // Credit sources (customer_credits.source).

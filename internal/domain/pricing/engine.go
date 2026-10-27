@@ -459,6 +459,9 @@ type unit struct {
 	itemID string
 	vatBP  int64
 	amount money.Cents
+	// lc is the line context of the day when it differs from the line's
+	// (a segment of a split stay on another spot, ADR 0028).
+	lc *lineCtx
 }
 
 func (e *engine) lookupFixed(packID string, f Formula, category, period string) (FixedDurationPrice, bool) {
@@ -507,18 +510,18 @@ func (e *engine) quote(in QuoteInput) (PriceBreakdown, error) {
 			lb.Spot = lc.spot.Label
 		}
 		packVAT := e.vatOf(lc.pack.VATRateBP)
+		perDay, err := e.segmentCtxs(l, b)
+		if err != nil {
+			return PriceBreakdown{}, err
+		}
 		fixedDone := false
 		if in.Formula.IsFixedDuration() {
 			period := e.ratePeriodOf(in.StartsOn)
-			if fp, ok := e.lookupFixed(lc.pack.ID, in.Formula, lc.category, period); ok {
-				amount := fp.Amount
+			if amount, ratePeriod, ok := e.fixedAmount(lc, perDay, b.dates, in.Formula, period); ok {
 				if len(b.slots) == 1 {
 					amount = amount.MulRat(e.factorNum, e.factorDen)
 				}
-				fb := &FixedBreakdown{Formula: in.Formula, Amount: amount}
-				if fp.RatePeriodCode != nil {
-					fb.RatePeriod = *fp.RatePeriodCode
-				}
+				fb := &FixedBreakdown{Formula: in.Formula, Amount: amount, RatePeriod: ratePeriod}
 				lb.Fixed = fb
 				lb.Total += amount
 				units = append(units, unit{line: li, date: in.StartsOn, whole: true, target: TargetPack, itemID: lc.pack.ID, vatBP: packVAT, amount: amount})
@@ -527,13 +530,21 @@ func (e *engine) quote(in QuoteInput) (PriceBreakdown, error) {
 		}
 		if !fixedDone {
 			for _, d := range b.dates {
-				base, applied, total, err := e.unitPrice(TargetPack, lc.pack.ID, lc.pack.Code, b, lc, d, b.slots, true)
+				dlc := lc
+				if x, ok := perDay[d]; ok {
+					dlc = x
+				}
+				base, applied, total, err := e.unitPrice(TargetPack, lc.pack.ID, lc.pack.Code, b, dlc, d, b.slots, true)
 				if err != nil {
 					return PriceBreakdown{}, err
 				}
 				lb.Days = append(lb.Days, DayBreakdown{Date: d, Slots: in.Slots, Base: base, Applied: applied, Total: total})
 				lb.Total += total
-				units = append(units, unit{line: li, date: d, target: TargetPack, itemID: lc.pack.ID, vatBP: packVAT, amount: total})
+				u := unit{line: li, date: d, target: TargetPack, itemID: lc.pack.ID, vatBP: packVAT, amount: total}
+				if dlc != lc {
+					u.lc = dlc
+				}
+				units = append(units, u)
 			}
 		}
 		for _, xi := range l.Extras {

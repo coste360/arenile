@@ -141,6 +141,9 @@ func (s *Service) Allocate(ctx context.Context, tx bun.IDB, es store.Establishme
 	} else if len(qc) > 0 {
 		return nil, &availability.ConflictError{Err: availability.ErrQuotaExceeded, Conflicts: qc}
 	}
+	if err := s.enforceAgreementQuota(ctx, tx, es, req, p, snap, now); err != nil {
+		return nil, wrapAgreementErr(err)
+	}
 	return summarize(p), nil
 }
 
@@ -172,8 +175,11 @@ func (s *Service) reclaimExpiredHolds(ctx context.Context, tx bun.IDB, es store.
 	if err := store.LockBookings(ctx, tx, es, owners.BookingIDs); err != nil {
 		return err
 	}
-	_, pools, err := store.DeleteExpiredHoldsOfOwners(ctx, tx, es, owners, now)
+	spots, pools, err := store.DeleteExpiredHoldsOfOwners(ctx, tx, es, owners, now)
 	if err != nil {
+		return err
+	}
+	if err := releaseAgreementQuota(ctx, tx, es, spots, pools, now); err != nil {
 		return err
 	}
 	return store.ApplyPoolDeltas(ctx, tx, es, poolDeltas(pools, -1), now)
@@ -419,6 +425,9 @@ func (s *Service) releaseOwner(ctx context.Context, tx bun.IDB, es store.Establi
 		return nil, err
 	}
 	if err := store.ApplyPoolDeltas(ctx, tx, es, poolDeltas(pools, -1), s.d.Clock.Now()); err != nil {
+		return nil, err
+	}
+	if err := releaseAgreementQuota(ctx, tx, es, spots, pools, s.d.Clock.Now()); err != nil {
 		return nil, err
 	}
 	return summarizeRows(spots, pools), nil

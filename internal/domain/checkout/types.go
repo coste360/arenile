@@ -160,6 +160,8 @@ type Selection struct {
 	Lines            []booking.LineInput
 	Extras           []booking.ExtraInput
 	PromoCode        string
+	// AgreementCode applies an agreement sold online (M8, agreements.go).
+	AgreementCode string
 }
 
 // Quote item kinds (api.PublicQuoteItem.kind).
@@ -213,6 +215,8 @@ type Quote struct {
 	Violations   []policy.Violation
 	Promo        *PromoStatus
 	Plan         string
+	// Agreement is the outcome of Selection.AgreementCode (M8).
+	Agreement *AgreementStatus
 }
 
 // ---- session (writes) -----------------------------------------------------------

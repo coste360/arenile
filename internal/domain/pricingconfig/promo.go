@@ -285,6 +285,8 @@ type Agreement struct {
 	Version     int64
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	// M8 fields (spec 30.2.2, agreement_m8.go).
+	M8 AgreementM8
 }
 
 // Engine returns the pricing engine view of the agreement.
@@ -293,7 +295,10 @@ func (a Agreement) Engine() pricing.Agreement {
 	if a.Code != nil {
 		code = *a.Code
 	}
-	return pricing.Agreement{ID: a.ID, Code: code, Action: a.Action, Conditions: a.Conditions, Stackable: a.Stackable, Active: a.Active}
+	return pricing.Agreement{
+		ID: a.ID, Code: code, Action: a.Action, Conditions: a.Conditions, Stackable: a.Stackable, Active: a.Active,
+		PackPrices: a.M8.PackPrices, Scope: a.M8.Scope,
+	}
 }
 
 // ValidOn reports whether the agreement is active and d is in its window.
@@ -319,6 +324,8 @@ type AgreementInput struct {
 	ValidTo     *calendar.Date
 	Stackable   bool
 	Active      bool
+	// M8 fields (spec 30.2.2, agreement_m8.go); output-only fields ignored.
+	M8 AgreementM8
 }
 
 func agreementFromRow(r *store.Agreement) (Agreement, error) {
@@ -332,6 +339,9 @@ func agreementFromRow(r *store.Agreement) (Agreement, error) {
 	}
 	if err := r.Conditions.Unmarshal(&out.Conditions); err != nil {
 		return Agreement{}, fmt.Errorf("pricingconfig: agreement %s conditions: %w", r.ID, err)
+	}
+	if err := decodeAgreementM8(r, &out.M8); err != nil {
+		return Agreement{}, err
 	}
 	return out, nil
 }
@@ -355,10 +365,12 @@ func validateAgreement(id string, in *AgreementInput) error {
 	if in.ValidFrom != nil && in.ValidTo != nil && in.ValidTo.Before(*in.ValidFrom) {
 		v.Add("valid_to", "Deve essere successiva o uguale a valid_from.")
 	}
+	in.M8.Partner, in.M8.PublicLink = nil, ""
+	validateAgreementM8(v, in)
 	if err := v.OrNil(); err != nil {
 		return err
 	}
-	a := Agreement{ID: id, Code: in.Code, Action: in.Action, Conditions: in.Conditions, Active: in.Active}
+	a := Agreement{ID: id, Code: in.Code, Action: in.Action, Conditions: in.Conditions, Active: in.Active, M8: in.M8}
 	return fromEngine(pricing.ValidateAgreement(a.Engine()), "")
 }
 
@@ -374,7 +386,7 @@ func applyAgreement(row *store.Agreement, in AgreementInput) error {
 	row.Code, row.Name, row.PartnerName, row.Notes = in.Code, in.Name, in.PartnerName, in.Notes
 	row.Action, row.Conditions, row.ValidFrom, row.ValidTo = act, cond, in.ValidFrom, in.ValidTo
 	row.Stackable, row.Active = in.Stackable, in.Active
-	return nil
+	return encodeAgreementM8(row, in.M8)
 }
 
 // ListAgreements lists agreements (view permission).
@@ -395,6 +407,13 @@ func (s *Service) ListAgreements(ctx context.Context, p *auth.Principal, establi
 		}
 		out = append(out, a)
 	}
+	ptrs := make([]*Agreement, len(out))
+	for i := range out {
+		ptrs[i] = &out[i]
+	}
+	if err := fillAgreementOutput(ctx, s.d.DB, es, ptrs); err != nil {
+		return nil, "", err
+	}
 	return out, page.NextCursor, nil
 }
 
@@ -409,7 +428,10 @@ func (s *Service) GetAgreement(ctx context.Context, p *auth.Principal, establish
 		return nil, mapStoreErr(err, nil)
 	}
 	a, err := agreementFromRow(row)
-	return &a, err
+	if err != nil {
+		return nil, err
+	}
+	return &a, fillAgreementOutput(ctx, s.d.DB, es, []*Agreement{&a})
 }
 
 // CreateAgreement stores an agreement; codes are unique ignoring case.
@@ -424,6 +446,9 @@ func (s *Service) CreateAgreement(ctx context.Context, p *auth.Principal, establ
 		if err := validateAgreement(id, &in); err != nil {
 			return err
 		}
+		if err := checkAgreementRefs(ctx, tx, es, &in.M8); err != nil {
+			return err
+		}
 		now := s.now()
 		row := &store.Agreement{ID: id, Version: 1, CreatedAt: now, UpdatedAt: now}
 		if err := applyAgreement(row, in); err != nil {
@@ -434,6 +459,12 @@ func (s *Service) CreateAgreement(ctx context.Context, p *auth.Principal, establ
 		}
 		a, err := agreementFromRow(row)
 		if err != nil {
+			return err
+		}
+		if err := recordAgreementVersion(ctx, tx, es, p, a, now); err != nil {
+			return err
+		}
+		if err := fillAgreementOutput(ctx, tx, es, []*Agreement{&a}); err != nil {
 			return err
 		}
 		out = &a
@@ -464,6 +495,9 @@ func (s *Service) UpdateAgreement(ctx context.Context, p *auth.Principal, establ
 		if err := validateAgreement(id, &in); err != nil {
 			return err
 		}
+		if err := checkAgreementRefs(ctx, tx, es, &in.M8); err != nil {
+			return err
+		}
 		old := row.Version
 		if err := applyAgreement(row, in); err != nil {
 			return err
@@ -478,6 +512,12 @@ func (s *Service) UpdateAgreement(ctx context.Context, p *auth.Principal, establ
 		}
 		after, err := agreementFromRow(row)
 		if err != nil {
+			return err
+		}
+		if err := recordAgreementVersion(ctx, tx, es, p, after, row.UpdatedAt); err != nil {
+			return err
+		}
+		if err := fillAgreementOutput(ctx, tx, es, []*Agreement{&after}); err != nil {
 			return err
 		}
 		out = &after

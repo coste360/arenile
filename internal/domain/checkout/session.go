@@ -86,7 +86,7 @@ func (s *Service) Create(ctx context.Context, slug string, in CreateInput) (*Ses
 		var err error
 		d, err = s.d.Bookings.CreateOnline(ctx, tx, actor(ctx, sessionID), es, booking.CreateInput{
 			Channel: store.ChannelOnline, StartsOn: sel.StartsOn, EndsOn: sel.EndsOn, Slots: sel.Slots, Formula: sel.Formula,
-			Lines: sel.Lines, Extras: sel.Extras, PromoCode: promo, HoldTTL: s.d.HoldTTL,
+			Lines: sel.Lines, Extras: sel.Extras, PromoCode: promo, HoldTTL: s.d.HoldTTL, AgreementCode: sel.AgreementCode,
 		})
 		if err != nil {
 			return err

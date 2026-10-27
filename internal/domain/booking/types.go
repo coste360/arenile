@@ -25,22 +25,29 @@ type LineInput struct {
 	SpotID   string
 	Quantity int
 	Extras   []ExtraInput
+	// Segments split the stay over several spots (spec 30.6, find spot):
+	// consecutive, covering the stay exactly once (INV-102); SpotID is then
+	// empty or the spot of the first segment.
+	Segments []SegmentInput
 }
 
 // CreateInput is a booking creation (api.BookingCreate) plus the fields set
 // only by internal callers (season passes, renewals).
 type CreateInput struct {
-	CustomerID    string
-	Customer      *customer.Input
-	Channel       string // default desk
-	StartsOn      calendar.Date
-	EndsOn        calendar.Date
-	Slots         calendar.Slots
-	Formula       string
-	Lines         []LineInput
-	Extras        []ExtraInput
-	PromoCode     string
-	AgreementID   string
+	CustomerID  string
+	Customer    *customer.Input
+	Channel     string // default desk
+	StartsOn    calendar.Date
+	EndsOn      calendar.Date
+	Slots       calendar.Slots
+	Formula     string
+	Lines       []LineInput
+	Extras      []ExtraInput
+	PromoCode   string
+	AgreementID string
+	// AgreementCode applies an agreement sold online by its code (public
+	// channel only, M8); unknown or not usable online: 422.
+	AgreementCode string
 	NotesCustomer string
 	NotesInternal string
 	HoldID        string
@@ -51,6 +58,15 @@ type CreateInput struct {
 	HoldTTL time.Duration
 	// Force ignores policy violations (panel only, audited).
 	Force bool
+	// ExpectedTotal refuses the creation with ErrTotalChanged when the
+	// computed total differs (find spot: the price shown with the proposal).
+	ExpectedTotal *money.Cents
+
+	// Group, party, partner and partner share (M8, spec 30.2.3-30.3).
+	Group GroupInput
+	// RequirementVerified records the check of the agreement requirement
+	// (date and operator, never a document) with the creation.
+	RequirementVerified bool
 
 	// Internal callers only.
 	SeasonID           string
@@ -75,6 +91,11 @@ type PatchInput struct {
 	NotesInternal *string
 	Force         bool
 	DryRun        bool
+	// AgreementID changes the agreement (M8, spec 30.2.3): "" removes it,
+	// nil leaves it; the booking is repriced (spec 10.3).
+	AgreementID *string
+	// Group changes group, party, partner and partner share (M8).
+	Group GroupInput
 }
 
 // Detail is a booking with everything the detail page shows.
@@ -96,6 +117,11 @@ type Detail struct {
 	// RefundRequests are the guaranteed provider refunds of the booking
 	// (ADR 0019 feature B), oldest first.
 	RefundRequests []store.RefundRequest
+	// LastMove is the most recent move touching the booking that can still
+	// be undone (spec 30.7), nil if none.
+	LastMove *UndoInfo
+	// M8 holds the agreement, partner and requirement check (spec 30.2).
+	M8 M8Detail
 }
 
 // Quote is the preview of a creation (no writes): price, policy and the
@@ -115,6 +141,8 @@ type ChangeResult struct {
 	PreviousTotal money.Cents
 	NewTotal      money.Cents
 	Conflicts     []availability.Conflict
+	// Undo is the 5 minute undo of an applied move (spec 30.7), nil otherwise.
+	Undo *UndoInfo
 }
 
 // PriceDifference is NewTotal - PreviousTotal: positive to collect,

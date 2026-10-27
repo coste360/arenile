@@ -52,6 +52,7 @@ func (h *Handlers) CreatePublicBooking(w http.ResponseWriter, r *http.Request, s
 	}
 	sel := selectionFromAPI(api.PublicSelection{
 		StartsOn: req.StartsOn, EndsOn: req.EndsOn, Slots: req.Slots, Formula: req.Formula, Lines: req.Lines, Extras: req.Extras, PromoCode: req.PromoCode,
+		AgreementCode: req.AgreementCode,
 	})
 	in := checkout.CreateInput{Selection: sel, EmbedOrigin: embedOrigin(r)}
 	if req.Locale != nil {

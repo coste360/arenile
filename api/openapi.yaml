@@ -18346,6 +18346,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CustomerCredit"
+        requirement_verifications:
+          type: array
+          description: Verifiche dei requisiti delle convenzioni sul cliente e sulle sue prenotazioni (M8, spec 30.2.2); solo data, operatore, requisito e nota.
+          items:
+            $ref: "#/components/schemas/RequirementVerification"
 
     BookingStatus:
       type: string
@@ -18417,6 +18422,11 @@ components:
           type: string
         group_name:
           type: string
+        guest_names:
+          type: array
+          description: Nomi degli ospiti (solo nell'esportazione GDPR del cliente, spec 23).
+          items:
+            type: string
     BookingList:
       type: object
       required: [items]

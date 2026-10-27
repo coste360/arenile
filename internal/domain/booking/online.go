@@ -125,6 +125,10 @@ func (s *Service) CreateOnline(ctx context.Context, tx bun.IDB, actor audit.Acto
 	in.Status, in.Force, in.HoldID = StatusHeld, false, ""
 	in.CustomerID, in.Customer, in.NotesInternal, in.AgreementID = "", nil, "", ""
 	in.IsSeasonPass, in.AllocationKind, in.SeasonID, in.RenewalOfBookingID = false, "", "", ""
+	in.Group, in.RequirementVerified = GroupInput{}, false
+	if err := s.applyOnlineAgreementCode(ctx, tx, es, &in); err != nil {
+		return nil, err
+	}
 	if err := validateCreate(&in); err != nil {
 		return nil, err
 	}

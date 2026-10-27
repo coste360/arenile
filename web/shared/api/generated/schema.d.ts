@@ -6808,6 +6808,8 @@ export interface components {
             bookings: components["schemas"]["BookingSummary"][];
             payments: components["schemas"]["Payment"][];
             credits: components["schemas"]["CustomerCredit"][];
+            /** @description Verifiche dei requisiti delle convenzioni sul cliente e sulle sue prenotazioni (M8, spec 30.2.2); solo data, operatore, requisito e nota. */
+            requirement_verifications?: components["schemas"]["RequirementVerification"][];
         };
         /**
          * @description Stato della prenotazione (spec 10.2).
@@ -6848,6 +6850,8 @@ export interface components {
             agreement_name?: string;
             partner_name?: string;
             group_name?: string;
+            /** @description Nomi degli ospiti (solo nell'esportazione GDPR del cliente, spec 23). */
+            guest_names?: string[];
         };
         BookingList: {
             items: components["schemas"]["BookingSummary"][];

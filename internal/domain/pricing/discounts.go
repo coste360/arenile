@@ -26,6 +26,9 @@ type discountSource struct {
 	priority  int
 	seq       int64
 	id        string
+	// agreement terms beyond the action (M8): scope and pack prices.
+	scope      *AgreementScope
+	packPrices []AgreementPackPrice
 }
 
 // order is the application order: class, then priority ascending, then older
@@ -70,9 +73,15 @@ func (e *engine) eligible(src discountSource, b *bookingCtx, lines []*lineCtx, u
 		if len(src.targetIDs) > 0 && !slices.Contains(src.targetIDs, u.itemID) {
 			continue
 		}
+		if !src.scope.covers(u) {
+			continue
+		}
 		var lc *lineCtx
 		if u.line >= 0 {
 			lc = lines[u.line]
+		}
+		if u.lc != nil {
+			lc = u.lc
 		}
 		if !e.matches(src.conds, evalCtx{b: b, line: lc, date: u.date, slots: b.slots}) {
 			continue
@@ -197,7 +206,7 @@ func (e *engine) runDiscounts(seq []discountSource, b *bookingCtx, lines []*line
 	var total money.Cents
 	for _, src := range seq {
 		idx := e.eligible(src, b, lines, cur)
-		d, alloc := computeDiscount(src.action, b, cur, idx)
+		d, alloc := computeAgreementDiscount(src, b, cur, idx)
 		if d == 0 {
 			continue
 		}
@@ -222,7 +231,7 @@ func (e *engine) applyDiscounts(b *bookingCtx, lines []*lineCtx, units []unit) (
 		}
 		cands = append(cands, discountSource{
 			label: "agreement:" + a.Code, class: classAgreement, action: a.Action, conds: a.Conditions,
-			stackable: a.Stackable, id: a.ID,
+			stackable: a.Stackable, id: a.ID, scope: a.Scope, packPrices: a.PackPrices,
 		})
 	}
 	if p := in.PromoCode; p != nil {

@@ -51,6 +51,9 @@ type AllocateRequest struct {
 	// ExpiresAt is required iff Kind == KindHold (INV-06).
 	ExpiresAt *time.Time
 	Lines     []LineRequest
+	// AgreementID is the agreement of the booking (M8): its quota counts
+	// this sale; every other reserve is protected from it (INV-103).
+	AgreementID string
 }
 
 // LineAllocation is the outcome for one line.

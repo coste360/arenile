@@ -230,6 +230,9 @@ func (s *Service) createWith(ctx context.Context, tx bun.IDB, actor audit.Actor,
 	if len(pr.res.Violations) > 0 && !in.Force {
 		return nil, &policy.ViolationError{Violations: pr.res.Violations}
 	}
+	if in.ExpectedTotal != nil && *in.ExpectedTotal != pr.res.Breakdown.Total {
+		return nil, ErrTotalChanged
+	}
 	now := s.now()
 	holdTTL := s.d.HoldTTL
 	if in.HoldTTL > 0 {
@@ -261,6 +264,9 @@ func (s *Service) createWith(ctx context.Context, tx bun.IDB, actor audit.Actor,
 	if agreement != "" {
 		a := agreement
 		b.AgreementID = &a
+	}
+	if err := s.applyCreateM8(ctx, tx, es, b, in); err != nil {
+		return nil, err
 	}
 	b.CreatedByUserID = createdBy
 	if state.Status == StatusConfirmed {
@@ -294,7 +300,12 @@ func (s *Service) createWith(ctx context.Context, tx bun.IDB, actor audit.Actor,
 	}
 
 	var alloc *inventory.Allocation
-	if state.Kind != "" {
+	if state.Kind != "" && hasSegments(pr.lines) {
+		// Split stay (find spot): one allocation per segment (INV-102).
+		if alloc, err = s.allocateSplit(ctx, tx, es, b, state.Kind, expiresAt, rows, extras, cat, pr.lines, now); err != nil {
+			return nil, err
+		}
+	} else if state.Kind != "" {
 		req := allocRequest(b, state.Kind, expiresAt, rows, extras, cat)
 		if in.HoldID != "" {
 			alloc, err = s.d.Inventory.ConvertHold(ctx, tx, es, inventory.ConvertHoldRequest{
@@ -325,6 +336,9 @@ func (s *Service) createWith(ctx context.Context, tx bun.IDB, actor audit.Actor,
 	if in.IsSeasonPass {
 		diff["season_pass"] = true
 	}
+	if err := s.afterCreateM8(ctx, tx, es, b, in, createdBy, diff); err != nil {
+		return nil, err
+	}
 	if err := s.recordAs(ctx, tx, actor, es, b, eventCreated, eventCreated, "", diff, alloc); err != nil {
 		return nil, err
 	}
@@ -353,6 +367,7 @@ func validateCreate(in *CreateInput) error {
 	if in.HoldTTL < 0 || in.HoldTTL > 24*time.Hour {
 		v.Add("hold_ttl_seconds", "Durata dell'hold non valida (massimo 24 ore).")
 	}
+	validateSegments(v, in)
 	return v.OrNil()
 }
 
@@ -669,6 +684,14 @@ func (s *Service) loadDetail(ctx context.Context, db bun.IDB, es store.Establish
 			spotIDs = append(spotIDs, *l.SpotID)
 		}
 	}
+	for _, a := range d.SpotAllocations { // segments of split stays
+		if !contains(spotIDs, a.SpotID) {
+			spotIDs = append(spotIDs, a.SpotID)
+		}
+	}
+	if d.LastMove, err = lastMoveOf(ctx, db, es, b.ID, s.now()); err != nil {
+		return nil, err
+	}
 	if d.SpotLabels, err = store.SpotLabels(ctx, db, es, spotIDs); err != nil {
 		return nil, err
 	}
@@ -686,6 +709,9 @@ func (s *Service) loadDetail(ctx context.Context, db bun.IDB, es store.Establish
 	}
 	for _, x := range extras {
 		d.ExtraCodes[x.ID] = x.Code
+	}
+	if err := loadM8Detail(ctx, db, es, d); err != nil {
+		return nil, err
 	}
 	return d, nil
 }

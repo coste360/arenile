@@ -196,6 +196,9 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 	if err := v.OrNil(); err != nil {
 		return nil, err
 	}
+	if err := applyPatchM8(ctx, tx, es, b, in, diff); err != nil {
+		return nil, err
+	}
 	if in.CustomerID != nil && *in.CustomerID != b.CustomerID {
 		c, err := s.d.Customers.Resolve(ctx, tx, p, es, *in.CustomerID, nil)
 		if err != nil {
@@ -448,20 +451,33 @@ func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time, diff 
 // release + allocation happen in one transaction. Requires
 // auth.PermBookingsWrite.
 func (s *Service) Move(ctx context.Context, p *auth.Principal, establishmentID, id string, in MoveInput) (*ChangeResult, error) {
+	return s.move(ctx, p, establishmentID, id, in, true)
+}
+
+// move is Move; undoable writes the 5 minute undo entry (spec 30.7, the
+// panel move; not the auto-assignment).
+func (s *Service) move(ctx context.Context, p *auth.Principal, establishmentID, id string, in MoveInput, undoable bool) (*ChangeResult, error) {
 	if in.LineID == "" {
 		return nil, configerr.Invalid("line_id", "Campo obbligatorio.")
 	}
 	if in.SpotID == "" {
 		return nil, configerr.Invalid("spot_id", "Campo obbligatorio.")
 	}
-	return s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
+	res, err := s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
 		// A ticket booking is placed only through MoveThen (ticket update in
 		// the same transaction).
 		if err := refuseTicketOwned(ctx, tx, es, b); err != nil {
 			return nil, err
 		}
+		if undoable {
+			return s.moveRecorded(ctx, tx, p, es, b, in, res)
+		}
 		return s.moveLocked(ctx, tx, p, es, b, in, res)
 	})
+	if res != nil && !res.Applied {
+		res.Undo = nil // a dry run wrote nothing
+	}
+	return res, err
 }
 
 func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, b *store.Booking, in MoveInput, res *ChangeResult) (*outcome, error) {
@@ -500,6 +516,18 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		}
 		return nil, err
 	}
+	// Split stays (ADR 0028): each day is priced with the spot of that day,
+	// the moved line keeps its spots before from.
+	cur, err := allocSegments(ctx, tx, es, b)
+	if err != nil {
+		return nil, err
+	}
+	if partial {
+		cur[in.LineID] = joinSegments(clipBefore(cur[in.LineID], *in.From), []SegmentInput{{SpotID: in.SpotID, StartsOn: *in.From, EndsOn: b.EndsOn}})
+	} else {
+		delete(cur, in.LineID)
+	}
+	withSegments(lines, rows, cur)
 	st2 := stay{StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, Formula: b.Formula, Channel: b.Channel}
 	if b.IsSeasonPass && b.SeasonID != nil {
 		st2.SeasonID = *b.SeasonID
@@ -658,7 +686,7 @@ func (s *Service) Quote(ctx context.Context, p *auth.Principal, establishmentID 
 	for i := range req.Lines {
 		req.Lines[i].LineID = ""
 	}
-	conflicts, err := s.d.Inventory.Check(ctx, s.d.DB, es, req)
+	conflicts, err := s.checkSplit(ctx, s.d.DB, es, req, pr.lines, cat)
 	if err != nil {
 		return nil, err
 	}
@@ -709,7 +737,7 @@ func (s *Service) AutoAssign(ctx context.Context, p *auth.Principal, establishme
 		return out, nil
 	}
 	for _, a := range plan.assigned {
-		_, err := s.Move(ctx, p, establishmentID, a.BookingID, MoveInput{LineID: a.LineID, SpotID: a.SpotID})
+		_, err := s.move(ctx, p, establishmentID, a.BookingID, MoveInput{LineID: a.LineID, SpotID: a.SpotID}, false)
 		var ce *availability.ConflictError
 		switch {
 		case errors.As(err, &ce), errors.Is(err, availability.ErrSpotUnavailable), errors.Is(err, configerr.ErrVersionConflict):

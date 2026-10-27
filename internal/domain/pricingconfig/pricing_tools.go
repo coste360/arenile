@@ -129,6 +129,9 @@ func (s *Service) Quote(ctx context.Context, db bun.IDB, es store.EstablishmentS
 	spotIDs := make([]string, 0, len(in.Lines))
 	for _, l := range in.Lines {
 		spotIDs = append(spotIDs, l.SpotID)
+		for _, sg := range l.Segments { // split stays (ADR 0028)
+			spotIDs = append(spotIDs, sg.SpotID)
+		}
 	}
 	pl, err := LoadPriceList(ctx, db, es, seasonID, spotIDs)
 	if err != nil {
@@ -158,8 +161,8 @@ func (s *Service) Quote(ctx context.Context, db bun.IDB, es store.EstablishmentS
 		if err != nil {
 			return nil, err
 		}
-		if !a.ValidOn(today) {
-			return nil, configerr.Invalid("agreement_id", "Convenzione non attiva o fuori validità.")
+		if err := a.ApplicableTo(today, seasonID, in.Channel); err != nil {
+			return nil, err
 		}
 		ea := a.Engine()
 		q.Agreement = &ea

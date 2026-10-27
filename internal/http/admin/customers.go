@@ -21,7 +21,11 @@ func (h *Handlers) ListCustomers(w http.ResponseWriter, r *http.Request, establi
 		problem.Error(w, r, h.Log, err)
 		return
 	}
-	f := customer.ListFilter{Q: customerStr(params.Q), Tag: customerStr(params.Tag)}
+	f := customer.ListFilter{Q: customerStr(params.Q), Tag: customerStr(params.Tag), CategoryID: customerStr(params.CategoryId)}
+	if err := uuidParams(map[string]*string{"category_id": params.CategoryId}); err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
 	if params.IncludeAnonymized != nil {
 		f.IncludeAnonymized = *params.IncludeAnonymized
 	}
@@ -134,6 +138,7 @@ func (h *Handlers) ExportCustomer(w http.ResponseWriter, r *http.Request, establ
 	for i := range x.Credits {
 		out.Credits = append(out.Credits, customerCreditToAPI(&x.Credits[i]))
 	}
+	customerExportM8(&out, x)
 	customerNoStore(w)
 	w.Header().Set("Content-Disposition", `attachment; filename="cliente-`+x.Customer.ID+`.json"`)
 	writeJSON(w, http.StatusOK, out)
@@ -166,6 +171,10 @@ func CustomerToAPI(c *store.Customer) api.Customer {
 	if out.Tags == nil {
 		out.Tags = []string{}
 	}
+	if c.CategoryIDs != nil {
+		ids := append([]string{}, c.CategoryIDs...)
+		out.CategoryIds = &ids
+	}
 	if mc := c.MarketingConsent; mc != nil {
 		out.MarketingConsent = &api.MarketingConsent{GivenAt: mc.GivenAt, Source: mc.Source, TextVersion: mc.TextVersion}
 	}
@@ -185,6 +194,10 @@ func customerInputFromAPI(in *api.CustomerInput) customer.Input {
 	}
 	if in.Tags != nil {
 		out.Tags = *in.Tags
+	}
+	if in.CategoryIds != nil {
+		ids := append([]string{}, *in.CategoryIds...)
+		out.CategoryIDs = &ids
 	}
 	if mc := in.MarketingConsent; mc != nil {
 		out.MarketingConsent = &store.MarketingConsent{GivenAt: mc.GivenAt, Source: mc.Source, TextVersion: mc.TextVersion}

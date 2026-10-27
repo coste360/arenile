@@ -52,6 +52,12 @@ func ValidateAgreement(a Agreement) error {
 	if err := validateConditions(id, a.Conditions); err != nil {
 		return err
 	}
+	if err := validatePackPrices(id, a.PackPrices); err != nil {
+		return err
+	}
+	if len(a.PackPrices) > 0 && noAction(a.Action) {
+		return nil // fixed prices only
+	}
 	return validateAction(id, StageDiscount, a.Action)
 }
 

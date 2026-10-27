@@ -14,10 +14,11 @@ import (
 // requirement verification; inventory: spot calendar, lifeguard list;
 // report: partner report, statement, agreements register).
 //
-// The find-spot builder adds the Occupancy (inventory) and Quoter (pricing)
-// adapters here; until then Search answers 501.
+// Find spot reads the occupancy from the database (findspot.StoreOccupancy)
+// and prices and books through the booking service (Quote and Create with
+// the segments of a split stay, ADR 0028).
 func (a *App) wireM8(aw *audit.Writer) {
 	c := a.opts.clock
 	a.Partners = partner.NewService(partner.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
-	a.SpotFinder = findspot.NewService(findspot.Deps{Clock: c, Booker: a.Bookings, Log: a.log})
+	a.SpotFinder = findspot.NewService(findspot.Deps{DB: a.db, Clock: c, Quoter: a.Bookings, Booker: a.Bookings, Log: a.log})
 }
