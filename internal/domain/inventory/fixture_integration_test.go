@@ -156,6 +156,7 @@ type bookingSpec struct {
 	lines    []lineSpec
 	season   bool
 	expires  *time.Time
+	byDesk   bool // a panel operation on a booking of any channel (INV-105)
 }
 
 type lineSpec struct {
@@ -248,7 +249,7 @@ func (f *fixture) allocRequest(b bookingSpec, tb testBooking, components map[str
 	if b.slots == "" {
 		b.slots = calendar.SlotsFull
 	}
-	req := inventory.AllocateRequest{BookingID: tb.id, Channel: b.channel, StartsOn: d(b.from), EndsOn: d(b.to), Slots: b.slots, Kind: kind, ExpiresAt: b.expires}
+	req := inventory.AllocateRequest{BookingID: tb.id, Channel: b.channel, StartsOn: d(b.from), EndsOn: d(b.to), Slots: b.slots, Kind: kind, ExpiresAt: b.expires, ByDesk: b.byDesk}
 	for i, l := range b.lines {
 		lr := inventory.LineRequest{LineID: tb.lineIDs[i], ZoneID: l.zone.ID, Quantity: l.qty, Components: components}
 		if l.spot != nil {

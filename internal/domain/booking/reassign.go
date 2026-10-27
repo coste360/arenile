@@ -259,6 +259,7 @@ func (s *Service) reassignLocked(ctx context.Context, tx bun.IDB, p *auth.Princi
 		row.SpotID, row.ZoneID = &lines[i].SpotID, lines[i].ZoneID
 		// The first line also carries the booking-level components.
 		base := allocRequest(b, kind, b.HoldExpiresAt, []store.BookingLine{row}, lineExtras(extras, row.ID, i == 0), cat)
+		base.ByDesk = byDesk(p)
 		// A season pass keeps the days its holder released (INV-10).
 		if base.Skip, err = seasonSkips(ctx, tx, es, b, c.LineID, c.From, b.EndsOn); err != nil {
 			return nil, err

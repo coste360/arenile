@@ -302,7 +302,7 @@ func (s *Service) createWith(ctx context.Context, tx bun.IDB, actor audit.Actor,
 	var alloc *inventory.Allocation
 	if state.Kind != "" && hasSegments(pr.lines) {
 		// Split stay (find spot): one allocation per segment (INV-102).
-		if alloc, err = s.allocateSplit(ctx, tx, es, b, state.Kind, expiresAt, rows, extras, cat, pr.lines, now); err != nil {
+		if alloc, err = s.allocateSplit(ctx, tx, es, b, state.Kind, expiresAt, rows, extras, cat, pr.lines, now, false); err != nil {
 			return nil, err
 		}
 	} else if state.Kind != "" {

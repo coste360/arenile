@@ -321,11 +321,13 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 		if hasSegments(pr.lines) {
 			// One allocation per segment (the kept ones, or those of the
 			// replaced lines), the plain lines in one request.
-			if allocated, err = s.allocateSplit(ctx, tx, es, b, kind, exp, rows, newExtras, cat, pr.lines, now); err != nil {
+			if allocated, err = s.allocateSplit(ctx, tx, es, b, kind, exp, rows, newExtras, cat, pr.lines, now, byDesk(p)); err != nil {
 				return nil, err
 			}
 		} else {
-			if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, allocRequest(b, kind, exp, rows, newExtras, cat)); err != nil {
+			req := allocRequest(b, kind, exp, rows, newExtras, cat)
+			req.ByDesk = byDesk(p)
+			if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, req); err != nil {
 				return nil, err
 			}
 			if err := s.applyAllocation(ctx, tx, es, b, rows, allocated, kind, now); err != nil {
@@ -367,6 +369,13 @@ func fitSegments(segs []SegmentInput, from, to calendar.Date) []SegmentInput {
 	out[0].StartsOn = from
 	out[len(out)-1].EndsOn = to
 	return out
+}
+
+// byDesk reports whether p is a panel user: the cash desk may place a
+// booking of any channel on a spot excluded from online sale (spec 30.11),
+// while an API key or a public-channel actor follows the online rules.
+func byDesk(p *auth.Principal) bool {
+	return p != nil && p.Kind == auth.PrincipalUser
 }
 
 func diffDates(b *store.Booking, st stay) bool {
@@ -634,7 +643,7 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		}
 		// The first line also carries the booking-level components.
 		req := allocRequest(b, kind, b.HoldExpiresAt, rows[idx:idx+1], lineExtras(newExtras, rows[idx].ID, idx == 0), cat)
-		req.StartsOn = from
+		req.StartsOn, req.ByDesk = from, byDesk(p)
 		// A season pass keeps the days its holder released (INV-10).
 		if req.Skip, err = seasonSkips(ctx, tx, es, b, in.LineID, from, b.EndsOn); err != nil {
 			return nil, err
@@ -882,6 +891,7 @@ func (s *Service) autoAssignPlan(ctx context.Context, es store.EstablishmentScop
 		}
 		engineSpots = append(engineSpots, availability.Spot{
 			ID: id, ZoneID: zid, Label: sp.Label, Row: sp.RowLabel, Number: sp.Number, Kind: sp.Kind, Attributes: sp.Attributes,
+			OnlineExcluded: sp.OnlineExcluded,
 		})
 		free.AddInterval(all, id)
 	}
@@ -906,8 +916,9 @@ func (s *Service) autoAssignPlan(ctx context.Context, es store.EstablishmentScop
 		owners[l.ID] = l.BookingID
 		lines = append(lines, availability.Line{
 			ID: lid, BookingID: bid, CustomerID: cid, ZoneID: zid,
-			Interval:  availability.Interval{From: l.StartsOn, To: l.EndsOn, Slots: l.Slots},
-			SpotKinds: kinds[l.PackID],
+			Interval:    availability.Interval{From: l.StartsOn, To: l.EndsOn, Slots: l.Slots},
+			SpotKinds:   kinds[l.PackID],
+			SelfService: l.Channel != store.ChannelDesk, // never an excluded spot (INV-105)
 		})
 	}
 	res := availability.AutoAssign(availability.AssignInput{Lines: lines, Spots: engineSpots, Free: free})

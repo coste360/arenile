@@ -58,6 +58,11 @@ type AllocateRequest struct {
 	// pass holder released stay free when the pass is moved or swapped
 	// (INV-10). Half-days outside the interval are ignored.
 	Skip []availability.DateSlot
+	// ByDesk marks an operation of the cash desk (a panel user moving,
+	// swapping or editing a booking of any channel): the spots excluded
+	// from online sale are allowed, "la cassa le vede tutte" (spec 30.11);
+	// the online quotas still follow Channel.
+	ByDesk bool
 }
 
 // LineAllocation is the outcome for one line.

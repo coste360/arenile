@@ -616,6 +616,7 @@ func ConsumePromoCode(ctx context.Context, db bun.IDB, es EstablishmentScope, id
 type PendingLine struct {
 	BookingLine `bun:",extend"`
 	CustomerID  string         `bun:"customer_id"`
+	Channel     string         `bun:"channel"`
 	StartsOn    calendar.Date  `bun:"starts_on"`
 	EndsOn      calendar.Date  `bun:"ends_on"`
 	Slots       calendar.Slots `bun:"slots"`
@@ -630,7 +631,7 @@ func ListPendingLines(ctx context.Context, db bun.IDB, es EstablishmentScope, fr
 	var out []PendingLine
 	q := db.NewSelect().Model(&out).
 		ColumnExpr("bl.*").
-		ColumnExpr("bk.customer_id AS customer_id, bk.starts_on AS starts_on, bk.ends_on AS ends_on, bk.slots AS slots").
+		ColumnExpr("bk.customer_id AS customer_id, bk.channel AS channel, bk.starts_on AS starts_on, bk.ends_on AS ends_on, bk.slots AS slots").
 		Join("JOIN bookings AS bk ON bk.id = bl.booking_id").
 		Where("bl.establishment_id = ?", es.ID()).Where("bl.assignment_status = ?", AssignmentPending).
 		Where("bk.status IN (?)", bun.List(statuses)).

@@ -796,3 +796,36 @@ func TestConcurrency_SaveMap(t *testing.T) {
 		}
 	})
 }
+
+// TestMappingIntegration_OnlineBookableRoundtrip (spec 30.11, INV-105): the
+// map save writes spots.online_excluded and the document reads it back; a
+// save that only toggles the flag is a change.
+func TestMappingIntegration_OnlineBookableRoundtrip(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		doc := e.newMap(e.ownerA, e.estA.ID)
+		z := e.newZone(e.ownerA, e.estA.ID, doc.Map.ID, "row1", ModeSeat)
+		in := docInput(doc)
+		hidden := spot(z.Zone.ID, "A1", 10)
+		hidden.OnlineExcluded = true
+		in.Spots = []SpotInput{hidden, spot(z.Zone.ID, "A2", 20)}
+		v2, err := e.svc.SaveMap(e.ctx, e.ownerA, e.estA.ID, doc.Map.ID, 1, in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if a1, a2 := spotByLabel(v2, "A1"), spotByLabel(v2, "A2"); !a1.OnlineExcluded || a2.OnlineExcluded {
+			t.Fatalf("after save: A1 excluded=%v A2 excluded=%v", a1.OnlineExcluded, a2.OnlineExcluded)
+		}
+		in = docInput(v2)
+		for i := range in.Spots {
+			in.Spots[i].OnlineExcluded = in.Spots[i].Label == "A2"
+		}
+		v3, err := e.svc.SaveMap(e.ctx, e.ownerA, e.estA.ID, doc.Map.ID, 2, in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if a1, a2 := spotByLabel(v3, "A1"), spotByLabel(v3, "A2"); v3.Map.Version != 3 || a1.OnlineExcluded || !a2.OnlineExcluded {
+			t.Fatalf("after toggling: v%d A1 excluded=%v A2 excluded=%v", v3.Map.Version, a1.OnlineExcluded, a2.OnlineExcluded)
+		}
+	})
+}

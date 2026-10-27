@@ -1052,13 +1052,19 @@ registro delle convenzioni coincidono con il venduto e l'incassato dei report di
 i totali per categoria sommano ai totali generali.
 
 **INV-105 — Una postazione esclusa dalla vendita online non è mai venduta online.**
-Una postazione con `online_bookable = false` (colonna `spots.online_excluded`, migrazione 00013) non compare nella
-disponibilità pubblica e non la conta; un'allocazione per una prenotazione del canale online che la tocca (checkout
-pubblico, modifica o spostamento di una prenotazione nata online) è rifiutata dall'inventario con `409
-spot_unavailable`, come una postazione occupata, nella transazione dell'allocazione. La cassa continua a venderla.
-Verificata da: `TestOnlineBookable_Spot` (`internal/domain/inventory`), `TestCheckoutFlow_SpotNotOnlineBookable`
-(`internal/domain/checkout`, attraverso il checkout pubblico), tag `integration`, SQLite e PostgreSQL. Stato:
-implemented.
+Una postazione con `online_bookable = false` (colonna `spots.online_excluded`, migrazione 00013, scritta dal
+salvataggio della mappa) non compare nella disponibilità pubblica e non la conta; un'allocazione di una prenotazione
+di un canale self-service (`online` e `api`, come per le quote online, INV-09, INV-62) che la tocca, in qualunque
+modalità di zona (checkout pubblico, assegnazione automatica o alla conferma in zona `zone`, modifica dal link di
+gestione), è rifiutata dall'inventario con `409 spot_unavailable`, come una postazione occupata, nella transazione
+dell'allocazione. La cassa la vende e vi sposta o scambia anche una prenotazione nata online (`AllocateRequest.ByDesk`,
+operazioni di un utente del pannello; una chiave API segue le regole online).
+Verificata da: `TestOnlineBookable_Spot` (`internal/domain/inventory`: online, api, zona `zone`, operazione di cassa),
+`TestAutoAssign_Table` (`internal/domain/availability`, la riga self-service evita la postazione esclusa),
+`TestBookingAutoAssign_OnlineSkipsExcludedSpot` (`internal/domain/booking`), `TestCheckoutFlow_SpotNotOnlineBookable`
+(`internal/domain/checkout`, attraverso il checkout pubblico), `TestMappingIntegration_OnlineBookableRoundtrip`
+(`internal/domain/mapping`) e `TestMapsHTTP_OnlineBookable` (`internal/http/admin`, il salvataggio della mappa scrive
+la colonna e la rilegge), tag `integration`, SQLite e PostgreSQL. Stato: implemented.
 
 **INV-106 — Una modifica che non sostituisce le righe conserva i segmenti.**
 Un `PATCH` della prenotazione che non invia `lines` (note, cliente, extra, convenzione, gruppo, date) conserva i

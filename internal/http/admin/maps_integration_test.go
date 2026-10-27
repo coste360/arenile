@@ -400,3 +400,61 @@ func TestMapsHTTP_IfMatchWildcard(t *testing.T) {
 		t.Fatalf("delete with the current version: %d %s", status, body)
 	}
 }
+
+// TestMapsHTTP_OnlineBookable (spec 30.11, INV-105): online_bookable=false
+// in the map save is stored as spots.online_excluded and read back as
+// false; omitted, the spot stays on sale online. The enforcement from that
+// column is TestCheckoutFlow_SpotNotOnlineBookable and TestOnlineBookable_Spot.
+func TestMapsHTTP_OnlineBookable(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newMapsEnv(t, db)
+		a := e.estA.ID
+		mapIn := api.MapInput{Name: api.I18nText{"it": "Spiaggia"}, Width: 1200, Height: 800, GridSize: 10, SeaSide: "bottom"}
+		status, _, body := mapsCall(t, e.owner, http.MethodPost, mapIn, func(w http.ResponseWriter, r *http.Request) {
+			e.h.CreateMap(w, r, a, api.CreateMapParams{})
+		})
+		if status != 201 {
+			t.Fatalf("create map: %d %s", status, body)
+		}
+		mapID := mapsDecode[api.MapDocument](t, body).Map.Id
+		status, _, body = mapsCall(t, e.owner, http.MethodPost, api.ZoneInput{MapId: mapsPtr(mapID), Code: "row1", Name: api.I18nText{"it": "Fila 1"}, AssignmentMode: "seat", OnlineVisible: mapsPtr(true), PriceCategory: "row1"},
+			func(w http.ResponseWriter, r *http.Request) { e.h.CreateZone(w, r, a, api.CreateZoneParams{}) })
+		if status != 201 {
+			t.Fatalf("create zone: %d %s", status, body)
+		}
+		zone := mapsDecode[api.Zone](t, body)
+		shape := api.Shape{Type: "circle", W: 8, H: 8}
+		save := api.MapSaveRequest{Map: mapIn, Spots: []api.SpotInput{
+			{ZoneId: zone.Id, Label: "A1", Kind: "umbrella", X: 100, Y: 100, Shape: shape, OnlineBookable: mapsPtr(false)},
+			{ZoneId: zone.Id, Label: "A2", Kind: "umbrella", X: 200, Y: 100, Shape: shape},
+		}}
+		status, _, body = mapsCall(t, e.owner, http.MethodPut, save, func(w http.ResponseWriter, r *http.Request) {
+			e.h.SaveMap(w, r, a, mapID, api.SaveMapParams{IfMatch: "*"})
+		})
+		if status != 200 {
+			t.Fatalf("save: %d %s", status, body)
+		}
+		status, _, body = mapsCall(t, e.viewer, http.MethodGet, nil, func(w http.ResponseWriter, r *http.Request) { e.h.GetMap(w, r, a, mapID) })
+		if status != 200 {
+			t.Fatalf("get: %d %s", status, body)
+		}
+		doc := mapsDecode[api.MapDocument](t, body)
+		got := map[string]bool{}
+		for _, sp := range doc.Spots {
+			if sp.OnlineBookable == nil {
+				t.Fatalf("spot %s without online_bookable", sp.Label)
+			}
+			got[sp.Label] = *sp.OnlineBookable
+			var excluded bool
+			if err := db.NewSelect().Table("spots").Column("online_excluded").Where("id = ?", sp.Id).Scan(context.Background(), &excluded); err != nil {
+				t.Fatal(err)
+			}
+			if excluded == *sp.OnlineBookable {
+				t.Fatalf("spot %s: column online_excluded=%v, api online_bookable=%v", sp.Label, excluded, *sp.OnlineBookable)
+			}
+		}
+		if got["A1"] || !got["A2"] {
+			t.Fatalf("online_bookable read back: %v", got)
+		}
+	})
+}

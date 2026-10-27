@@ -382,6 +382,27 @@ func TestOnlineBookable_Spot(t *testing.T) {
 		if _, err := f.book(t, bookingSpec{from: "2027-07-02", to: "2027-07-02", lines: []lineSpec{{zone: f.seat, spot: a2}}}, nil); err != nil {
 			t.Fatalf("desk sale of an excluded spot: %v", err)
 		}
+		// The api channel follows the online rules (as the online quotas,
+		// INV-09, INV-62).
+		if _, err := f.book(t, bookingSpec{channel: store.ChannelAPI, from: "2027-07-03", to: "2027-07-03", lines: []lineSpec{{zone: f.seat, spot: a2}}}, nil); !errors.As(err, &ce) {
+			t.Fatalf("api sale of an excluded spot: %v", err)
+		}
+		// A zone-mode spot is excluded the same way: an online line placed
+		// on it (assignment at confirmation, auto-assign) is refused...
+		z1 := f.spots["Z1"]
+		_, err = db.NewUpdate().Table("spots").Set("online_excluded = ?", true).Where("id = ?", z1.ID).Exec(ctx)
+		must(t, err)
+		if _, err := f.book(t, bookingSpec{channel: store.ChannelOnline, from: "2027-07-03", to: "2027-07-03", lines: []lineSpec{{zone: f.zoneMode, spot: z1}}}, nil); !errors.As(err, &ce) || ce.Conflicts[0].SpotID != z1.ID {
+			t.Fatalf("online line on an excluded zone-mode spot: %v", err)
+		}
+		// ...while the cash desk may move an online booking onto it ("la
+		// cassa le vede tutte", spec 30.11).
+		if _, err := f.book(t, bookingSpec{channel: store.ChannelOnline, byDesk: true, from: "2027-07-03", to: "2027-07-03", lines: []lineSpec{{zone: f.zoneMode, spot: z1}}}, nil); err != nil {
+			t.Fatalf("desk move of an online booking onto an excluded spot: %v", err)
+		}
+		if _, err := f.book(t, bookingSpec{channel: store.ChannelOnline, byDesk: true, from: "2027-07-04", to: "2027-07-04", lines: []lineSpec{{zone: f.seat, spot: a2}}}, nil); err != nil {
+			t.Fatalf("desk move of an online booking onto an excluded seat: %v", err)
+		}
 		f.checkInvariants(t)
 	})
 }

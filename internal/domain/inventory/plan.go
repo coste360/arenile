@@ -208,6 +208,15 @@ func buildPlan(req AllocateRequest, snap *snapshot, newID func() string, now tim
 					conflicts = append(conflicts, availability.Conflict{SpotID: sp.ID, Date: ds.Date, Slot: ds.Slot, Reason: availability.ReasonInactive})
 				}
 			}
+			// Spots excluded from online sale (spec 30.11, INV-105) refuse
+			// every self-service channel (online and api, as the online
+			// quotas) like a taken spot, whatever the zone mode; the desk
+			// sells and moves onto them all.
+			if sp.OnlineExcluded && quotaBound(req.Channel) && !req.ByDesk {
+				for _, ds := range p.halfDays {
+					conflicts = append(conflicts, availability.Conflict{SpotID: sp.ID, Date: ds.Date, Slot: ds.Slot, Reason: availability.ReasonSpotUnavailable})
+				}
+			}
 		}
 		// zoneQty is the demand on the zone pool; components may add to it.
 		lineDemand := map[string]int{}
@@ -231,13 +240,6 @@ func buildPlan(req AllocateRequest, snap *snapshot, newID func() string, now tim
 					continue
 				}
 				la.AssignmentStatus = store.AssignmentAssigned
-				// Spots excluded from online sale (spec 30.11) refuse the
-				// online channel like a taken spot; the desk sells them all.
-				if sp := snap.spots[l.SpotID]; sp != nil && sp.OnlineExcluded && req.Channel == store.ChannelOnline {
-					for _, ds := range p.halfDays {
-						conflicts = append(conflicts, availability.Conflict{SpotID: sp.ID, Date: ds.Date, Slot: ds.Slot, Reason: availability.ReasonSpotUnavailable})
-					}
-				}
 				if quotaBound(req.Channel) && z.OnlineQuota != nil && !quotaSeen[z.ID] {
 					quotaSeen[z.ID] = true
 					p.seatQuotaZones = append(p.seatQuotaZones, z.ID)

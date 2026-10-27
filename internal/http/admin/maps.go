@@ -383,7 +383,7 @@ func spotToAPI(s *store.Spot) api.Spot {
 		Kind: api.SpotKind(s.Kind), X: s.X, Y: s.Y, Rotation: s.Rotation, Shape: mapsShapeToAPI(s.Shape),
 		Capacity: api.ComponentQuantities(mapsNonNilQty(s.Capacity)), MaxExtra: api.ComponentQuantities(mapsNonNilQty(s.MaxExtra)),
 		PriceCategoryOverride: s.PriceCategoryOverride, Attributes: nonNil(s.Attributes), Active: s.Active,
-		Asset: mapsKitAsset(s.Asset),
+		Asset: mapsKitAsset(s.Asset), OnlineBookable: strPtrBool(!s.OnlineExcluded),
 	}
 }
 
@@ -409,6 +409,7 @@ func spotInputFromAPI(s api.SpotInput) mapping.SpotInput {
 		Number: mapsDerefOr(s.Number, 0), Kind: string(s.Kind), X: s.X, Y: s.Y, Rotation: mapsDerefOr(s.Rotation, 0),
 		Shape: mapsShapeFromAPI(s.Shape), PriceCategoryOverride: s.PriceCategoryOverride,
 		Active: mapsDerefOr(s.Active, true), Asset: string(mapsDerefOr(s.Asset, "")),
+		OnlineExcluded: !mapsDerefOr(s.OnlineBookable, true),
 	}
 	if s.Capacity != nil {
 		out.Capacity = map[string]int(*s.Capacity)
@@ -430,7 +431,7 @@ func spotInputToAPI(s mapping.SpotInput) api.SpotInput {
 		ZoneId: s.ZoneID, Label: s.Label, RowLabel: &s.RowLabel, Number: &s.Number, Kind: api.SpotKind(s.Kind),
 		X: s.X, Y: s.Y, Rotation: &s.Rotation, Shape: mapsShapeToAPI(s.Shape), Capacity: &capacity, MaxExtra: &maxExtra,
 		PriceCategoryOverride: s.PriceCategoryOverride, Attributes: &attrs, Active: &s.Active,
-		Asset: mapsKitAssetString(s.Asset),
+		Asset: mapsKitAssetString(s.Asset), OnlineBookable: strPtrBool(!s.OnlineExcluded),
 	}
 	if s.ID != "" {
 		id := s.ID
@@ -581,3 +582,5 @@ func mapsKitAssetString(s string) *api.KitAsset {
 	a := api.KitAsset(s)
 	return &a
 }
+
+func strPtrBool(v bool) *bool { return &v }

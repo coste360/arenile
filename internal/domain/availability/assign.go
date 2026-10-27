@@ -21,6 +21,9 @@ type Spot struct {
 	Kind       string
 	Attributes []string
 	X, Y       float64
+	// OnlineExcluded: not on sale online (spec 30.11, INV-105); a line of a
+	// self-service booking (Line.SelfService) is never placed on it.
+	OnlineExcluded bool
 }
 
 // Line is a booking line of a zone-mode zone waiting for a spot.
@@ -38,6 +41,9 @@ type Line struct {
 	// SpotKinds lists compatible spot kinds (pack.requires_spot_kind); empty
 	// means any kind.
 	SpotKinds []string
+	// SelfService marks a line of an online or api booking: spots with
+	// OnlineExcluded are not candidates (INV-105).
+	SelfService bool
 	// PreviousSpotID is the spot the same customer had in a previous booking
 	// (continuity), uuid.Nil if none.
 	PreviousSpotID uuid.UUID
@@ -228,6 +234,9 @@ func (a *assigner) compatible(l Line) []Spot {
 			continue
 		}
 		if len(l.SpotKinds) > 0 && !slices.Contains(l.SpotKinds, s.Kind) {
+			continue
+		}
+		if l.SelfService && s.OnlineExcluded {
 			continue
 		}
 		out = append(out, s)

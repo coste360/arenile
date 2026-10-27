@@ -846,3 +846,35 @@ func mustScopeOf(t *testing.T, db *store.DB, estID string) store.EstablishmentSc
 	}
 	return es
 }
+
+// TestBookingAutoAssign_OnlineSkipsExcludedSpot (INV-105): the
+// auto-assignment never places a line of an online booking on a spot
+// excluded from online sale, while a desk line may take it.
+func TestBookingAutoAssign_OnlineSkipsExcludedSpot(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		if _, err := db.NewUpdate().Table("spots").Set("online_excluded = ?", true).Where("id = ?", f.FreeSpots[0].ID).Exec(f.Ctx); err != nil {
+			t.Fatal(err)
+		}
+		in := f.Input(f.Spots[0], "2027-07-10", "2027-07-11")
+		in.Lines[0].SpotID, in.Lines[0].ZoneID = "", f.FreeZone.ID
+		in.Channel = store.ChannelOnline
+		online := f.MustCreate(in)
+		res, err := f.Svc.AutoAssign(f.Ctx, f.Owner, f.Est.ID, booking.AutoAssignInput{From: d("2027-07-01"), To: d("2027-07-31")})
+		if err != nil || !res.Applied || len(res.Assigned) != 1 || res.Assigned[0].SpotID == f.FreeSpots[0].ID {
+			t.Fatalf("online line: %v %+v (must avoid the excluded spot)", err, res)
+		}
+		got, _ := f.Svc.Get(f.Ctx, f.Owner, f.Est.ID, online.Booking.ID)
+		if got.Lines[0].SpotID == nil || *got.Lines[0].SpotID == f.FreeSpots[0].ID {
+			t.Fatalf("assigned %+v", got.Lines[0])
+		}
+		// A desk line of the same days takes the excluded spot.
+		in2 := f.Input(f.Spots[0], "2027-07-10", "2027-07-11")
+		in2.Lines[0].SpotID, in2.Lines[0].ZoneID = "", f.FreeZone.ID
+		f.MustCreate(in2)
+		res, err = f.Svc.AutoAssign(f.Ctx, f.Owner, f.Est.ID, booking.AutoAssignInput{From: d("2027-07-01"), To: d("2027-07-31")})
+		if err != nil || len(res.Assigned) != 1 || res.Assigned[0].SpotID != f.FreeSpots[0].ID {
+			t.Fatalf("desk line: %v %+v (may take the excluded spot)", err, res)
+		}
+	})
+}

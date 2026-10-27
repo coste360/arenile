@@ -158,9 +158,10 @@ func (c *catalog) segmentRequest(base inventory.AllocateRequest, lr inventory.Li
 // meanwhile: 409 with the conflicts), and records the allocation on the
 // rows like applyAllocation.
 func (s *Service) allocateSplit(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, kind inventory.Kind, expiresAt *time.Time,
-	rows []store.BookingLine, extras []store.BookingLineExtra, cat *catalog, lines []PricedLine, now time.Time,
+	rows []store.BookingLine, extras []store.BookingLineExtra, cat *catalog, lines []PricedLine, now time.Time, desk bool,
 ) (*inventory.Allocation, error) {
 	req := allocRequest(b, kind, expiresAt, rows, extras, cat)
+	req.ByDesk = desk
 	plain := req
 	plain.Lines = nil
 	var plainRows []store.BookingLine
