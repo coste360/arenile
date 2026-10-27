@@ -153,7 +153,7 @@ export function PartnerDetailPage() {
         </>
       }
     >
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-6">
           {perms.canReport ? (
             <StatementSection establishmentId={establishmentId} partner={p} />

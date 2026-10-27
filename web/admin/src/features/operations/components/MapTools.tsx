@@ -40,7 +40,7 @@ export function MapTools({
       {onFindSpot && (
         <Button variant="outline" onClick={onFindSpot}>
           <SearchIcon aria-hidden="true" />
-          {t('tools.findSpot')}
+          <span className="sr-only sm:not-sr-only">{t('tools.findSpot')}</span>
         </Button>
       )}
       <UndoLastMoveButton establishmentId={establishmentId} enabled={canUndo} />
@@ -48,7 +48,7 @@ export function MapTools({
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
             <PrinterIcon aria-hidden="true" />
-            {t('tools.print')}
+            <span className="sr-only sm:not-sr-only">{t('tools.print')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

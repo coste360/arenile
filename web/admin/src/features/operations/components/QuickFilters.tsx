@@ -50,7 +50,7 @@ export function QuickFilters({ value, onChange, agreements, groups }: QuickFilte
         aria-label={t('filters.label')}
         value={simple}
         onValueChange={(v) => onChange(v ? { kind: v as QuickFilterKind } : null)}
-        className="flex-wrap"
+        className="max-w-full flex-nowrap overflow-x-auto sm:flex-wrap"
       >
         {SIMPLE_FILTERS.map((k) => {
           const Icon = ICONS[k]!;

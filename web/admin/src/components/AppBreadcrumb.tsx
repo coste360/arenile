@@ -15,6 +15,7 @@ import {
   CONFIG_NAV_ITEMS,
   ESTABLISHMENTS_NAV_ITEM,
   NAV_ITEMS,
+  OPERATIONS_BREADCRUMB_ITEMS,
 } from '../nav';
 
 /** Where am I: group › (establishment ›) page, derived from the matched route. */
@@ -24,7 +25,9 @@ function useRouteTrail(): string[] {
   const current = useCurrentEstablishment();
 
   let trail: string[] = [];
-  const op = NAV_ITEMS.find((i) => matchRoute({ to: i.to, fuzzy: true } as never));
+  const op =
+    OPERATIONS_BREADCRUMB_ITEMS.find((i) => matchRoute({ to: i.to, fuzzy: true } as never)) ??
+    NAV_ITEMS.find((i) => matchRoute({ to: i.to, fuzzy: true } as never));
   if (op) {
     trail = [
       t('nav.operations'),

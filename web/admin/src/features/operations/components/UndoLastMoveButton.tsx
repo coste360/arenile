@@ -48,7 +48,7 @@ export function UndoLastMoveButton({
       }
     >
       {undo.isPending ? <Spinner /> : <Undo2Icon aria-hidden="true" />}
-      {t('undo.last')}
+      <span className="sr-only sm:not-sr-only">{t('undo.last')}</span>
     </Button>
   );
 }

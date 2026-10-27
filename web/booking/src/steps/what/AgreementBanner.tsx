@@ -72,8 +72,8 @@ export default function AgreementBanner({
   return (
     <Alert role="status">
       <HandshakeIcon aria-hidden="true" />
-      <AlertTitle>
-        {a.partner_name
+      <AlertTitle className="line-clamp-none">
+        {a.partner_name && a.partner_name !== a.name
           ? t('agreement.titlePartner', { name: a.name, partner: a.partner_name })
           : t('agreement.title', { name: a.name })}
       </AlertTitle>

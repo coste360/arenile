@@ -49,17 +49,17 @@ export function OperationalMapPage() {
 
   return (
     <Page title={t('map.title')} description={t('map.description')}>
-      <DayToolbar
-        date={date}
-        slot={slot}
-        today={today}
-        onChange={setDay}
-        maps={options}
-        mapId={mapId}
-        onMapChange={setMapId}
-      />
-      {/* Spec 30.4: a range shows free, free in part ("N giorni su M") and taken spots. */}
       <div className="flex flex-wrap items-center gap-2">
+        <DayToolbar
+          date={date}
+          slot={slot}
+          today={today}
+          onChange={setDay}
+          maps={options}
+          mapId={mapId}
+          onMapChange={setMapId}
+        />
+        {/* Spec 30.4: a range shows free, free in part ("N giorni su M") and taken spots. */}
         <SegmentedControl
           label={t('range.mode')}
           value={mode}

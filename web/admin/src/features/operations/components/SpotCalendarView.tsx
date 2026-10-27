@@ -96,7 +96,7 @@ export function SpotCalendarView({
   };
 
   return (
-    <div className="space-y-3" data-testid="spot-calendar">
+    <div className="min-w-0 space-y-3" data-testid="spot-calendar">
       <div className="overflow-x-auto rounded-lg border">
         <table className="border-separate border-spacing-0.5 p-1 text-xs">
           <caption className="sr-only">{t('calendar.caption', { label: cal.label })}</caption>

@@ -317,7 +317,15 @@ export const BREADCRUMB_ONLY_ITEMS = [
   { to: '/e/$establishmentId/config/devices/lan', labelKey: 'nav.config.devicesLan' },
   { to: '/e/$establishmentId/config/seasons/rollover', labelKey: 'nav.config.seasonRollover' },
   { to: '/e/$establishmentId/ticket/varco', labelKey: 'nav.entryGate' },
-  // M8 (ADR 0028).
+] as const satisfies readonly { to: string; labelKey: string }[];
+
+/**
+ * Operational pages not listed in the sidebar (reached from the map or from
+ * a sidebar page): their breadcrumb is "Operatività › establishment › page"
+ * with their own label, checked before the sidebar items so that
+ * /convenzioni/rendiconti does not stop at "Partner e convenzioni" (M8).
+ */
+export const OPERATIONS_BREADCRUMB_ITEMS = [
   { to: '/e/$establishmentId/convenzioni/rendiconti', labelKey: 'nav.agreementsReports' },
   { to: '/e/$establishmentId/trova-posto', labelKey: 'nav.findSpot' },
 ] as const satisfies readonly { to: string; labelKey: string }[];
