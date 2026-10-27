@@ -5,7 +5,8 @@ import { login } from "./helpers";
 
 /**
  * Occupant labels on the operational map (spec 11.3): who occupies a spot,
- * the "Etichette" toggle (Codice / Cliente / Entrambi) remembered per user,
+ * the "Etichette" toggles (Codice / Cliente / Fine / Allestimento, combinable,
+ * spec 30.4) remembered per user,
  * hidden below the legibility threshold with the zoom hint. Demo data: the
  * season pass on A1 belongs to a customer named Rossi.
  */
@@ -68,28 +69,27 @@ test.describe("desktop", () => {
     // Free spots: code only.
     await expect(caption(page, "F8")).toHaveCount(0);
 
-    const toggle = page.getByRole("radiogroup", { name: "Etichette" });
-    await toggle.getByRole("radio", { name: "Cliente" }).click();
+    const labels = () => page.getByRole("toolbar", { name: "Etichette" });
+    const part = (name: string) => labels().getByRole("button", { name, exact: true });
+    // Customer only.
+    await part("Codice").click();
+    await expect(part("Codice")).toHaveAttribute("aria-pressed", "false");
     await expect(code(page, "A1")).toHaveCount(0);
     await expect(caption(page, "A1")).toHaveText("Rossi");
     await expect(code(page, "F8")).toHaveText("F8");
 
-    await toggle.getByRole("radio", { name: "Codice" }).click();
+    // Code only.
+    await part("Codice").click();
+    await part("Cliente").click();
     await expect(caption(page, "A1")).toHaveCount(0);
     await expect(code(page, "A1")).toHaveText("A1");
 
     // Remembered per user across reloads.
     await page.reload();
-    await expect(
-      page
-        .getByRole("radiogroup", { name: "Etichette" })
-        .getByRole("radio", { name: "Codice" }),
-    ).toHaveAttribute("aria-checked", "true");
+    await expect(part("Codice")).toHaveAttribute("aria-pressed", "true");
+    await expect(part("Cliente")).toHaveAttribute("aria-pressed", "false");
     await expect(caption(page, "A1")).toHaveCount(0);
-    await page
-      .getByRole("radiogroup", { name: "Etichette" })
-      .getByRole("radio", { name: "Entrambi" })
-      .click();
+    await part("Cliente").click();
     await expect(caption(page, "A1")).toHaveText("Rossi");
 
     expect(await seriousViolations(page)).toEqual([]);
@@ -111,7 +111,7 @@ test.describe("mobile", () => {
     isMobile: true,
   });
 
-  test("names wait for the zoom, the toggle is a select", async ({ page }) => {
+  test("names wait for the zoom, the toggles wrap", async ({ page }) => {
     await openMap(page);
     await expect(spot(page, "A1")).toHaveAccessibleName(/occupato da Rossi/);
     // Too small to read at the fitted zoom: no pill, the hint says how to get them.
@@ -123,8 +123,11 @@ test.describe("mobile", () => {
       await zoomIn.click();
     await expect(caption(page, "A1")).toHaveText(/^Ross/);
 
-    await page.getByRole("combobox", { name: "Etichette" }).click();
-    await page.getByRole("option", { name: "Cliente" }).click();
+    // Customer only (Codice switched off).
+    await page
+      .getByRole("toolbar", { name: "Etichette" })
+      .getByRole("button", { name: "Codice", exact: true })
+      .click();
     await expect(code(page, "A1")).toHaveCount(0);
     await expect(caption(page, "A1")).toHaveText(/^Ross/);
 
