@@ -57,6 +57,23 @@
 - Notifiche push non incluse in questa edizione: l'app aggiorna i dati all'apertura; un'eventuale futura edizione a pagamento potrà offrirle.
 - **Accettazione:** lo staff collega un telefono a un'istanza scansionando un QR in meno di un minuto; con il telefono offline esegue check-in e incassi che, alla riconnessione, arrivano al server senza duplicati; nessuna richiesta di rete verso domini diversi dall'istanza (verificato con un proxy di ispezione).
 
+### M8 — Cassa avanzata e convenzioni (sezione 30)
+- Convenzioni complete: partner (strutture ricettive, enti, aziende, associazioni), categorie di clienti
+  (residenti, categorie tutelate), contingenti riservati, verifica dei requisiti in cassa, link della convenzione
+  per la pagina pubblica, conto del partner, rendiconto per partner e registro delle convenzioni per il bando.
+- Gruppi e ospiti sulla prenotazione (nome del gruppo, persone, struttura di provenienza).
+- Postazione sulla mappa: arrivo e partenza, data di fine, allestimento, badge, filtri rapidi, stato "libero in
+  parte" nella vista a intervallo; calendario della stagione della postazione.
+- Trova posto: ricerca con numero massimo di cambi di posto, prenotazione a segmenti in una sola transazione.
+- Spostamenti: da una data, programmati, scambio tra due prenotazioni, gruppi, annulla l'ultimo spostamento.
+- Assenze degli abbonati per intervalli e giorni ricorrenti; duplica e cambia cliente; riepilogo via WhatsApp;
+  stampa della mappa e lista per i bagnini; vendita online per singola postazione.
+- **Accettazione:** con la spiaggia piena il 15 agosto, la cassa vende una settimana dal 10 al 16 su due postazioni
+  in meno di un minuto; uno scambio tra due prenotazioni non produce mai una doppia allocazione
+  (`TestConcurrency_*` con almeno 100 tentativi paralleli); a fine stagione il registro delle convenzioni esporta
+  per ogni convenzione prenotazioni, giorni-postazione e sconto concesso coerenti con i report di cassa; nessuna
+  funzione introduce overbooking.
+
 ### Dopo l'MVP
 - Driver Satispay e altri provider; driver per registratori telematici.
 - Notifiche WhatsApp e SMS tramite estensioni.
