@@ -3,6 +3,7 @@
 package acceptance
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -10,6 +11,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -140,7 +142,16 @@ func newEnv(t *testing.T, databaseURL string) *env {
 	}
 	// Many customers from one address: the per-IP public limits (spec 17.2)
 	// are raised; the per-establishment checkout limit still applies.
-	a, err := app.New(cfg, app.WithClock(c), app.WithoutSignalHandling(), app.WithLogger(slog.New(slog.DiscardHandler)),
+	// Server errors are kept and printed only when the test fails, so a 500
+	// in CI shows its cause.
+	logs := &lockedBuffer{}
+	t.Cleanup(func() {
+		if t.Failed() && logs.Len() > 0 {
+			t.Logf("server errors:\n%s", logs.String())
+		}
+	})
+	logger := slog.New(slog.NewTextHandler(logs, &slog.HandlerOptions{Level: slog.LevelError}))
+	a, err := app.New(cfg, app.WithClock(c), app.WithoutSignalHandling(), app.WithLogger(logger),
 		app.WithPublicRateLimits(100000, 100000))
 	if err != nil {
 		t.Fatal(err)
@@ -293,4 +304,29 @@ func (e *env) drainOutbox() {
 // path builds an establishment-scoped admin API path.
 func (e *env) path(suffix string) string {
 	return "/api/admin/v1/establishments/" + e.estID + suffix
+}
+
+// lockedBuffer is a bytes.Buffer safe for the concurrent writes of the
+// server's request goroutines.
+type lockedBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *lockedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *lockedBuffer) Len() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Len()
+}
+
+func (b *lockedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
 }
