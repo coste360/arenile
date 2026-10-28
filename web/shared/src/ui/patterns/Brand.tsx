@@ -205,12 +205,13 @@ export function Coste360Signature({ className }: BrandProps) {
       rel="noopener noreferrer"
       title={t('brand.lockup')}
       className={cn(
-        'mx-auto flex w-fit items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground opacity-60 outline-ring/50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2',
+        'group mx-auto flex w-fit items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground outline-ring/50 focus-visible:outline-2',
         className,
       )}
     >
+      {/* Only the logo is dimmed: the label keeps the muted text contrast (WCAG AA). */}
       <span>{t('brand.madeBy')}</span>
-      <Coste360Logo className="h-5" />
+      <Coste360Logo className="h-5 opacity-60 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
     </a>
   );
 }
