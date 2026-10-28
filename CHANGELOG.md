@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-28
+
 ### Aggiunto
 - **Cassa avanzata e convenzioni (M8, spec 30, ADR 0028).** Migrazione 00013 (SQLite e PostgreSQL) con partner,
   categorie di clienti, verifiche dei requisiti, versioni e contingente delle convenzioni, pagamenti dei partner e
@@ -78,6 +80,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - Pannello: il logo Coste360 (barra laterale sotto l'account, login, primo avvio) usa il file vettoriale
   fornito dall'azienda al posto dell'immagine PNG, nitido a ogni zoom e su schermi ad alta densità; sotto l'account
   la firma è «Un prodotto di» + logo, centrata.
+
+### Note di aggiornamento
+- La migrazione 00013 parte da sola all'avvio (SQLite e PostgreSQL): fai un backup prima di aggiornare.
+- Le convenzioni esistenti valgono solo in cassa finché non attivi "Online con codice" o "Link della convenzione"
+  (prima della 1.1 il codice era accettato anche sulla pagina pubblica).
 
 ## [1.0.6] - 2026-10-26
 
@@ -1035,7 +1042,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.6...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.0...main
+[1.1.0]: https://github.com/coste360/arenile/compare/v1.0.6...v1.1.0
 [1.0.6]: https://github.com/coste360/arenile/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/coste360/arenile/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/coste360/arenile/compare/v1.0.3...v1.0.4
