@@ -2,11 +2,13 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
 
 	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect"
 
 	"github.com/coste360/arenile/internal/calendar"
 )
@@ -159,20 +161,51 @@ func sortedUnique(ids []string) []string {
 	return slices.Compact(ids)
 }
 
+// lockWaitLimit bounds how long LockBookings waits on PostgreSQL. It stays
+// below the driver read timeout (10 s): past it the wait would end as a
+// network error and a 500 instead of a conflict.
+const lockWaitLimit = 5 * time.Second
+
 // LockBookings locks the rows of the given bookings of es, one at a time in
 // id order (a deterministic order never deadlocks two reclaims), with the
 // same no-op UPDATE as LockBooking. Unknown ids are ignored.
+//
+// On PostgreSQL each UPDATE runs with a statement_timeout of lockWaitLimit:
+// a waiter queued behind many changes of the same booking waits again after
+// each one commits (lock_timeout restarts every time), so only a limit on
+// the whole statement bounds it. A wait cut short is a conflict (409).
 func LockBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, ids []string) error {
 	if err := es.mustBeValid(); err != nil {
 		return err
 	}
+	pg := db.Dialect().Name() == dialect.PG
+	if pg {
+		if _, err := db.ExecContext(ctx, fmt.Sprintf("SET LOCAL statement_timeout = %d", lockWaitLimit.Milliseconds())); err != nil {
+			return fmt.Errorf("store: lock bookings: %w", err)
+		}
+	}
 	for _, id := range sortedUnique(ids) {
 		if _, err := db.NewUpdate().Model((*Booking)(nil)).Set("version = version").
 			Where("id = ?", id).Where("establishment_id = ?", es.ID()).Exec(ctx); err != nil {
+			if isQueryCanceled(err) && ctx.Err() == nil {
+				return fmt.Errorf("%w: store: lock bookings: waited more than %s: %w", ErrConflict, lockWaitLimit, err)
+			}
+			return fmt.Errorf("store: lock bookings: %w", err)
+		}
+	}
+	if pg {
+		if _, err := db.ExecContext(ctx, "SET LOCAL statement_timeout TO DEFAULT"); err != nil {
 			return fmt.Errorf("store: lock bookings: %w", err)
 		}
 	}
 	return nil
+}
+
+// isQueryCanceled reports a PostgreSQL query_canceled error (57014), which
+// statement_timeout raises.
+func isQueryCanceled(err error) bool {
+	var pgErr interface{ Field(byte) string }
+	return errors.As(err, &pgErr) && pgErr.Field('C') == "57014"
 }
 
 // DeleteExpiredHoldsOfOwners deletes every hold row (spot and pool, any

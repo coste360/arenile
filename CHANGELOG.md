@@ -73,9 +73,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   restano applicabili solo dalla cassa: il loro codice non vale sulla pagina pubblica finché non si attiva "Codice
   online" o "Link". Il preventivo pubblico risponde `invalid` senza nome per ogni codice sconosciuto, solo cassa,
   spento o scaduto.
-- PostgreSQL: l'attesa di un lock ha un limite (`lock_timeout`, metà del timeout di lettura del driver: 5 s con i
-  valori predefiniti; si può impostare nell'URL del database). Una modifica in coda troppo a lungo sulla stessa
-  prenotazione risponde 409 (riprova) invece di un errore interno 500.
+- PostgreSQL: il blocco delle prenotazioni da modificare aspetta al massimo 5 s. Una modifica in coda troppo a lungo
+  sulla stessa prenotazione (molte casse sulle stesse righe) risponde 409 (riprova) invece di un errore interno 500.
 
 ## [1.0.6] - 2026-10-26
 

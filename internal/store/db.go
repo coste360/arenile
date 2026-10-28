@@ -127,7 +127,7 @@ func openPostgres(ctx context.Context, dsn string) (*DB, error) {
 	if !strings.HasPrefix(dsn, "postgres://") && !strings.HasPrefix(dsn, "postgresql://") {
 		return nil, errors.New("store: postgres url must start with postgres://")
 	}
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn), withLockTimeout))
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 	sqldb.SetMaxOpenConns(20)
 	sqldb.SetMaxIdleConns(10)
 	db := &DB{DB: bun.NewDB(sqldb, pgdialect.New()), Kind: Postgres}
@@ -141,23 +141,6 @@ func openPostgres(ctx context.Context, dsn string) (*DB, error) {
 // Migrator returns a migration runner bound to this database.
 func (db *DB) Migrator() (*migrations.Runner, error) {
 	return migrations.NewRunner(db.DB.DB, db.Kind)
-}
-
-// withLockTimeout sets the PostgreSQL lock_timeout to half the driver read
-// timeout, unless the URL sets it. A transaction queued on a busy row lock
-// (many desks changing the same bookings) then fails with lock_not_available
-// (55P03), which RunInTx reports as a conflict, before the driver gives up on
-// the read and the request ends with a network error and a 500.
-func withLockTimeout(conf *pgdriver.Config) {
-	if _, ok := conf.ConnParams["lock_timeout"]; ok {
-		return
-	}
-	params := make(map[string]any, len(conf.ConnParams)+1)
-	for k, v := range conf.ConnParams {
-		params[k] = v
-	}
-	params["lock_timeout"] = fmt.Sprintf("%dms", (conf.ReadTimeout / 2).Milliseconds())
-	conf.ConnParams = params
 }
 
 // RunInTx runs fn inside a transaction, committing on nil error and rolling
