@@ -9,14 +9,28 @@ const ASSETS = resolve(import.meta.dirname, '../../../../../assets/brand');
 
 /** Where each copy in shared/src/brand comes from (assets/brand is the source of truth). */
 function sourceOf(file: string): string {
-  // The Coste360 lockup is the company's original raster logo (logo-*.png, 781x312), never redrawn.
-  const coste360 = /^coste360-logo-(\w+)\.png$/.exec(file);
-  if (coste360) return resolve(ASSETS, 'coste360', `logo-${coste360[1]}.png`);
+  // The Coste360 lockup is the company's own SVG (logo.svg), only recoloured per tone, never redrawn.
+  const coste360 = /^coste360-logo-(\w+)\.svg$/.exec(file);
+  if (coste360) return resolve(ASSETS, 'coste360', `logo-${coste360[1]}.svg`);
   if (/^arenile-(logo|name)-/.test(file)) return resolve(ASSETS, 'arenile', 'outlined', file);
   return resolve(ASSETS, 'arenile', file);
 }
 
 describe('brand assets', () => {
+  it.each([
+    ['primary', '#0c2442'],
+    ['white', '#fff'],
+  ])(
+    'the Coste360 %s lockup is the supplied logo.svg with only its fill set to %s',
+    (tone, fill) => {
+      const original = readFileSync(resolve(ASSETS, 'coste360', 'logo.svg'), 'utf8');
+      const variant = readFileSync(resolve(ASSETS, 'coste360', `logo-${tone}.svg`), 'utf8');
+      const group = `fill="${fill}" id="content_group"`;
+      expect(variant.split(group)).toHaveLength(2);
+      expect(variant.replace(group, 'fill="#000" id="content_group"')).toBe(original);
+    },
+  );
+
   it.each(readdirSync(BRAND_DIR))('%s is an unmodified copy of assets/brand', (file) => {
     expect(readFileSync(resolve(BRAND_DIR, file))).toEqual(readFileSync(sourceOf(file)));
   });
@@ -109,5 +123,12 @@ describe('BrandLogo', () => {
     for (const link of screen.getAllByRole('link')) {
       expect(link).toHaveAttribute('href', 'https://www.coste360.it/');
     }
+  });
+
+  it('sidebar signature puts the "made by" label before the logo', () => {
+    render(<Coste360Signature />);
+    const link = screen.getByRole('link');
+    expect(link.firstElementChild?.tagName).toBe('SPAN');
+    expect(link.querySelector('img')).not.toBeNull();
   });
 });

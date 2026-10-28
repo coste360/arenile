@@ -8,8 +8,8 @@ import nameWhiteUrl from '../../brand/arenile-name-white.svg';
 import symbolUrl from '../../brand/arenile-symbol-color.svg';
 import symbolNavyUrl from '../../brand/arenile-symbol-navy.svg';
 import symbolWhiteUrl from '../../brand/arenile-symbol-white.svg';
-import coste360PrimaryUrl from '../../brand/coste360-logo-primary.png';
-import coste360WhiteUrl from '../../brand/coste360-logo-white.png';
+import coste360PrimaryUrl from '../../brand/coste360-logo-primary.svg';
+import coste360WhiteUrl from '../../brand/coste360-logo-white.svg';
 import { cn } from '../../lib/utils';
 
 /**
@@ -141,7 +141,7 @@ export function Coste360Logo({ className }: BrandProps) {
       light={coste360PrimaryUrl}
       dark={coste360WhiteUrl}
       alt="Coste360.it"
-      className={cn('h-12', className)}
+      className={cn('h-7', className)}
     />
   );
 }
@@ -160,7 +160,7 @@ export function MadeByCoste360({ className }: BrandProps) {
       )}
     >
       <span>{t('brand.madeBy')}</span>
-      <Coste360Logo className="h-10" />
+      <Coste360Logo className="h-6" />
     </a>
   );
 }
@@ -192,7 +192,10 @@ export function BrandLogo({
   return <ArenileLogo className={className} tone={tone} />;
 }
 
-/** Discreet Coste360 signature for app chrome (sidebar footer): small, muted, linked. */
+/**
+ * Discreet Coste360 signature for app chrome (sidebar footer): "Un prodotto
+ * di" + logo, centred, small, muted, linked.
+ */
 export function Coste360Signature({ className }: BrandProps) {
   const { t } = useTranslation();
   return (
@@ -202,11 +205,13 @@ export function Coste360Signature({ className }: BrandProps) {
       rel="noopener noreferrer"
       title={t('brand.lockup')}
       className={cn(
-        'flex w-fit items-center rounded-md px-2 py-1 opacity-60 outline-ring/50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2',
+        'group mx-auto flex w-fit items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground outline-ring/50 focus-visible:outline-2',
         className,
       )}
     >
-      <Coste360Logo className="h-8" />
+      {/* Only the logo is dimmed: the label keeps the muted text contrast (WCAG AA). */}
+      <span>{t('brand.madeBy')}</span>
+      <Coste360Logo className="h-5 opacity-60 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
     </a>
   );
 }

@@ -15,6 +15,12 @@ filings are **to be reviewed by counsel**.
 
 - **Original company files** (kept exactly as supplied): `icon-primary.svg`, `icon-white.svg`,
   `icon-*.png`, `logo-{black,primary,white}.png` (781x312), `logo-full-*.png` (981x140, with the tagline).
-- **Used by the apps:** `logo-{primary,white}.png` (the company logo as supplied, copied unchanged into
-  `web/shared/src/brand/` and `docs-site/public/brand/`; a test keeps the copies identical). The lockup is
-  never redrawn or vectorised.
+- **Company SVG lockup** (supplied and approved by the owner on 2026-10-27): `logo.svg`, mark and
+  "Coste360.it" outlined, black. It was vectorised from the company logo with an AI tool (QuiverAI Arrow,
+  see the comment in the file) and is kept exactly as supplied; it falls under the counsel review above.
+  The only derived files are `logo-primary.svg` (fill #0c2442, the company primary) and `logo-white.svg`
+  (fill #fff), which change only the fill of the `content_group` group. The lockup is never redrawn.
+- **Used by the apps:** the panel uses `logo-{primary,white}.svg`, copied unchanged into
+  `web/shared/src/brand/` (`Brand.test.tsx` keeps the panel copies identical and checks the fills); the
+  docs site still uses `logo-{primary,white}.png` in `docs-site/public/brand/` (ADR 0018, 2026-10-27
+  amendment).

@@ -92,3 +92,16 @@ deve caricare font solo per un logo.
   `TestBrandMarkMatchesBrandKit` (marchio delle email), budget della pagina pubblica.
 - Da rivedere con un legale: testi di `TRADEMARK.md` e dei `NOTICE.md` (asset creati con l'aiuto
   dell'intelligenza artificiale).
+
+## Emendamento — logo Coste360 vettoriale (decisione del titolare, 2026-10-27)
+
+- Il titolare ha fornito il logo Coste360 completo (simbolo e "Coste360.it") in SVG con il testo in
+  tracciati: `assets/brand/coste360/logo.svg`, nero. Il file è stato vettorializzato dal logo aziendale con
+  uno strumento di intelligenza artificiale (QuiverAI Arrow, come indica il commento nel file) ed è stato
+  approvato dal titolare così com'è. Rientra nella verifica legale già prevista per il materiale del marchio.
+- Il pannello (firma sotto l'account nella sidebar, accesso, primo avvio) usa questo SVG al posto del PNG:
+  `logo-primary.svg` (riempimento `#0c2442`, il primario Coste360 di `icon-primary.svg`) sui fondi chiari e
+  `logo-white.svg` (`#fff`) in tema scuro. Le due varianti cambiano solo il riempimento del gruppo
+  `content_group`; un test lo verifica. Il disegno non viene modificato.
+- La documentazione usa ancora i PNG originali (`logo-{primary,white}.png`). Il resto della regola resta
+  valido: il logo non viene ridisegnato e il link è sempre https://www.coste360.it/.
