@@ -113,6 +113,9 @@ func selectionFromAPI(s api.PublicSelection) checkout.Selection {
 	if s.PromoCode != nil {
 		out.PromoCode = strings.TrimSpace(*s.PromoCode)
 	}
+	if s.AgreementCode != nil {
+		out.AgreementCode = strings.TrimSpace(*s.AgreementCode)
+	}
 	return out
 }
 
@@ -155,6 +158,7 @@ func quoteToAPI(q *checkout.Quote) api.PublicQuote {
 	if q.Promo != nil {
 		out.Promo = &api.PromoStatus{Code: q.Promo.Code, Status: api.PromoStatusStatus(q.Promo.Status)}
 	}
+	out.Agreement = agreementStatusToAPI(q.Agreement)
 	return out
 }
 

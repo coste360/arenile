@@ -25,6 +25,12 @@ import type {
   PromoCode,
   PromoCodeInput,
 } from './api';
+import {
+  agreementM8Fields,
+  agreementM8Values,
+  refineAgreementM8,
+  toAgreementM8Input,
+} from './agreements/agreement.schema';
 
 /**
  * Form schemas of the pricing feature (spec 8): price rules, fixed-duration
@@ -532,8 +538,12 @@ export const agreementSchema = z
     partner_name: z.string().trim().max(200),
     notes: z.string().trim().max(2000),
     ...discountBase,
+    ...agreementM8Fields,
   })
-  .superRefine(refineDiscount);
+  .superRefine((v, ctx) => {
+    refineDiscount(v, ctx);
+    refineAgreementM8(v, ctx);
+  });
 
 export type AgreementValues = z.infer<typeof agreementSchema>;
 
@@ -549,6 +559,7 @@ export function agreementValues(a: Agreement | undefined): AgreementValues {
     active: a?.active ?? true,
     ...actionValues(a?.action, 'percent_off'),
     ...conditionValues(a?.conditions),
+    ...agreementM8Values(a),
   };
 }
 
@@ -561,6 +572,7 @@ export function toAgreementInput(v: AgreementValues): AgreementInput {
     conditions: toConditions(v),
     stackable: v.stackable,
     active: v.active,
+    ...toAgreementM8Input(v),
   };
   if (v.code) input.code = v.code.trim();
   if (v.valid_from) input.valid_from = v.valid_from;

@@ -114,5 +114,16 @@
       "amount": "Indica un importo tra 0 e 1.000.000 €.",
       "reason": "Scrivi il motivo (da 3 a 500 caratteri)."
     }
+  },
+  "releaseRange": {
+    "title": "Rilascia un periodo",
+    "period": "Periodo",
+    "weekdays": "Solo questi giorni della settimana",
+    "weekdaysHint": "Nessun giorno scelto = tutti i giorni del periodo (es. ogni lunedì di luglio).",
+    "count_one": "{{count}} giorno da rilasciare",
+    "count_other": "{{count}} giorni da rilasciare",
+    "submit": "Rilascia il periodo",
+    "done_one": "{{count}} giorno rilasciato: la postazione è prenotabile.",
+    "done_other": "{{count}} giorni rilasciati: la postazione è prenotabile."
   }
 }

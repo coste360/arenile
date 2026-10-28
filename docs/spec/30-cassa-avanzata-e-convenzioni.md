@@ -179,6 +179,9 @@ Ricerca della disponibilità per la cassa, dal pulsante **Trova posto** e dalla 
 
 - Nell'editor, ogni postazione ha l'opzione **vendibile online**, oltre alla quota online di zona (spec 7.6).
 - La pagina pubblica mostra e vende solo le postazioni abilitate; la cassa le vede tutte.
+- Il canale `api` segue le regole online (come per la quota online); l'esclusione vale in ogni modalità di zona,
+  anche nell'assegnazione automatica delle zone `zone`. Un operatore della cassa può spostare o scambiare una
+  prenotazione nata online su una postazione esclusa (INV-105).
 
 ### 30.12 Fuori perimetro
 

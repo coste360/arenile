@@ -25,6 +25,7 @@ import { seasons as seasonsResource, type Season } from '../configuration/api/re
 import { useSeasonPass, useSeasonPasses, type SeasonPass } from './api';
 import { CreatePassDialog } from './CreatePassDialog';
 import { ReleaseCalendar } from './ReleaseCalendar';
+import { ReleaseRangeForm } from './ReleaseRangeForm';
 
 /** Season of today, else the latest one. */
 function currentSeason(seasons: Season[], today: string): Season | undefined {
@@ -357,6 +358,14 @@ function PassSheet({
             releases={detail.data.releases}
             canWrite={canWrite && (pass.status === 'confirmed' || pass.status === 'checked_in')}
           />
+          {canWrite && (pass.status === 'confirmed' || pass.status === 'checked_in') && (
+            <section aria-labelledby="release-range-title" className="space-y-3 border-t pt-4">
+              <h3 id="release-range-title" className="text-sm font-medium">
+                {t('releaseRange.title')}
+              </h3>
+              <ReleaseRangeForm establishmentId={establishmentId} pass={pass} />
+            </section>
+          )}
         </div>
       )}
     </FormSheet>

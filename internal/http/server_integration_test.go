@@ -93,3 +93,26 @@ func TestHTTPIntegration_CrossTenant(t *testing.T) {
 		}
 	})
 }
+
+// TestHTTPIntegration_ShareSummaryIsPost: the summary for the customer
+// rotates the manage link, so it is a POST and the router refuses a GET
+// (405): no cross-site navigation or prefetch can revoke the link the
+// customer received (session cookies are SameSite=Lax).
+func TestHTTPIntegration_ShareSummaryIsPost(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		c := e.client()
+		if resp, body := c.login("owner@lido-a.it", "password-a-123"); resp.StatusCode != 200 {
+			t.Fatal(body)
+		}
+		path := "/api/admin/v1/establishments/" + e.estA.ID + "/bookings/" + store.NewID() + "/share-summary"
+		resp, _ := c.do(http.MethodGet, path, nil, nil)
+		if resp.StatusCode != http.StatusMethodNotAllowed {
+			t.Fatalf("GET share-summary: %d, want 405", resp.StatusCode)
+		}
+		resp, _ = c.do(http.MethodPost, path, nil, nil)
+		if resp.StatusCode == http.StatusMethodNotAllowed {
+			t.Fatalf("POST share-summary: %d", resp.StatusCode)
+		}
+	})
+}

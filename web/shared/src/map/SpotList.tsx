@@ -18,6 +18,8 @@ export interface SpotListProps {
    * Inactive spots are never activatable.
    */
   activateAny?: boolean;
+  /** Status names overriding the defaults (see BeachMap `statusLabels`). */
+  statusLabels?: Partial<Record<SpotStatus, string>>;
   className?: string;
 }
 
@@ -72,6 +74,7 @@ export function SpotList({
   onSpotActivate,
   spotDescription,
   activateAny = false,
+  statusLabels,
   className,
 }: SpotListProps) {
   const { t } = useTranslation();
@@ -158,7 +161,7 @@ export function SpotList({
                         {/* The spaces keep words apart in the computed accessible name. */}
                         <span className="font-medium">{spot.label}</span>{' '}
                         <span className="text-xs opacity-80">
-                          {t(`map.status.${status}`)}
+                          {statusLabels?.[status] ?? t(`map.status.${status}`)}
                           {extra ? ` – ${extra}` : ''}
                         </span>
                       </Button>

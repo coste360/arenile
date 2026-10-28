@@ -37,6 +37,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/customer"
 	devicedomain "github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/findspot"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/inventory"
@@ -44,6 +45,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
+	"github.com/coste360/arenile/internal/domain/partner"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
@@ -150,6 +152,9 @@ type Deps struct {
 	Printing *printing.Service
 	// Update notice (ADR 0025); nil answers 501.
 	Updates *update.Service
+	// M8 (ADR 0028): partners and find spot; nil answers 501.
+	Partners   *partner.Service
+	SpotFinder *findspot.Service
 
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
@@ -284,11 +289,13 @@ func New(d Deps) http.Handler {
 			Reports: d.Reports, APIKeys: d.APIKeys, Webhooks: d.Webhooks,
 			Stream:   &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 			Rollover: d.Rollover, Renewals: d.Renewals, Waitlist: d.Waitlist, Credits: d.Credits,
-			TestMode: d.TestMode,
-			Refunds:  d.Refunds,
-			Imports:  d.Imports,
-			Printing: d.Printing,
-			Updates:  d.Updates,
+			TestMode:   d.TestMode,
+			Refunds:    d.Refunds,
+			Imports:    d.Imports,
+			Printing:   d.Printing,
+			Updates:    d.Updates,
+			Partners:   d.Partners,
+			SpotFinder: d.SpotFinder,
 		},
 		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
 		desktopHandlers: &desktopHandlers{

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}} · {{.Header.Name}}</title>
+<style>
+@page { size: A4 landscape; margin: 12mm; }
+:root { color-scheme: light; --ink: #0f172a; --muted: #475569; --rule: #cbd5e1; --navy: #0b2542; --neg: #b91c1c; --pos: #15803d; }
+* { box-sizing: border-box; }
+html { background: #f8fafc; }
+body { margin: 0 auto; padding: 24px 16px; max-width: 297mm; color: var(--ink); background: #fff;
+  font: 12px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.hint { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; color: var(--muted); }
+header.doc { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--navy); }
+.est h1 { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+.est p { margin: 0; color: var(--muted); }
+.logo { height: 34px; width: auto; flex: none; }
+h2.title { margin: 16px 0 8px; font-size: 20px; }
+h3 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--navy); }
+dl.meta { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 10px; margin: 0 0 12px; }
+dl.meta dt { color: var(--muted); }
+dl.meta dd { margin: 0; font-weight: 600; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 6px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 11px; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tfoot td, tr.total td { font-weight: 700; border-top: 2px solid var(--ink); }
+.cond { color: var(--muted); font-size: 11px; }
+.void { color: var(--muted); text-decoration: line-through; }
+.neg { color: var(--neg); }
+.pos { color: var(--pos); }
+section { break-inside: avoid; margin: 0 0 12px; }
+.empty { color: var(--muted); margin: 0; }
+.sign { display: flex; gap: 24px; margin-top: 36px; }
+.sign div { flex: 1; border-top: 1px solid var(--ink); padding-top: 4px; color: var(--muted); font-size: 11px; }
+footer.doc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; }
+@media print { html, body { background: #fff; } body { padding: 0; max-width: none; } .hint { display: none; } .scroll { overflow: visible; } }
+@media screen and (max-width: 640px) { header.doc { flex-direction: column-reverse; } dl.meta { grid-template-columns: auto 1fr; } }
+</style>
+</head>
+<body>
+<p class="hint">{{call .T "doc.printHint"}}</p>
+<header class="doc">
+  <div class="est">
+    <h1>{{.Header.Name}}</h1>
+    {{range .Header.AddressLines}}<p>{{.}}</p>{{end}}
+    {{if .Header.LegalName}}<p>{{.Header.LegalName}}</p>{{end}}
+    {{if .Header.VATNumber}}<p>{{call .T "st.vat"}} {{.Header.VATNumber}}</p>{{end}}
+    {{if .Header.ConcessionRef}}<p>{{.Header.ConcessionRef}}</p>{{end}}
+  </div>
+  <img class="logo" src="{{.Logo}}" alt="Arenile" width="107" height="34">
+</header>
+<h2 class="title">{{.Title}}</h2>
+<dl class="meta">
+  <dt>{{call .T "reg.period"}}</dt><dd>{{.Period}}</dd>
+  <dt>{{call .T "reg.generatedAt"}}</dt><dd>{{.Generated}}</dd>
+  {{if .SeasonYear}}<dt>{{call .T "reg.season"}}</dt><dd>{{.SeasonYear}}</dd>{{end}}
+</dl>
+{{if not .Categories}}<p class="empty">{{call .T "reg.empty"}}</p>{{end}}
+{{range .Categories}}
+<section data-testid="register-category">
+  <h3>{{.Label}}</h3>
+  <div class="scroll"><table>
+    <thead><tr>
+      <th scope="col">{{call $.T "reg.agreement"}}</th>
+      <th scope="col">{{call $.T "reg.recipients"}}</th>
+      <th scope="col">{{call $.T "reg.conditions"}}</th>
+      <th scope="col">{{call $.T "reg.validity"}}</th>
+      <th scope="col" class="num">{{call $.T "reg.bookings"}}</th>
+      <th scope="col" class="num">{{call $.T "reg.spotDays"}}</th>
+      <th scope="col" class="num">{{call $.T "reg.people"}}</th>
+      <th scope="col" class="num">{{call $.T "reg.revenue"}}</th>
+      <th scope="col" class="num">{{call $.T "reg.discount"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range .Entries}}<tr>
+      <th scope="row">{{.Name}}{{if .Code}} <span class="cond">({{.Code}})</span>{{end}}</th>
+      <td>{{.Recipients}}</td>
+      <td class="cond">{{.Conditions}}</td>
+      <td>{{.Validity}}</td>
+      <td class="num">{{.Bookings}}</td>
+      <td class="num">{{.SpotDays}}</td>
+      <td class="num">{{.People}}</td>
+      <td class="num">{{.Revenue}}</td>
+      <td class="num">{{.Discount}}</td>
+    </tr>
+    {{end}}</tbody>
+    <tfoot><tr>
+      <td colspan="4">{{call $.T "reg.categoryTotal"}}</td>
+      <td class="num">{{.Total.Bookings}}</td>
+      <td class="num">{{.Total.SpotDays}}</td>
+      <td class="num">{{.Total.People}}</td>
+      <td class="num">{{.Total.Revenue}}</td>
+      <td class="num">{{.Total.Discount}}</td>
+    </tr></tfoot>
+  </table></div>
+</section>
+{{end}}
+<section data-testid="register-summary">
+  <h3>{{call .T "reg.byCategory"}}</h3>
+  <div class="scroll"><table>
+    <thead><tr>
+      <th scope="col">{{call .T "reg.category"}}</th>
+      <th scope="col" class="num">{{call .T "reg.agreements"}}</th>
+      <th scope="col" class="num">{{call .T "reg.bookings"}}</th>
+      <th scope="col" class="num">{{call .T "reg.spotDays"}}</th>
+      <th scope="col" class="num">{{call .T "reg.people"}}</th>
+      <th scope="col" class="num">{{call .T "reg.revenue"}}</th>
+      <th scope="col" class="num">{{call .T "reg.discount"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range .Categories}}<tr>
+      <th scope="row">{{.Label}}</th>
+      <td class="num">{{.Total.Agreements}}</td>
+      <td class="num">{{.Total.Bookings}}</td>
+      <td class="num">{{.Total.SpotDays}}</td>
+      <td class="num">{{.Total.People}}</td>
+      <td class="num">{{.Total.Revenue}}</td>
+      <td class="num">{{.Total.Discount}}</td>
+    </tr>{{end}}
+    </tbody>
+    <tfoot><tr data-testid="register-total">
+      <td>{{call .T "reg.grandTotal"}}</td>
+      <td class="num">{{.Total.Agreements}}</td>
+      <td class="num">{{.Total.Bookings}}</td>
+      <td class="num">{{.Total.SpotDays}}</td>
+      <td class="num">{{.Total.People}}</td>
+      <td class="num">{{.Total.Revenue}}</td>
+      <td class="num">{{.Total.Discount}}</td>
+    </tr></tfoot>
+  </table></div>
+</section>
+<div class="sign"><div>{{call .T "reg.place"}}</div><div>{{call .T "reg.signature"}}</div></div>
+<footer class="doc">{{call .T "reg.footer"}}</footer>
+</body>
+</html>

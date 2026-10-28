@@ -95,6 +95,9 @@ type Spot struct {
 	Active                bool           `bun:"active,notnull"`
 	CreatedAt             time.Time      `bun:"created_at,notnull"`
 	UpdatedAt             time.Time      `bun:"updated_at,notnull"`
+	// OnlineExcluded is the negation of the API flag online_bookable (00013,
+	// spec 30.11): false (the zero value) keeps the spot sellable online.
+	OnlineExcluded bool `bun:"online_excluded,notnull"`
 }
 
 // MapDecoration is a non-bookable map element (walkway, shower, bar...).

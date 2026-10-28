@@ -10,6 +10,7 @@ import type { FlowAction, FlowLine, FlowState } from '../flow/selection';
 import { PUBLIC_NS } from '../i18n';
 import { ExtrasList } from './what/ExtrasList';
 import { PackChoice } from './what/PackChoice';
+import { AgreementCode } from './what/AgreementCode';
 import { PromoCode } from './what/PromoCode';
 
 export interface WhatStepProps {
@@ -17,6 +18,7 @@ export interface WhatStepProps {
   dispatch: Dispatch<FlowAction>;
   /** Promo status from the latest quote. */
   promoStatus?: Schemas['PromoStatus'];
+  agreementStatus?: Schemas['AgreementStatus'];
 }
 
 function baseQuery(state: FlowState): CatalogQuery {
@@ -111,7 +113,7 @@ function LinePacks({
  * booking extras and the promo code. Prices here are indicative; the price
  * summary shows the binding `quote` (debounced) on every change.
  */
-export default function WhatStep({ state, dispatch, promoStatus }: WhatStepProps) {
+export default function WhatStep({ state, dispatch, promoStatus, agreementStatus }: WhatStepProps) {
   const { t } = useTranslation(PUBLIC_NS);
   const { slug, online } = useBookingEnv();
   const general = usePublicCatalog(slug, baseQuery(state));
@@ -135,6 +137,11 @@ export default function WhatStep({ state, dispatch, promoStatus }: WhatStepProps
           onApply={(code) => dispatch({ type: 'promo', code })}
         />
       )}
+      <AgreementCode
+        value={state.agreementCode}
+        status={agreementStatus}
+        onApply={(code) => dispatch({ type: 'agreement', code })}
+      />
     </div>
   );
 }

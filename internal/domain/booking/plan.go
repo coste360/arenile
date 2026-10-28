@@ -113,6 +113,9 @@ type PricedLine struct {
 	SpotID   string
 	Quantity int
 	Extras   []ExtraInput
+	// Segments of a split stay: each day is priced with the spot occupied
+	// that day (ADR 0028).
+	Segments []SegmentInput
 }
 
 // PricingLines expands the requested lines into the engine lines: a line
@@ -125,7 +128,7 @@ func PricingLines(lines []PricedLine) ([]pricing.LineInput, []int) {
 	for i, l := range lines {
 		q := max(l.Quantity, 1)
 		for u := range q {
-			in := pricing.LineInput{PackID: l.PackID, ZoneID: l.ZoneID, SpotID: l.SpotID}
+			in := pricing.LineInput{PackID: l.PackID, ZoneID: l.ZoneID, SpotID: l.SpotID, Segments: EngineSegments(l.Segments)}
 			if u == 0 {
 				for _, x := range l.Extras {
 					in.Extras = append(in.Extras, pricing.ExtraInput{ExtraID: x.ExtraID, Quantity: x.Quantity})

@@ -190,7 +190,7 @@ func UpdateSpot(ctx context.Context, db bun.IDB, es EstablishmentScope, s *Spot)
 	mappingNormalizeSpot(s)
 	res, err := db.NewUpdate().Model(s).
 		Column("zone_id", "label", "row_label", "number", "kind", "asset", "x", "y", "rotation", "shape", "capacity",
-			"max_extra", "price_category_override", "attributes", "active", "updated_at").
+			"max_extra", "price_category_override", "attributes", "active", "online_excluded", "updated_at").
 		Where("sp.id = ?", s.ID).Where("sp.establishment_id = ?", es.ID()).Where("sp.map_id = ?", s.MapID).
 		Exec(ctx)
 	if err != nil {

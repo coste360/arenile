@@ -51,6 +51,18 @@ type AllocateRequest struct {
 	// ExpiresAt is required iff Kind == KindHold (INV-06).
 	ExpiresAt *time.Time
 	Lines     []LineRequest
+	// AgreementID is the agreement of the booking (M8): its quota counts
+	// this sale; every other reserve is protected from it (INV-103).
+	AgreementID string
+	// Skip leaves these half-days out of the allocation: the days a season
+	// pass holder released stay free when the pass is moved or swapped
+	// (INV-10). Half-days outside the interval are ignored.
+	Skip []availability.DateSlot
+	// ByDesk marks an operation of the cash desk (a panel user moving,
+	// swapping or editing a booking of any channel): the spots excluded
+	// from online sale are allowed, "la cassa le vede tutte" (spec 30.11);
+	// the online quotas still follow Channel.
+	ByDesk bool
 }
 
 // LineAllocation is the outcome for one line.

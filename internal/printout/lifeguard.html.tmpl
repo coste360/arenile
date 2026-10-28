@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{call .T "lg.title"}} · {{.Date}} · {{.Establishment}}</title>
+<style>
+@page { size: A4; margin: 12mm 12mm 14mm; }
+:root { color-scheme: light; --ink: #0f172a; --muted: #475569; --rule: #cbd5e1; --navy: #0b2542; --warn: #b45309; }
+* { box-sizing: border-box; }
+html { background: #f8fafc; }
+body { margin: 0 auto; padding: 24px 16px; max-width: 210mm; color: var(--ink); background: #fff;
+  font: 12px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.hint { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; color: var(--muted); }
+header.doc { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--navy); }
+header.doc h1 { margin: 0 0 2px; font-size: 18px; }
+header.doc p { margin: 0; color: var(--muted); }
+.logo { height: 30px; width: auto; flex: none; }
+dl.kpi { display: grid; grid-template-columns: repeat(4, auto 1fr); gap: 2px 10px; margin: 10px 0; }
+dl.kpi dt { color: var(--muted); }
+dl.kpi dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 3px 6px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 11px; }
+tbody tr { break-inside: avoid; }
+tr.row-start td { border-top: 2px solid var(--ink); }
+.due { color: var(--warn); font-weight: 600; }
+.anon { color: var(--muted); font-style: italic; }
+.empty { color: var(--muted); }
+footer.doc { margin-top: 14px; padding-top: 6px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; }
+@media print { html, body { background: #fff; } body { padding: 0; max-width: none; } .hint { display: none; } }
+@media screen and (max-width: 640px) { dl.kpi { grid-template-columns: auto 1fr; } .wide { display: none; } }
+</style>
+</head>
+<body>
+<p class="hint">{{call .T "lg.printHint"}}</p>
+<header class="doc">
+  <div>
+    <h1>{{call .T "lg.title"}}</h1>
+    <p>{{.Establishment}} · {{call .T "lg.date"}} {{.Date}} · {{.Slot}}</p>
+  </div>
+  <img class="logo" src="{{.Logo}}" alt="Arenile" width="94" height="30">
+</header>
+<dl class="kpi" data-testid="totals">
+  <dt>{{call .T "lg.occupied"}}</dt><dd>{{.Occupied}}</dd>
+  <dt>{{call .T "lg.free"}}</dt><dd>{{.Free}}</dd>
+  <dt>{{call .T "lg.arrivals"}}</dt><dd>{{.Arrivals}}</dd>
+  <dt>{{call .T "lg.departures"}}</dt><dd>{{.Departures}}</dd>
+</dl>
+{{if .Rows}}
+<table data-testid="rows">
+  <thead><tr>
+    <th scope="col">{{call .T "lg.row"}}</th>
+    <th scope="col">{{call .T "lg.spot"}}</th>
+    <th scope="col">{{call .T "lg.occupant"}}</th>
+    <th scope="col">{{call .T "lg.setup"}}</th>
+    <th scope="col">{{call .T "lg.movement"}}</th>
+    <th scope="col">{{call .T "lg.balanceDue"}}</th>
+    <th scope="col" class="wide">{{call .T "lg.group"}}</th>
+  </tr></thead>
+  <tbody>
+  {{range .Rows}}<tr{{if .RowStart}} class="row-start"{{end}}>
+    <td>{{.Row}}</td>
+    <th scope="row">{{.Spot}}</th>
+    <td>{{if .Occupant}}{{.Occupant}}{{else}}<span class="anon">{{call $.T "lg.anonymous"}}</span>{{end}}</td>
+    <td>{{.Setup}}</td>
+    <td>{{.Movement}}</td>
+    <td>{{if .Due}}<span class="due">{{call $.T "lg.balanceDue"}}</span>{{end}}</td>
+    <td class="wide">{{.Group}}</td>
+  </tr>
+  {{end}}</tbody>
+</table>
+{{else}}<p class="empty">{{call .T "lg.empty"}}</p>{{end}}
+<footer class="doc">{{call .T "lg.footer"}}</footer>
+</body>
+</html>

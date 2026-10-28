@@ -90,6 +90,8 @@ export function toCustomerInput(
     ...(v.notes.trim() ? { notes: v.notes.trim() } : {}),
     ...(tags.length ? { tags } : {}),
     ...(previous?.agreement_id ? { agreement_id: previous.agreement_id } : {}),
+    // Full replacement: keep the categories edited on the customer card (M8).
+    ...(previous?.category_ids?.length ? { category_ids: previous.category_ids } : {}),
     ...(consent ? { marketing_consent: consent } : {}),
   };
 }

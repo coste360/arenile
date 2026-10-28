@@ -1,0 +1,63 @@
+{
+  "title": "Find a spot",
+  "description": "Search availability by dates, slot, number of spots and allowed spot changes, with the estimated price.",
+  "open": "Find a spot",
+  "form": {
+    "label": "Search",
+    "dates": "Dates",
+    "slots": "Slot",
+    "count": "Spots",
+    "countHint": "For groups the proposals prefer spots close together.",
+    "maxChanges": "Spot changes allowed",
+    "changes": {
+      "0": "None",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
+    "maxChangesHint": "With one or more changes the same booking moves from one spot to another during the stay.",
+    "zones": "Zones",
+    "anyZone": "All zones",
+    "pack": "Pack or setup",
+    "noPack": "No pack (no price)",
+    "packHint": "A pack is needed to see the price and to book.",
+    "attributes": "Attributes",
+    "anyAttribute": "Any",
+    "agreement": "Agreement",
+    "noAgreement": "None",
+    "search": "Search",
+    "again": "Search again"
+  },
+  "results": {
+    "title": "Proposals",
+    "empty": "No proposals",
+    "emptyHint": "Try other dates, more spot changes or fewer spots.",
+    "count_one": "{{count}} proposal",
+    "count_other": "{{count}} proposals",
+    "truncated": "There are more: narrow the search.",
+    "proposal": "Proposal {{rank}}",
+    "noChanges": "No spot change",
+    "changes_one": "{{count}} spot change",
+    "changes_other": "{{count}} spot changes",
+    "adjacent": "Close together",
+    "agreementApplied": "Agreement applied",
+    "showOnMap": "Show on the map",
+    "book": "Book",
+    "packToBook": "To book, choose a pack and search again."
+  },
+  "segment": {
+    "day": "{{spot}} on {{date}}",
+    "range": "{{spot}} from {{from}} to {{to}}"
+  },
+  "book": {
+    "title": "Book proposal {{rank}}",
+    "description": "From {{from}} to {{to}}: choose the customer and confirm.",
+    "segments": "Spots",
+    "total": "Estimated total:",
+    "customer": "Customer",
+    "cancel": "Cancel",
+    "confirm": "Book",
+    "done": "Booking {{code}} created.",
+    "taken": "Meanwhile a date was taken: here are the new proposals."
+  }
+}

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}} · {{.Partner.Name}} · {{.Header.Name}}</title>
+<style>
+@page { size: A4 landscape; margin: 12mm; }
+:root { color-scheme: light; --ink: #0f172a; --muted: #475569; --rule: #cbd5e1; --navy: #0b2542; --neg: #b91c1c; --pos: #15803d; }
+* { box-sizing: border-box; }
+html { background: #f8fafc; }
+body { margin: 0 auto; padding: 24px 16px; max-width: 297mm; color: var(--ink); background: #fff;
+  font: 12px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.hint { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; color: var(--muted); }
+header.doc { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--navy); }
+.est h1 { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+.est p { margin: 0; color: var(--muted); }
+.logo { height: 34px; width: auto; flex: none; }
+h2.title { margin: 16px 0 8px; font-size: 20px; }
+h3 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--navy); }
+dl.meta { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 10px; margin: 0 0 12px; }
+dl.meta dt { color: var(--muted); }
+dl.meta dd { margin: 0; font-weight: 600; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 6px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 11px; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tfoot td, tr.total td { font-weight: 700; border-top: 2px solid var(--ink); }
+.cond { color: var(--muted); font-size: 11px; }
+.void { color: var(--muted); text-decoration: line-through; }
+.neg { color: var(--neg); }
+.pos { color: var(--pos); }
+section { break-inside: avoid; margin: 0 0 12px; }
+.empty { color: var(--muted); margin: 0; }
+.sign { display: flex; gap: 24px; margin-top: 36px; }
+.sign div { flex: 1; border-top: 1px solid var(--ink); padding-top: 4px; color: var(--muted); font-size: 11px; }
+footer.doc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; }
+@media print { html, body { background: #fff; } body { padding: 0; max-width: none; } .hint { display: none; } .scroll { overflow: visible; } }
+@media screen and (max-width: 640px) { header.doc { flex-direction: column-reverse; } dl.meta { grid-template-columns: auto 1fr; } }
+</style>
+</head>
+<body>
+<p class="hint">{{call .T "doc.printHint"}}</p>
+<header class="doc">
+  <div class="est">
+    <h1>{{.Header.Name}}</h1>
+    {{range .Header.AddressLines}}<p>{{.}}</p>{{end}}
+    {{if .Header.LegalName}}<p>{{.Header.LegalName}}</p>{{end}}
+    {{if .Header.VATNumber}}<p>{{call .T "st.vat"}} {{.Header.VATNumber}}</p>{{end}}
+    {{if .Header.ConcessionRef}}<p>{{.Header.ConcessionRef}}</p>{{end}}
+  </div>
+  <img class="logo" src="{{.Logo}}" alt="Arenile" width="107" height="34">
+</header>
+<h2 class="title">{{.Title}}</h2>
+<dl class="meta">
+  <dt>{{call .T "st.partner"}}</dt><dd>{{.Partner.Name}}</dd>
+  <dt>{{call .T "reg.period"}}</dt><dd>{{.Period}}</dd>
+  {{if .Partner.VATNumber}}<dt>{{call .T "st.vat"}}</dt><dd>{{.Partner.VATNumber}}</dd>{{end}}
+  {{if .Partner.TaxCode}}<dt>{{call .T "st.fiscalCode"}}</dt><dd>{{.Partner.TaxCode}}</dd>{{end}}
+  {{if or .Partner.Address .Partner.Municipality}}<dt>&nbsp;</dt><dd>{{.Partner.Address}}{{if and .Partner.Address .Partner.Municipality}}, {{end}}{{.Partner.Municipality}}</dd>{{end}}
+  <dt>{{call .T "reg.generatedAt"}}</dt><dd>{{.Generated}}</dd>
+</dl>
+<section>
+  <h3>{{call .T "reg.bookings"}}</h3>
+  {{if .Bookings}}<div class="scroll"><table data-testid="statement-bookings">
+    <thead><tr>
+      <th scope="col">{{call .T "st.booking"}}</th>
+      <th scope="col">{{call .T "st.guest"}}</th>
+      <th scope="col">{{call .T "st.group"}}</th>
+      <th scope="col">{{call .T "reg.agreement"}}</th>
+      <th scope="col">{{call .T "st.stay"}}</th>
+      <th scope="col" class="num">{{call .T "reg.spotDays"}}</th>
+      <th scope="col" class="num">{{call .T "reg.people"}}</th>
+      <th scope="col" class="num">{{call .T "st.total"}}</th>
+      <th scope="col" class="num">{{call .T "reg.discount"}}</th>
+      <th scope="col" class="num">{{call .T "st.partnerAmount"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range .Bookings}}<tr>
+      <th scope="row">{{.Code}}</th><td>{{.Guest}}</td><td>{{.Group}}</td><td>{{.Agreement}}</td><td>{{.Stay}}</td>
+      <td class="num">{{.SpotDays}}</td><td class="num">{{.People}}</td><td class="num">{{.Total}}</td>
+      <td class="num">{{.Discount}}</td><td class="num">{{.Partner}}</td>
+    </tr>{{end}}
+    </tbody>
+    <tfoot><tr>
+      <td colspan="5">{{call .T "st.total"}}</td>
+      <td class="num">{{.SpotDays}}</td><td class="num">{{.People}}</td><td class="num">{{.Total}}</td>
+      <td class="num">{{.Discount}}</td><td class="num">{{.Charged}}</td>
+    </tr></tfoot>
+  </table></div>{{else}}<p class="empty">{{call .T "st.noBookings"}}</p>{{end}}
+</section>
+<section>
+  <h3>{{call .T "st.payments"}}</h3>
+  {{if .Payments}}<div class="scroll"><table data-testid="statement-payments">
+    <thead><tr>
+      <th scope="col">{{call .T "st.receivedOn"}}</th>
+      <th scope="col">{{call .T "st.method"}}</th>
+      <th scope="col">{{call .T "st.reference"}}</th>
+      <th scope="col" class="num">{{call .T "st.amount"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range .Payments}}<tr{{if .Voided}} class="void"{{end}}>
+      <td>{{.Date}}</td><td>{{.Method}}{{if .Voided}} ({{call $.T "st.voided"}}){{end}}</td><td>{{.Reference}}</td><td class="num">{{.Amount}}</td>
+    </tr>{{end}}
+    </tbody>
+  </table></div>{{else}}<p class="empty">{{call .T "st.noPayments"}}</p>{{end}}
+</section>
+<section>
+  <table data-testid="statement-balance">
+    <tbody>
+      <tr><th scope="row">{{call .T "st.opening"}}</th><td class="num">{{.Opening}}</td></tr>
+      <tr><th scope="row">{{call .T "st.charged"}}</th><td class="num">{{.Charged}}</td></tr>
+      <tr><th scope="row">{{call .T "st.paid"}}</th><td class="num">{{.Paid}}</td></tr>
+      <tr class="total"><td>{{call .T "st.closing"}}</td><td class="num {{.ClosingTone}}">{{.Closing}}</td></tr>
+    </tbody>
+  </table>
+</section>
+<div class="sign"><div>{{call .T "reg.place"}}</div><div>{{call .T "reg.signature"}}</div></div>
+<footer class="doc">{{call .T "st.footer"}}</footer>
+</body>
+</html>

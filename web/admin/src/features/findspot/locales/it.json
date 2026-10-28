@@ -1,0 +1,63 @@
+{
+  "title": "Trova posto",
+  "description": "Cerca la disponibilità per date, fascia, numero di postazioni e cambi di posto ammessi, con il prezzo stimato.",
+  "open": "Trova posto",
+  "form": {
+    "label": "Ricerca",
+    "dates": "Date",
+    "slots": "Fascia",
+    "count": "Postazioni",
+    "countHint": "Per i gruppi le proposte preferiscono postazioni vicine.",
+    "maxChanges": "Cambi di posto ammessi",
+    "changes": {
+      "0": "Nessuno",
+      "1": "1",
+      "2": "2",
+      "3": "3"
+    },
+    "maxChangesHint": "Con uno o più cambi la stessa prenotazione passa da una postazione all'altra durante il soggiorno.",
+    "zones": "Zone",
+    "anyZone": "Tutte le zone",
+    "pack": "Pack o allestimento",
+    "noPack": "Nessun pack (senza prezzo)",
+    "packHint": "Serve un pack per vedere il prezzo e prenotare.",
+    "attributes": "Attributi",
+    "anyAttribute": "Qualsiasi",
+    "agreement": "Convenzione",
+    "noAgreement": "Nessuna",
+    "search": "Cerca",
+    "again": "Rifai la ricerca"
+  },
+  "results": {
+    "title": "Proposte",
+    "empty": "Nessuna proposta",
+    "emptyHint": "Prova con altre date, più cambi di posto o meno postazioni.",
+    "count_one": "{{count}} proposta",
+    "count_other": "{{count}} proposte",
+    "truncated": "Ce ne sono altre: restringi la ricerca.",
+    "proposal": "Proposta {{rank}}",
+    "noChanges": "Nessun cambio di posto",
+    "changes_one": "{{count}} cambio di posto",
+    "changes_other": "{{count}} cambi di posto",
+    "adjacent": "Vicine",
+    "agreementApplied": "Convenzione applicata",
+    "showOnMap": "Mostra sulla mappa",
+    "book": "Prenota",
+    "packToBook": "Per prenotare scegli un pack e rifai la ricerca."
+  },
+  "segment": {
+    "day": "{{spot}} il {{date}}",
+    "range": "{{spot}} dal {{from}} al {{to}}"
+  },
+  "book": {
+    "title": "Prenota la proposta {{rank}}",
+    "description": "Dal {{from}} al {{to}}: scegli il cliente e conferma.",
+    "segments": "Postazioni",
+    "total": "Totale stimato:",
+    "customer": "Cliente",
+    "cancel": "Annulla",
+    "confirm": "Prenota",
+    "done": "Prenotazione {{code}} creata.",
+    "taken": "Nel frattempo una data è stata presa: ecco le nuove proposte."
+  }
+}

@@ -104,6 +104,8 @@ type Input struct {
 	Tags             []string
 	AgreementID      string
 	MarketingConsent *store.MarketingConsent
+	// CategoryIDs replaces the customer categories (M8); nil = unchanged.
+	CategoryIDs *[]string
 }
 
 // ---- ports used by other domain packages -----------------------------------
@@ -143,7 +145,14 @@ func (s *Service) Resolve(ctx context.Context, tx bun.IDB, p *auth.Principal, es
 		if err := s.checkAgreement(ctx, tx, es, f.AgreementID); err != nil {
 			return nil, prefixFields(err, "customer.")
 		}
-		return s.insert(ctx, tx, p, "", es, &f, now)
+		c, err := s.insert(ctx, tx, p, "", es, &f, now)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := s.setCategories(ctx, tx, es, c, in.CategoryIDs); err != nil {
+			return nil, prefixFields(err, "customer.")
+		}
+		return c, nil
 	}
 	return nil, configerr.Invalid("customer_id", "Il cliente è obbligatorio.")
 }

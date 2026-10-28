@@ -1,0 +1,41 @@
+---
+title: Printing the map
+description: Printing the day map on A4 or A3 and the list for the lifeguards, with the labels, filters and glyphs of the operational map.
+sidebar:
+  order: 21.9
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Map** → **Print**. **Who:** whoever sees the map.
+
+<Screenshot name="admin-map-print" alt="Print menu of the day map" />
+
+## Day map
+
+<Steps>
+
+1. Set the day, the slot, the **Labels** (Code, Customer, End, Setup) and, if needed, a quick filter on the map: the
+   print shows what you see.
+2. Press **Print** and choose **Day map (A4)** or **Day map (A3)**: it sets the scale of the drawing.
+3. In the browser's print dialog choose the printer, the paper and landscape orientation, or **Save as PDF**.
+
+</Steps>
+
+The printed map has the legend of the statuses and glyphs: arrival, departure, agreement or partner, group, extras,
+note.
+
+## Lifeguard list
+
+**Lifeguard list** prepares an A4 page with the occupied spots row by row: the surname of the occupant, the
+setup (for example *2L 1S*), the day's arrivals and departures and who still has a balance to pay. It contains no
+phone numbers or emails.
+
+<Aside type="tip" title="Labels and filters">
+The **Labels** combine (for example code and end date) and are remembered for your user. The **quick filters**
+(Arrivals, Departures, Balance due, Present, one agreement, one group) highlight the matching spots and dim the
+others.
+</Aside>
+
+<Screenshot name="admin-map-m8" alt="Day map with the Code, Customer and End labels and the Arrivals filter" />

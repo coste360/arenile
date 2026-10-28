@@ -67,7 +67,12 @@ func newClient(t *testing.T, base string) *apiClient {
 	jar, _ := cookiejar.New(nil)
 	return &apiClient{
 		t: t, base: base, missing: map[string]int{}, counts: map[string]int{},
-		http: &http.Client{Jar: jar, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }},
+		http: &http.Client{
+			Jar: jar, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+			// Bursts stay at 100 connections at once: macOS refuses dials past
+			// its listen backlog (128) with "connection reset by peer".
+			Transport: &http.Transport{MaxConnsPerHost: 100, MaxIdleConnsPerHost: 100},
+		},
 	}
 }
 

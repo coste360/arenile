@@ -96,6 +96,27 @@ func IsUniqueViolation(err error) bool {
 		strings.Contains(msg, "SQLITE_CONSTRAINT_PRIMARYKEY")
 }
 
+// IsSerializationFailure reports whether err is a PostgreSQL deadlock
+// (40P01), serialization failure (40001) or lock not available (55P03):
+// two transactions inserting the same allocation keys in a different order
+// (a swap against a desk sale) can wait on each other and PostgreSQL aborts
+// one. The aborted one lost a race, like a unique violation: RunInTx maps it
+// to ErrConflict (409), never a 500. SQLite serializes writers and never
+// reports it.
+func IsSerializationFailure(err error) bool {
+	if err == nil {
+		return false
+	}
+	var pgErr interface{ Field(byte) string }
+	if errors.As(err, &pgErr) {
+		switch pgErr.Field('C') {
+		case "40P01", "40001", "55P03":
+			return true
+		}
+	}
+	return false
+}
+
 // Organization is a legal entity owning establishments.
 type Organization struct {
 	bun.BaseModel `bun:"table:organizations"`

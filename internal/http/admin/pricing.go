@@ -212,20 +212,26 @@ func pcAgreementInputFromAPI(in api.AgreementInput) (pricingconfig.AgreementInpu
 	if err != nil {
 		return pricingconfig.AgreementInput{}, err
 	}
+	m8, err := agreementM8FromAPI(in)
+	if err != nil {
+		return pricingconfig.AgreementInput{}, err
+	}
 	return pricingconfig.AgreementInput{
 		Code: in.Code, Name: in.Name, PartnerName: pcStrOr(in.PartnerName), Notes: pcStrOr(in.Notes), Action: act,
 		Conditions: cond, ValidFrom: in.ValidFrom, ValidTo: in.ValidTo, Stackable: pcBoolOr(in.Stackable, false),
-		Active: pcBoolOr(in.Active, true),
+		Active: pcBoolOr(in.Active, true), M8: m8,
 	}, nil
 }
 
 // AgreementToAPI maps an agreement.
 func AgreementToAPI(a pricingconfig.Agreement) api.Agreement {
-	return api.Agreement{
+	out := api.Agreement{
 		Id: a.ID, Code: a.Code, Name: a.Name, PartnerName: a.PartnerName, Notes: a.Notes, Action: pcActionToAPI(a.Action),
 		Conditions: pcConditionsToAPI(a.Conditions), ValidFrom: a.ValidFrom, ValidTo: a.ValidTo, Stackable: a.Stackable,
 		Active: a.Active, Version: a.Version, CreatedAt: a.CreatedAt, UpdatedAt: a.UpdatedAt,
 	}
+	agreementM8ToAPI(&out, a)
+	return out
 }
 
 // BreakdownToAPI maps an engine breakdown (VAT rates as decimal strings).

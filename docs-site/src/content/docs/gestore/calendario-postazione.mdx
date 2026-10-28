@@ -1,0 +1,29 @@
+---
+title: Calendario della postazione
+description: La stagione di una postazione in un colpo d'occhio, mesi per giorni con mattina e pomeriggio, per vedere quando è libera, avviare una prenotazione o aprire quella di un giorno.
+sidebar:
+  order: 21.8
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Mappa** → scheda della postazione → **Calendario**. **Chi:** chi vede la mappa; i nomi dei
+clienti solo con il permesso di vedere le prenotazioni.
+
+Il calendario mostra tutta la stagione di una postazione: una riga per mese, una colonna per giorno. Ogni giorno è
+diviso a metà, **a sinistra la mattina e a destra il pomeriggio**, con il colore e il glifo dello stato (libero,
+prenotato, abbonato, rilasciato, in attesa, bloccato, da incassare).
+
+<Screenshot name="admin-spot-calendar" alt="Calendario della stagione di una postazione con i giorni occupati" />
+
+- **Un giorno libero** avvia una nuova prenotazione da quel giorno, con i giorni liberi successivi già proposti
+  (fino a 14).
+- **Un giorno occupato** apre la sua prenotazione.
+- Su computer basta passare il mouse sul pulsante **Calendario** per un'anteprima.
+
+## Vista per intervallo
+
+Sulla mappa, **Intervallo** al posto di **Giorno** mostra un periodo intero: per ogni postazione libera solo in parte
+compare **libero in parte N/M** (giorni liberi sul totale). Toccandola vedi i giorni liberi e puoi avviare la
+prenotazione o passare a [Trova posto](/gestore/trova-posto/).

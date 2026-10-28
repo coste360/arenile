@@ -1,12 +1,22 @@
-import { EmptyState, Page, QueryState, useMediaQuery } from '@arenile/shared/ui/patterns';
+import {
+  DateRangePicker,
+  EmptyState,
+  Page,
+  QueryState,
+  SegmentedControl,
+  useMediaQuery,
+} from '@arenile/shared/ui/patterns';
 import { Button } from '@arenile/shared/ui/button';
 import { Link } from '@tanstack/react-router';
 import { MapIcon } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRequiredEstablishmentId } from '../../establishment';
 import { useOperationsDay } from './api/operations';
 import { DayToolbar } from './components/DayToolbar';
 import { OperationalMapView } from './components/OperationalMapView';
+import { RangeMapView } from './components/RangeMapView';
+import { addDays } from './lib/dates';
 import { useOperationsPermissions } from './lib/permissions';
 import { useDaySearch } from './lib/useDaySearch';
 import { useSelectedMap } from './lib/useSelectedMap';
@@ -31,19 +41,43 @@ export function OperationalMapPage() {
   const permissions = useOperationsPermissions();
   const { maps, options, mapId, setMapId, geometry, hasNoMaps } = useSelectedMap(establishmentId);
   // Filter by map only when there is a choice: one cache entry with the Oggi page otherwise.
-  const day = useOperationsDay(establishmentId, date, slot, options.length > 1 ? mapId : undefined);
+  const [mode, setMode] = useState<'day' | 'range'>('day');
+  const [range, setRange] = useState<{ from: string; to: string } | null>(null);
+  const rangeShown = range ?? { from: date, to: addDays(date, 6) };
+  const dayMapId = options.length > 1 ? mapId : undefined;
+  const day = useOperationsDay(establishmentId, date, slot, dayMapId);
 
   return (
     <Page title={t('map.title')} description={t('map.description')}>
-      <DayToolbar
-        date={date}
-        slot={slot}
-        today={today}
-        onChange={setDay}
-        maps={options}
-        mapId={mapId}
-        onMapChange={setMapId}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        <DayToolbar
+          date={date}
+          slot={slot}
+          today={today}
+          onChange={setDay}
+          maps={options}
+          mapId={mapId}
+          onMapChange={setMapId}
+        />
+        {/* Spec 30.4: a range shows free, free in part ("N giorni su M") and taken spots. */}
+        <SegmentedControl
+          label={t('range.mode')}
+          value={mode}
+          onValueChange={(v) => setMode(v as 'day' | 'range')}
+          options={[
+            { value: 'day', label: t('range.modeDay') },
+            { value: 'range', label: t('range.modeRange') },
+          ]}
+        />
+        {mode === 'range' && (
+          <DateRangePicker
+            aria-label={t('range.period')}
+            value={rangeShown}
+            onChange={(v) => v && setRange({ from: v.from, to: v.to ?? v.from })}
+            className="sm:w-72"
+          />
+        )}
+      </div>
       {hasNoMaps ? (
         <EmptyState
           icon={MapIcon}
@@ -71,7 +105,18 @@ export function OperationalMapPage() {
             }}
             skeleton={<div className="h-[65vh] w-full animate-pulse rounded-lg bg-muted" />}
           />
-          {geometry.data && day.data && (
+          {mode === 'range' && geometry.data && (
+            <RangeMapView
+              establishmentId={establishmentId}
+              geometry={geometry.data}
+              range={rangeShown}
+              slot={slot}
+              mapId={dayMapId}
+              permissions={permissions}
+              height={wide ? WIDE_MAP_HEIGHT : undefined}
+            />
+          )}
+          {mode === 'day' && geometry.data && day.data && (
             <OperationalMapView
               establishmentId={establishmentId}
               geometry={geometry.data}
@@ -80,6 +125,7 @@ export function OperationalMapPage() {
               slot={slot}
               permissions={permissions}
               height={wide ? WIDE_MAP_HEIGHT : undefined}
+              mapId={dayMapId}
             />
           )}
         </>

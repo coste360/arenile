@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/coste360/arenile/internal/domain/checkout"
+	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/http/admin"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/problem"
@@ -189,6 +190,15 @@ func (h *Handlers) ReleaseManagedSeasonDays(w http.ResponseWriter, r *http.Reque
 	in := checkout.ReleaseInput{DryRun: req.DryRun == nil || *req.DryRun}
 	for _, d := range req.Days {
 		in.Days = append(in.Days, checkout.ReleaseDay{Date: d.Date, Slots: slotsOf(d.Slots)})
+	}
+	if rg := req.Range; rg != nil {
+		in.Range = &pass.ReleaseRange{From: rg.From, To: rg.To}
+		if rg.Weekdays != nil {
+			in.Range.Weekdays = *rg.Weekdays
+		}
+		if rg.Slots != nil {
+			in.RangeSlots = slotsOf(*rg.Slots)
+		}
 	}
 	out, err := h.Checkout.ManageRelease(r.Context(), slug, token, in)
 	if err != nil {

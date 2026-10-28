@@ -105,6 +105,9 @@ type SpotInput struct {
 	PriceCategoryOverride *string
 	Attributes            []string
 	Active                bool
+	// OnlineExcluded is the negation of the API flag online_bookable (spec
+	// 30.11, INV-105): the zero value keeps the spot on sale online.
+	OnlineExcluded bool
 }
 
 // DecorationInput is one decoration of a saved document; ID empty means new.

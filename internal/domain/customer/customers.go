@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -27,6 +28,8 @@ type ListFilter struct {
 	Q                 string
 	Tag               string
 	IncludeAnonymized bool
+	// CategoryID keeps the members of a customer category (M8).
+	CategoryID string
 }
 
 // Detail is the customer page (api.CustomerDetail).
@@ -51,7 +54,10 @@ type Export struct {
 	// BookingCodes maps the booking ids of Payments to their codes.
 	BookingCodes map[string]string
 	Credits      []store.CustomerCredit
-	ExportedAt   time.Time
+	// RequirementVerifications are the M8 requirement checks on the
+	// customer and its bookings (date, operator, requirement, note).
+	RequirementVerifications []store.RequirementVerification
+	ExportedAt               time.Time
 }
 
 // List returns a page of the customers of an establishment.
@@ -62,9 +68,13 @@ func (s *Service) List(ctx context.Context, p *auth.Principal, establishmentID s
 	}
 	page, err := store.ListCustomers(ctx, s.d.DB, es, store.CustomerFilter{
 		Terms: SearchTerms(f.Q), Tag: NormalizeTag(f.Tag), IncludeAnonymized: f.IncludeAnonymized,
+		CategoryID: strings.TrimSpace(f.CategoryID),
 	}, cursor, limit)
 	if err != nil && !errors.Is(err, store.ErrInvalidCursor) {
 		err = fmt.Errorf("customer: list: %w", err)
+	}
+	if err == nil {
+		err = s.fillPage(ctx, s.d.DB, es, page.Items)
 	}
 	return page, err
 }
@@ -86,6 +96,9 @@ func (s *Service) Get(ctx context.Context, p *auth.Principal, establishmentID, i
 		return nil, fmt.Errorf("customer: get: %w", err)
 	}
 	d := &Detail{Customer: *c}
+	if err := s.fillCategories(ctx, db, es, &d.Customer); err != nil {
+		return nil, err
+	}
 	if d.Credits, err = store.ListCustomerCredits(ctx, db, es, id); err != nil {
 		return nil, fmt.Errorf("customer: get: %w", err)
 	}
@@ -134,6 +147,10 @@ func (s *Service) Create(ctx context.Context, p *auth.Principal, ip, establishme
 			}
 		}
 		out, err = s.insert(ctx, tx, p, ip, es, &f, now)
+		if err != nil {
+			return err
+		}
+		_, err = s.setCategories(ctx, tx, es, out, in.CategoryIDs)
 		return err
 	})
 	return out, err
@@ -180,7 +197,15 @@ func (s *Service) Update(ctx context.Context, p *auth.Principal, ip, establishme
 		next := *cur
 		apply(&next, &f)
 		changed := changedFields(cur, &next)
+		catChanged, err := s.setCategories(ctx, tx, es, &next, in.CategoryIDs)
+		if err != nil {
+			return err
+		}
+		if catChanged {
+			changed = append(changed, "category_ids")
+		}
 		if len(changed) == 0 {
+			cur.CategoryIDs = next.CategoryIDs
 			out = cur
 			return nil
 		}
@@ -234,6 +259,11 @@ func (s *Service) Export(ctx context.Context, p *auth.Principal, ip, establishme
 		if x.Credits, err = store.ListCustomerCredits(ctx, tx, es, id); err != nil {
 			return fmt.Errorf("customer: export: %w", err)
 		}
+		m8, err := store.CustomerM8Data(ctx, tx, es, id)
+		if err != nil {
+			return fmt.Errorf("customer: export: %w", err)
+		}
+		x.Customer.CategoryIDs, x.RequirementVerifications = m8.CategoryIDs, m8.Verifications
 		out = x
 		return s.record(ctx, tx, p, ip, es, "customer.exported", "", c, map[string]any{
 			"bookings": len(x.Bookings), "payments": len(x.Payments), "credits": len(x.Credits),
@@ -284,11 +314,17 @@ func (s *Service) Anonymize(ctx context.Context, p *auth.Principal, ip, establis
 		if err != nil {
 			return fmt.Errorf("customer: anonymize: %w", err)
 		}
+		m8, err := store.WipeCustomerM8Data(ctx, tx, es, id, now)
+		if err != nil {
+			return fmt.Errorf("customer: anonymize: %w", err)
+		}
+		next.CategoryIDs = []string{}
 		out = &next
 		return s.record(ctx, tx, p, ip, es, "customer.anonymized", event.CustomerAnonymized, &next, map[string]any{
 			"fields": changedFields(cur, &next), "bookings_notes_wiped": wiped.Bookings,
 			"payment_notes_wiped": wiped.Payments, "credit_notes_wiped": wiped.Credits,
-			"renewal_reasons_wiped": wiped.RenewalReasons,
+			"renewal_reasons_wiped": wiped.RenewalReasons, "categories_removed": m8.Categories,
+			"verifications_removed": m8.Verifications, "booking_guests_wiped": m8.Bookings,
 		})
 	})
 	return out, err

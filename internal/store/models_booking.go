@@ -101,9 +101,25 @@ type Booking struct {
 	PriceOverrideReason       *string      `bun:"price_override_reason"`
 	PriceOverrideByUserID     *string      `bun:"price_override_by_user_id"`
 	PriceOverrideAt           *time.Time   `bun:"price_override_at"`
-	Version                   int64        `bun:"version,notnull"`
-	CreatedAt                 time.Time    `bun:"created_at,notnull"`
-	UpdatedAt                 time.Time    `bun:"updated_at,notnull"`
+	// M8 (00013, spec 30.2.4, 30.3): partner of provenance, group and party
+	// (people feed the attendance in reports), optional guest names (no
+	// other guest data), the partner share (type and value: basis points
+	// for percent, cents for amount) and the resolved PartnerAmount, kept
+	// with TotalAmount in the same transaction (statement, INV-104).
+	PartnerID         *string        `bun:"partner_id"`
+	GroupName         string         `bun:"group_name,notnull"`
+	GroupOrigin       string         `bun:"group_origin,notnull"`
+	PartyAdults       *int           `bun:"party_adults"`
+	PartyChildren     *int           `bun:"party_children"`
+	GuestNames        []string       `bun:"guest_names,type:json,nullzero"`
+	PartnerShareType  *string        `bun:"partner_share_type"`
+	PartnerShareValue *int64         `bun:"partner_share_value"`
+	PartnerAmount     money.Cents    `bun:"partner_amount,notnull"`
+	PartnerStayFrom   *calendar.Date `bun:"partner_stay_from"`
+	PartnerStayTo     *calendar.Date `bun:"partner_stay_to"`
+	Version           int64          `bun:"version,notnull"`
+	CreatedAt         time.Time      `bun:"created_at,notnull"`
+	UpdatedAt         time.Time      `bun:"updated_at,notnull"`
 }
 
 // BalanceDue is what remains to be collected (never negative).

@@ -747,7 +747,7 @@ func (s *Service) quote(ctx context.Context, db bun.IDB, pe *online.PublicEstabl
 	for _, x := range in.Extras {
 		sim.Extras = append(sim.Extras, pricing.ExtraInput{ExtraID: x.ExtraID, Quantity: x.Quantity})
 	}
-	res, err := s.d.Pricer.Quote(ctx, db, es, sim)
+	res, err := s.priceWithAgreement(ctx, db, pe, in, &sim, out)
 	if promo != "" {
 		var ve *configerr.ValidationError
 		if errors.As(err, &ve) && len(ve.Fields) > 0 && ve.Fields[0].Field == "promo_code" {

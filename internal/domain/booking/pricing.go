@@ -66,6 +66,9 @@ func loadCatalog(ctx context.Context, db bun.IDB, es store.EstablishmentScope, l
 		if l.SpotID != "" {
 			spotIDs = append(spotIDs, l.SpotID)
 		}
+		for _, sg := range l.Segments {
+			spotIDs = append(spotIDs, sg.SpotID)
+		}
 		if l.ZoneID != "" {
 			zoneIDs = append(zoneIDs, l.ZoneID)
 		}
@@ -98,6 +101,10 @@ func (c *catalog) resolve(in []LineInput, field string) ([]PricedLine, error) {
 	for i, l := range in {
 		f := fmt.Sprintf("%s[%d]", field, i)
 		pl := PricedLine{PackID: l.PackID, ZoneID: l.ZoneID, SpotID: l.SpotID, Quantity: max(l.Quantity, 1), Extras: l.Extras}
+		if len(l.Segments) > 0 {
+			c.resolveSegments(v, f, l, &pl)
+			l.SpotID = pl.SpotID
+		}
 		pack, ok := c.packs[l.PackID]
 		switch {
 		case l.PackID == "":
@@ -280,6 +287,9 @@ func allocRequest(b *store.Booking, kind inventory.Kind, expiresAt *time.Time, r
 	}
 	if kind == inventory.KindHold {
 		req.ExpiresAt = expiresAt
+	}
+	if b.AgreementID != nil {
+		req.AgreementID = *b.AgreementID // agreement quota (M8, INV-103)
 	}
 	byLine := map[string][]store.BookingLineExtra{}
 	var bookingExtras []store.BookingLineExtra

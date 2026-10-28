@@ -114,5 +114,16 @@
       "amount": "Enter an amount between €0 and €1,000,000.",
       "reason": "Write the reason (3 to 500 characters)."
     }
+  },
+  "releaseRange": {
+    "title": "Release a period",
+    "period": "Period",
+    "weekdays": "Only these weekdays",
+    "weekdaysHint": "No day chosen = every day of the period (e.g. every Monday of July).",
+    "count_one": "{{count}} day to release",
+    "count_other": "{{count}} days to release",
+    "submit": "Release the period",
+    "done_one": "{{count}} day released: the spot is bookable.",
+    "done_other": "{{count}} days released: the spot is bookable."
   }
 }

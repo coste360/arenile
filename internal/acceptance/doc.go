@@ -36,6 +36,16 @@
 // minutes) is e2e/tests/m4-acceptance.spec.ts; the real binary one is
 // scripts/acceptance/m4-real-binary.sh.
 //
+// M8 acceptance (spec 28, spec 30): TestAcceptance_M8CashDeskAndAgreements
+// fills a zone so that no spot is free for the whole 10-16 August week and
+// sells the week on two spots through find spot (search, book), tries
+// every desk path onto the full 15 August (always refused), swaps and
+// undoes, then sells with two agreements, collects in cash and checks at
+// season end that the agreements register totals match the booked and
+// collected revenue reports. TestConcurrency_AcceptanceM8Swaps races 120
+// swaps, moves and bookings on the full week; no spot-day is allocated
+// twice and every line keeps each day exactly once (INV-01, INV-102).
+//
 // TestAcceptance_DemoSeed runs the M3 demo seed through App.DemoOperations
 // (the adapter `arenile seed demo` uses) and checks the same invariants.
 // Any operation answering 501 Not Implemented fails the test.

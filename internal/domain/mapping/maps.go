@@ -563,6 +563,7 @@ func (s *Service) currentInput(ctx context.Context, db bun.IDB, es store.Establi
 			ID: sp.ID, ZoneID: sp.ZoneID, Label: sp.Label, RowLabel: sp.RowLabel, Number: sp.Number, Kind: sp.Kind, Asset: deref(sp.Asset),
 			X: sp.X, Y: sp.Y, Rotation: sp.Rotation, Shape: sp.Shape, Capacity: sp.Capacity, MaxExtra: sp.MaxExtra,
 			PriceCategoryOverride: sp.PriceCategoryOverride, Attributes: sp.Attributes, Active: sp.Active,
+			OnlineExcluded: sp.OnlineExcluded,
 		})
 	}
 	for _, d := range doc.Decorations {
@@ -619,7 +620,7 @@ func spotRow(in SpotInput, id, mapID string, now time.Time) store.Spot {
 		Kind: in.Kind, Asset: optional(in.Asset), X: in.X, Y: in.Y, Rotation: in.Rotation, Shape: in.Shape,
 		Capacity: nonNilMap(in.Capacity), MaxExtra: nonNilMap(in.MaxExtra),
 		PriceCategoryOverride: in.PriceCategoryOverride, Attributes: nonNilSlice(in.Attributes),
-		Active: in.Active, UpdatedAt: now,
+		Active: in.Active, OnlineExcluded: in.OnlineExcluded, UpdatedAt: now,
 	}
 }
 
@@ -628,7 +629,8 @@ func spotEqual(a, b *store.Spot) bool {
 		a.Kind == b.Kind && equalPtr(a.Asset, b.Asset) && a.X == b.X && a.Y == b.Y && a.Rotation == b.Rotation &&
 		a.Shape == b.Shape && maps.Equal(a.Capacity, b.Capacity) && maps.Equal(a.MaxExtra, b.MaxExtra) &&
 		equalPtr(a.PriceCategoryOverride, b.PriceCategoryOverride) && slices.Equal(a.Attributes, b.Attributes) &&
-		a.Active == b.Active
+		a.Active == b.Active &&
+		a.OnlineExcluded == b.OnlineExcluded
 }
 
 func decorationRow(in DecorationInput, id, mapID string, now time.Time) store.MapDecoration {

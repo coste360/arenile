@@ -111,7 +111,7 @@ test("a booking created from the new booking sheet appears on the map", async ({
 
   await form.getByRole("radio", { name: "Nuovo cliente" }).click();
   await form.getByLabel("Cognome").fill("Playwright");
-  await form.getByRole("textbox", { name: /^Nome/ }).fill("Test");
+  await form.getByRole("textbox", { name: /^Nome(?! del gruppo)/ }).fill("Test");
   await form.getByLabel("Telefono").fill("+39 333 0000001");
 
   // The live quote shows the price; far-ahead bookings break the lead-time

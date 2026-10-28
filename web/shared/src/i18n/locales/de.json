@@ -174,7 +174,10 @@
     "establishments": "Alle Betriebe",
     "goTo": "Wechseln zu…",
     "search": "Suchen",
-    "searchPlaceholder": "Seite suchen…"
+    "searchPlaceholder": "Seite suchen…",
+    "partners": "Partner und Vereinbarungen",
+    "agreementsReports": "Berichte zu Vereinbarungen",
+    "findSpot": "Platz finden"
   },
   "admin": {
     "placeholder": {
@@ -191,7 +194,8 @@
       "dailySale": "Tagesverkauf am Schalter: Platz oder Zone, Preis, Zahlung und nummeriertes Ticket.",
       "tickets": "Heute ausgestellte, zuzuweisende, stornierte und eingelöste Tickets; CSV-Export.",
       "reports": "Auslastung, Umsatz, Kanäle und Exporte.",
-      "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Richtlinien, öffentliche Seite und Zahlungen."
+      "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Richtlinien, öffentliche Seite und Zahlungen.",
+      "partners": "Unterkünfte, Behörden und Vereine mit Vereinbarung, Kundenkategorien und Partnerkonto."
     },
     "establishments": {
       "title": "Alle Betriebe",

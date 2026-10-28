@@ -64,6 +64,8 @@ export interface SpotSheetProps {
   onBlock?: (spot: OperationalSpot) => void;
   /** Quick walk-in sale on a free spot ("Vendi giornata", daily-sale feature). */
   onDailySale?: (spot: OperationalSpot) => void;
+  /** M8 additions (calendar, range release, group move, agreement and group; spec 30). */
+  extras?: (spot: OperationalSpot) => ReactNode;
 }
 
 function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
@@ -92,6 +94,7 @@ export function SpotSheet({
   onStartMove,
   onBlock,
   onDailySale,
+  extras,
 }: SpotSheetProps) {
   const { t } = useTranslation('operations');
   const problemText = useProblemText();
@@ -219,6 +222,7 @@ export function SpotSheet({
             </p>
           )}
           {status === 'free' && <p className="text-sm text-muted-foreground">{t('sheet.free')}</p>}
+          {extras?.(spot)}
           {error && (
             <Alert variant="destructive">
               <CircleAlertIcon aria-hidden="true" />

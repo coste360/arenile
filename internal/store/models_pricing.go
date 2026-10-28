@@ -99,6 +99,20 @@ type Agreement struct {
 	Version         int64          `bun:"version,notnull"`
 	CreatedAt       time.Time      `bun:"created_at,notnull"`
 	UpdatedAt       time.Time      `bun:"updated_at,notnull"`
+	// M8 (00013, spec 30.2.2): target (nil = individual customers), partner
+	// or customer category, fixed prices per pack, scope, seasons, quota
+	// configuration (api.AgreementQuota JSON), requirement, channels and the
+	// register category. JSON columns are NULL when empty.
+	Target             *string `bun:"target"`
+	PartnerID          *string `bun:"partner_id"`
+	CustomerCategoryID *string `bun:"customer_category_id"`
+	PackPrices         JSON    `bun:"pack_prices,nullzero"`
+	Scope              JSON    `bun:"scope,nullzero"`
+	SeasonIDs          JSON    `bun:"season_ids,nullzero"`
+	Quota              JSON    `bun:"quota,nullzero"`
+	Requirement        string  `bun:"requirement,notnull"`
+	Channels           JSON    `bun:"channels,nullzero"`
+	RegisterCategory   *string `bun:"register_category"`
 }
 
 // BookingPolicy is a scoped set of booking constraints of a season (spec 9).

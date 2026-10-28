@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { statusesBySpot } from "../../web/admin/src/features/operations/lib/status";
 import { AdminApi, ApiError, type Schemas } from "./support/api";
 import { DATA_DIR, DEMO_SLUG, runFile } from "./support/env";
+import { seedM8 } from "./support/m8";
 import { seedDailySale } from "./support/tickets";
 import type { RunContext } from "./support/context";
 
@@ -112,6 +113,9 @@ setup("demo context and data snapshots", async ({ playwright, baseURL }) => {
   await writePricingSnapshot(api, E, ctx, est, season);
   // After the snapshots: the live components keep the plain demo day.
   await seedDailySale(api, E, ctx);
+  // M8 (spec 30): partner, agreements and bookings with agreement, group and party.
+  const m8 = await seedM8(api, E, ctx);
+  writeFileSync(runFile("context.json"), JSON.stringify({ ...ctx, ...m8 }, null, 2));
   await request.dispose();
 });
 

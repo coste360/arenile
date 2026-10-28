@@ -35,6 +35,7 @@ import type { Customer } from '../customers/api';
 import { CustomerPicker, DuplicateHint } from '../customers/CustomerPicker';
 import { useDebounced } from '../customers/lib';
 import { OnlineOnlyNotice } from '../../offline/OnlineOnlyNotice';
+import { useNewBookingAgreement } from './agreement/useNewBookingAgreement';
 import { useBookingQuote, useCreateBooking, useRecordPayment } from './api';
 import {
   makeNewBookingSchema,
@@ -52,6 +53,7 @@ import { describeProblem, type ConflictGroup, type ProblemText } from './problem
 import { ProblemAlert } from './ProblemAlert';
 import { QuotePreview } from './QuotePreview';
 import { SpotPicker } from './SpotPicker';
+import { FindSpotLauncher } from '../findspot/FindSpotLauncher';
 import { useEstablishmentSpots } from './spots';
 
 export interface NewBookingSheetProps {
@@ -179,7 +181,13 @@ function NewBookingForm({
     holdId: defaults?.holdId,
   };
   const extraById = new Map((extraList.data ?? []).map((x) => [x.id, x]));
-  const selection = toSelection(values, lineCtx);
+  // Agreement, partner and group (spec 30.2.3, 30.3): the agreement re-prices the quote.
+  const agreement = useNewBookingAgreement(
+    establishmentId,
+    values.customer_mode === 'existing' ? customer : null,
+  );
+  const baseSelection = toSelection(values, lineCtx);
+  const selection = baseSelection && { ...baseSelection, ...agreement.quoteFields };
   const quoteBody = useDebounced(selection ? JSON.stringify(selection) : null, 350);
   const quote = useBookingQuote(establishmentId, quoteBody ? JSON.parse(quoteBody) : null);
   const quoteStale =
@@ -204,8 +212,9 @@ function NewBookingForm({
 
   const submitBooking = async (v: NewBookingValues) => {
     setFailure(null);
-    const body = toBookingCreate(v, lineCtx);
-    if (!body) return;
+    const base = toBookingCreate(v, lineCtx);
+    if (!base) return;
+    const body = { ...base, ...agreement.createFields };
     const serialized = JSON.stringify(body);
     if (keyRef.current?.body !== serialized) {
       keyRef.current = { body: serialized, key: newIdempotencyKey() };
@@ -331,6 +340,24 @@ function NewBookingForm({
         </FormSection>
 
         <FormSection title={t('new.where')}>
+          {/* Spec 30.6: search the availability, also with spot changes, and book a proposal. */}
+          <FindSpotLauncher
+            establishmentId={establishmentId}
+            defaults={() => ({
+              startsOn: form.getValues('starts_on'),
+              endsOn: form.getValues('ends_on'),
+              slots: form.getValues('slots') as 'FULL' | 'AM' | 'PM',
+            })}
+            onBooked={(id) => {
+              onClose();
+              if (onCreated) onCreated(id);
+              else
+                void navigate({
+                  to: '/e/$establishmentId/prenotazioni/$bookingId',
+                  params: { establishmentId, bookingId: id },
+                });
+            }}
+          />
           <FieldRow control={form.control} name="pack_id" label={t('fields.pack')}>
             {(field) => (
               <OptionSelect
@@ -528,6 +555,8 @@ function NewBookingForm({
             </div>
           )}
         </FormSection>
+
+        {agreement.section}
 
         <FormSection title={t('quote.title')}>
           <QuotePreview

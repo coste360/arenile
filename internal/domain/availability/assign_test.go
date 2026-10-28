@@ -3,6 +3,7 @@ package availability
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -137,6 +138,26 @@ func TestAutoAssign_Table(t *testing.T) {
 			f.occupy(fs, 2, 2, "A1")
 			return AssignInput{Lines: []Line{line(1, 1, iv(1, 3, full))}, Spots: f.spots, Free: fs}
 		}, map[int]string{1: "A2"}}, // A2 also earns the compact bonus (A1 occupied on day 2)
+		{"self-service line never takes an excluded spot", func(f fixture) AssignInput {
+			spots := slices.Clone(f.spots)
+			for i := range spots {
+				if spots[i].Label == "A1" {
+					spots[i].OnlineExcluded = true
+				}
+			}
+			l := line(1, 1, iv(1, 3, full))
+			l.SelfService = true
+			return AssignInput{Lines: []Line{l}, Spots: spots, Free: f.allFree()}
+		}, map[int]string{1: "A2"}},
+		{"desk line may take an excluded spot", func(f fixture) AssignInput {
+			spots := slices.Clone(f.spots)
+			for i := range spots {
+				if spots[i].Label == "A1" {
+					spots[i].OnlineExcluded = true
+				}
+			}
+			return AssignInput{Lines: []Line{line(1, 1, iv(1, 3, full))}, Spots: spots, Free: f.allFree()}
+		}, map[int]string{1: "A1"}},
 		{"continuity with previous spot", func(f fixture) AssignInput {
 			l := line(1, 1, iv(1, 7, full))
 			l.PreviousSpotID = f.id("B3")

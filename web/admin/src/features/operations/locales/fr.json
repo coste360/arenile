@@ -21,6 +21,7 @@
     "assignTicketAria": "Attribuer le billet {{number}} sur le plan"
   },
   "map": {
+    "legendToggle": "Légende et étiquettes",
     "title": "Plan",
     "description": "Plan opérationnel pour toute date et tout créneau, coloré par statut.",
     "noMapsTitle": "Aucun plan",
@@ -84,7 +85,11 @@
     "extra": "Suppléments",
     "note": "Note",
     "vip": "VIP",
-    "to_assign": "À attribuer"
+    "to_assign": "À attribuer",
+    "arrival": "Arrivée",
+    "departure": "Départ",
+    "agreement": "Convention ou partenaire",
+    "group": "Groupe"
   },
   "sheet": {
     "empty": "Emplacement",
@@ -105,7 +110,14 @@
     "free": "Aucune allocation pour ce créneau.",
     "checkedIn": "Check-in enregistré pour {{code}}.",
     "readOnly": "Accès en lecture seule.",
-    "ticket": "Billet"
+    "ticket": "Billet",
+    "agreement": "Convention",
+    "partner": "Partenaire",
+    "group": "Groupe",
+    "party": "Personnes",
+    "setup": "Équipement",
+    "segment": "Sur cet emplacement",
+    "segmentDates": "du {{from}} au {{to}}"
   },
   "actions": {
     "checkIn": "Check-in",
@@ -118,12 +130,18 @@
     "cancel": "Annuler",
     "block": "Bloquer l’emplacement",
     "unblock": "Débloquer",
-    "dailySale": "Vendre la journée"
+    "dailySale": "Vendre la journée",
+    "releaseRange": "Libérer une période",
+    "groupMove_one": "Déplacer le groupe ({{count}})",
+    "groupMove_other": "Déplacer le groupe ({{count}})",
+    "close": "Fermer"
   },
   "release": {
     "title": "Libérer l'emplacement {{label}} ?",
     "description": "{{customer}} ne viendra pas le {{date}} ({{slot}}) : l'emplacement devient réservable. S'il est revendu, l'abonné reçoit l'avoir prévu.",
-    "done": "Emplacement {{label}} libéré."
+    "done": "Emplacement {{label}} libéré.",
+    "rangeTitle": "Libérer une période de {{label}}",
+    "rangeDescription": "Jours où {{customer}} n'utilisera pas l'emplacement : ils deviennent réservables tout de suite."
   },
   "revoke": {
     "title": "Annuler la libération de {{label}} ?",
@@ -144,14 +162,17 @@
     "toRefund": "Différence à rembourser : {{amount}}",
     "done": "{{code}} déplacée vers {{to}}.",
     "blocked": "Déplacement impossible.",
-    "ticketPriceKept": "Billet {{number}} : le total déjà encaissé ne change pas."
+    "ticketPriceKept": "Billet {{number}} : le total déjà encaissé ne change pas.",
+    "pickDescriptionSwap": "Touchez un emplacement libre pour la déplacer, ou un emplacement occupé pour les échanger."
   },
   "conflict": {
     "spot_unavailable": "emplacement occupé",
     "pool_exhausted": "quantité épuisée",
     "quota_exceeded": "quota en ligne épuisé",
     "closed": "établissement fermé",
-    "inactive": "emplacement inactif"
+    "inactive": "emplacement inactif",
+    "agreement_reserved": "réservé à une convention",
+    "agreement_quota": "contingent de la convention épuisé"
   },
   "quick": {
     "map": "Plan",
@@ -179,7 +200,11 @@
     "label": "Étiquettes",
     "code": "Code",
     "customer": "Client",
-    "both": "Les deux"
+    "both": "Les deux",
+    "end": "Fin",
+    "setup": "Équipement",
+    "endAria": "fin {{date}}",
+    "setupAria": "équipement {{setup}}"
   },
   "occupant": {
     "anonymous": "Client anonyme",
@@ -224,5 +249,140 @@
     "exit": "Quitter la sélection",
     "groupTitle_one": "Réservation de groupe ({{count}} emplacement)",
     "groupTitle_other": "Réservation de groupe ({{count}} emplacements)"
+  },
+  "filters": {
+    "label": "Filtres rapides",
+    "arrivals": "Arrivées",
+    "departures": "Départs",
+    "to_collect": "À solder",
+    "present": "Présents",
+    "agreement": "Convention",
+    "anyAgreement": "Toutes les conventions",
+    "group": "Groupe",
+    "anyGroup": "Tous les groupes",
+    "clear": "Retirer le filtre"
+  },
+  "calendar": {
+    "open": "Calendrier",
+    "title": "Calendrier de {{label}}",
+    "description": "État de chaque jour de la saison : un jour libre lance une réservation, un jour occupé ouvre sa réservation.",
+    "caption": "Calendrier de la saison de {{label}}",
+    "month": "Mois",
+    "halves": "Chaque jour : le matin à gauche, l'après-midi à droite."
+  },
+  "undo": {
+    "hint": "Vous pouvez l'annuler dans les 5 minutes.",
+    "action": "Annuler",
+    "done": "Déplacement annulé.",
+    "last": "Annuler le dernier déplacement",
+    "notice": "Cette réservation vient d'être déplacée : vous pouvez encore annuler le déplacement."
+  },
+  "moveFrom": {
+    "label": "À partir de quand",
+    "whole": "Tout le séjour",
+    "today": "À partir d'aujourd'hui",
+    "tomorrow": "À partir de demain",
+    "date": "À partir d'une date",
+    "dateLabel": "Premier jour sur le nouvel emplacement"
+  },
+  "swap": {
+    "title": "Échanger {{a}} et {{b}} ?",
+    "description": "{{a}} passe sur {{to}} et {{b}} sur {{from}} les jours en commun ; les autres jours, chacune reste où elle était.",
+    "noOverlap": "Les deux réservations n'ont aucun jour en commun : l'échange est impossible.",
+    "period": "Échange du {{from}} au {{to}}",
+    "confirm": "Échanger",
+    "done": "Échange effectué : {{a}} ↔ {{b}}."
+  },
+  "groupMove": {
+    "title_one": "Déplacer {{count}} emplacement du groupe",
+    "title_other": "Déplacer {{count}} emplacements du groupe",
+    "description": "Les emplacements se déplacent ensemble en gardant leur disposition.",
+    "plan": "Nouveaux emplacements",
+    "to": "vers",
+    "noPlace": "aucun emplacement à cet endroit",
+    "unresolved": "Certains emplacements n'ont pas de destination : choisissez un autre endroit.",
+    "confirm": "Déplacer le groupe",
+    "done_one": "{{count}} emplacement déplacé.",
+    "done_other": "{{count}} emplacements déplacés.",
+    "pickTitle": "Déplacer le groupe {{group}} ({{label}})",
+    "pickDescription": "Touchez la nouvelle position de {{label}} : les autres emplacements du groupe la suivent."
+  },
+  "tools": {
+    "findSpot": "Trouver une place",
+    "print": "Imprimer",
+    "printMap": "Plan du jour",
+    "printA4": "Plan du jour (A4)",
+    "printA3": "Plan du jour (A3)",
+    "lifeguard": "Liste pour les surveillants de baignade"
+  },
+  "print": {
+    "mapTitle": "Plan {{name}}",
+    "totals": "Totaux",
+    "occupied": "Occupés",
+    "free": "Libres",
+    "arrivals": "Arrivées",
+    "departures": "Départs"
+  },
+  "lifeguard": {
+    "title": "Liste pour les surveillants de baignade",
+    "description": "{{date}} · {{slot}} : par rangée, emplacement, nom, équipement, arrivées et départs, à solder.",
+    "row": "Rangée {{row}}",
+    "print": "Imprimer",
+    "spot": "Emplacement",
+    "surname": "Nom",
+    "setup": "Équipement",
+    "arrivalDeparture": "Arrivée ou départ",
+    "balance": "Solde",
+    "toCollect": "À solder"
+  },
+  "range": {
+    "mode": "Vue",
+    "modeDay": "Jour",
+    "modeRange": "Période",
+    "period": "Période",
+    "legend": "Légende de la période",
+    "state": {
+      "free": "Libre",
+      "partial": "Libre en partie",
+      "taken": "Occupé",
+      "unavailable": "Non vendable"
+    },
+    "partialShort": "{{free}}/{{total}}",
+    "partialAria": "libre {{free}} jours sur {{total}}",
+    "aria": "Plan {{name}} du {{from}} au {{to}}",
+    "spotTitle": "Emplacement {{label}}",
+    "freeDays": "Jours libres"
+  },
+  "findSpot": {
+    "shownTitle": "Proposition {{rank}} mise en évidence sur le plan",
+    "book": "Réserver",
+    "again": "Autres propositions",
+    "hide": "Masquer"
+  },
+  "bookingActions": {
+    "more": "Autres actions",
+    "duplicate": "Dupliquer",
+    "changeCustomer": "Changer de client",
+    "share": "Récapitulatif via WhatsApp",
+    "printSummary": "Imprimer le récapitulatif",
+    "duplicateTitle": "Dupliquer {{code}}",
+    "duplicateDescription": "Même emplacement, client, extras et convention à de nouvelles dates ; le prix est recalculé.",
+    "newDates": "Nouvelles dates",
+    "newTotal": "Nouveau total :",
+    "duplicateConfirm": "Créer la réservation",
+    "check": "Vérifier",
+    "duplicated": "Réservation {{code}} créée.",
+    "changeCustomerTitle": "Changer le client de {{code}}",
+    "changeCustomerDescription": "Client actuel : {{name}}. Le prix peut changer (convention, étiquettes du client).",
+    "newCustomer": "Nouveau client",
+    "changeCustomerConfirm": "Changer de client",
+    "customerChanged": "Client changé : {{name}}.",
+    "shareTitle": "Récapitulatif de {{code}}",
+    "shareDescription": "Le texte s'ouvre dans WhatsApp avec le numéro du client : vous confirmez l'envoi dans votre application. Arenile n'envoie rien.",
+    "shareText": "Texte",
+    "copy": "Copier le texte",
+    "copied": "Texte copié.",
+    "copyFailed": "Copie impossible : sélectionnez le texte et copiez-le à la main.",
+    "openWhatsApp": "Ouvrir WhatsApp"
   }
 }

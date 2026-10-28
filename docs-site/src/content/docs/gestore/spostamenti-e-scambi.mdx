@@ -1,0 +1,69 @@
+---
+title: Spostamenti e scambi
+description: Spostare una prenotazione da una data, scambiare due prenotazioni con l'anteprima del prezzo, spostare un gruppo mantenendo la disposizione, annullare l'ultimo spostamento entro 5 minuti e duplicare una prenotazione.
+sidebar:
+  order: 21.7
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Mappa** (scheda della postazione → **Sposta**) e dettaglio della prenotazione → **Altre
+azioni**. **Chi:** chi ha il permesso di spostare prenotazioni (titolare, gestore, cassa).
+
+## Spostare da una data
+
+<Steps>
+
+1. Sulla mappa del giorno tocca la postazione e premi **Sposta**.
+2. Tocca la postazione libera di destinazione.
+3. In **Da quando** scegli **Tutto il soggiorno**, **Da oggi**, **Da domani** oppure **Da una data**.
+4. Controlla la differenza di prezzo e premi **Sposta**.
+
+</Steps>
+
+<Screenshot name="admin-map-move-from" alt="Spostamento da D3 a F1 con la scelta Da quando" />
+
+Con una data successiva la prenotazione resta sulla postazione di partenza fino al giorno prima e passa alla nuova
+da quella data: "dal 15 agosto passa ad A7". I giorni già passati non cambiano. Se le due postazioni hanno categorie
+di prezzo diverse, ogni giorno è prezzato con la postazione occupata quel giorno.
+
+## Scambiare due prenotazioni
+
+Se in modalità **Sposta** tocchi una postazione **occupata**, il pannello propone lo **scambio**: le due
+prenotazioni si scambiano le postazioni nei giorni in comune, dal giorno mostrato in poi; negli altri giorni
+ciascuna resta dov'era.
+
+<Screenshot name="admin-map-swap" alt="Anteprima dello scambio tra D3 e D6 con la differenza di prezzo di entrambe" />
+
+L'anteprima mostra il periodo dello scambio e la **differenza di prezzo di ciascuna prenotazione**. Premi **Scambia**
+per confermare. Lo scambio avviene in un'unica operazione: in nessun momento una postazione risulta occupata due
+volte, e se una delle due prenotazioni è stata modificata nel frattempo non cambia nulla.
+
+## Spostare un gruppo
+
+Per le prenotazioni con lo stesso **nome del gruppo**, la scheda della postazione ha **Sposta il gruppo**: tocca la
+nuova posizione della postazione scelta e le altre la seguono mantenendo la disposizione (le distanze tra le
+postazioni). Prima di confermare vedi le nuove postazioni; lo spostamento è tutto o niente.
+
+## Annullare l'ultimo spostamento
+
+Dopo uno spostamento, uno scambio o lo spostamento di un gruppo compare per **5 minuti** l'avviso con **Annulla**,
+e sulla mappa il pulsante **Annulla ultimo spostamento**. Si può annullare solo il proprio spostamento, solo se le
+prenotazioni non sono cambiate dopo e se le postazioni di partenza sono ancora libere.
+
+## Duplicare e altre azioni
+
+Nel dettaglio della prenotazione, **Altre azioni** contiene:
+
+- **Duplica**: stessa postazione, cliente, extra, convenzione e dati del gruppo su nuove date, con il prezzo
+  ricalcolato e l'avviso se le postazioni non sono libere;
+- **Cambia cliente**, con l'anteprima della differenza di prezzo;
+- **Riepilogo via WhatsApp**: il testo pronto nella lingua del cliente (date, postazioni, importo, saldo e un link
+  di gestione nuovo), con **Copia testo** e **Apri WhatsApp** sul numero del cliente; c'è solo se il cliente ha un
+  telefono. Arenile non invia nulla: il messaggio lo confermi dalla tua app;
+- **Stampa riepilogo**: riepilogo per il cliente con il QR della prenotazione, su A4 o scontrino da 80 mm.
+
+<Aside type="note" title="Storico">
+Ogni spostamento, scambio e annullamento compare nello storico della prenotazione con l'operatore e l'ora.
+</Aside>

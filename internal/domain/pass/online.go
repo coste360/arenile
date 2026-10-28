@@ -11,7 +11,6 @@ import (
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/event"
-	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -67,9 +66,12 @@ func (s *Service) releaseAs(ctx context.Context, actor audit.Actor, es store.Est
 		if err != nil {
 			return err
 		}
-		days, err := planRelease(&v.Booking, in.Dates, in.Slots, today)
+		days, err := s.planReleaseDays(ctx, tx, es, v, in, today)
 		if err != nil {
 			return err
+		}
+		if len(days) == 0 {
+			return nil // the range is already released: nothing to do
 		}
 		active, err := store.ActiveSeasonReleases(ctx, tx, es, v.LineID, uniqueDates(days))
 		if err != nil {
@@ -78,28 +80,12 @@ func (s *Service) releaseAs(ctx context.Context, actor audit.Actor, es store.Est
 		if dup := overlapping(days, active); len(dup) > 0 {
 			return fmt.Errorf("%w (%s)", ErrAlreadyReleased, strings.Join(dateStrings(dup), ", "))
 		}
-		if err := s.d.Inventory.RemoveSeasonDays(ctx, tx, es, inventory.SeasonDays{
-			BookingID: passID, BookingLineID: v.LineID, SpotID: v.SpotID, Days: days,
-		}); err != nil {
+		rows, spotIDs, err := s.removeReleasedDays(ctx, tx, es, passID, v, days, note, nil)
+		if err != nil {
 			return err
 		}
-		now := s.now()
-		rows := make([]store.SeasonRelease, len(days))
-		ids := make([]string, len(days))
-		for i, d := range days {
-			rows[i] = store.SeasonRelease{
-				ID: store.NewID(), EstablishmentID: es.ID(), BookingID: passID, BookingLineID: v.LineID, SpotID: v.SpotID,
-				Date: d.Date, Slot: d.Slot, Note: note, CreatedAt: now, UpdatedAt: now,
-			}
-			ids[i] = rows[i].ID
-		}
-		if err := store.InsertSeasonReleases(ctx, tx, es, rows); err != nil {
-			if errors.Is(err, store.ErrConflict) {
-				return ErrAlreadyReleased
-			}
-			return fmt.Errorf("pass: release: %w", err)
-		}
 		out = rows
+		ids := releaseIDs(rows)
 		if preview {
 			return errPreview
 		}
@@ -111,7 +97,7 @@ func (s *Service) releaseAs(ctx context.Context, actor audit.Actor, es store.Est
 			return fmt.Errorf("pass: %w", err)
 		}
 		if _, err := s.d.Outbox.Write(ctx, tx, event.SeasonDayReleased, es.ID(), 1, event.AllocationChange{
-			Reason: "day_released", BookingID: passID, ReleaseIDs: ids, SpotIDs: []string{v.SpotID}, Dates: dates,
+			Reason: "day_released", BookingID: passID, ReleaseIDs: ids, SpotIDs: spotIDs, Dates: dates,
 		}); err != nil {
 			return fmt.Errorf("pass: %w", err)
 		}

@@ -21,6 +21,7 @@
     "assignTicketAria": "Assign ticket {{number}} on the map"
   },
   "map": {
+    "legendToggle": "Legend and labels",
     "title": "Map",
     "description": "Operational map for any date and slot, coloured by status.",
     "noMapsTitle": "No map yet",
@@ -84,7 +85,11 @@
     "extra": "Extras",
     "note": "Note",
     "vip": "VIP",
-    "to_assign": "To assign"
+    "to_assign": "To assign",
+    "arrival": "Arrival",
+    "departure": "Departure",
+    "agreement": "Agreement or partner",
+    "group": "Group"
   },
   "sheet": {
     "empty": "Spot",
@@ -105,7 +110,14 @@
     "free": "No allocation for this slot.",
     "checkedIn": "{{code}} checked in.",
     "readOnly": "Read-only access.",
-    "ticket": "Ticket"
+    "ticket": "Ticket",
+    "agreement": "Agreement",
+    "partner": "Partner",
+    "group": "Group",
+    "party": "People",
+    "setup": "Setup",
+    "segment": "On this spot",
+    "segmentDates": "from {{from}} to {{to}}"
   },
   "actions": {
     "checkIn": "Check in",
@@ -118,12 +130,18 @@
     "cancel": "Cancel",
     "block": "Block spot",
     "unblock": "Unblock",
-    "dailySale": "Sell day ticket"
+    "dailySale": "Sell day ticket",
+    "releaseRange": "Release a period",
+    "groupMove_one": "Move the group ({{count}})",
+    "groupMove_other": "Move the group ({{count}})",
+    "close": "Close"
   },
   "release": {
     "title": "Release spot {{label}}?",
     "description": "{{customer}} will not come on {{date}} ({{slot}}): the spot becomes bookable. If it is resold, the pass holder gets the agreed credit.",
-    "done": "Spot {{label}} released."
+    "done": "Spot {{label}} released.",
+    "rangeTitle": "Release a period of {{label}}",
+    "rangeDescription": "Days on which {{customer}} will not use the spot: they become bookable at once."
   },
   "revoke": {
     "title": "Revoke the release of {{label}}?",
@@ -144,14 +162,17 @@
     "toRefund": "Difference to refund: {{amount}}",
     "done": "{{code}} moved to {{to}}.",
     "blocked": "Move not possible.",
-    "ticketPriceKept": "Ticket {{number}}: the total already collected does not change."
+    "ticketPriceKept": "Ticket {{number}}: the total already collected does not change.",
+    "pickDescriptionSwap": "Tap a free spot to move it there, or an occupied one to swap them."
   },
   "conflict": {
     "spot_unavailable": "spot taken",
     "pool_exhausted": "quantity sold out",
     "quota_exceeded": "online quota exhausted",
     "closed": "establishment closed",
-    "inactive": "spot inactive"
+    "inactive": "spot inactive",
+    "agreement_reserved": "reserved for an agreement",
+    "agreement_quota": "agreement quota used up"
   },
   "quick": {
     "map": "Map",
@@ -179,7 +200,11 @@
     "label": "Labels",
     "code": "Code",
     "customer": "Customer",
-    "both": "Both"
+    "both": "Both",
+    "end": "End",
+    "setup": "Setup",
+    "endAria": "ends {{date}}",
+    "setupAria": "setup {{setup}}"
   },
   "occupant": {
     "anonymous": "Anonymous customer",
@@ -224,5 +249,140 @@
     "exit": "Exit selection",
     "groupTitle_one": "Group booking ({{count}} spot)",
     "groupTitle_other": "Group booking ({{count}} spots)"
+  },
+  "filters": {
+    "label": "Quick filters",
+    "arrivals": "Arrivals",
+    "departures": "Departures",
+    "to_collect": "Balance due",
+    "present": "Present",
+    "agreement": "Agreement",
+    "anyAgreement": "All agreements",
+    "group": "Group",
+    "anyGroup": "All groups",
+    "clear": "Clear filter"
+  },
+  "calendar": {
+    "open": "Calendar",
+    "title": "Calendar of {{label}}",
+    "description": "Status of every day of the season: a free day starts a booking, an occupied day opens its booking.",
+    "caption": "Season calendar of {{label}}",
+    "month": "Month",
+    "halves": "Each day: morning on the left, afternoon on the right."
+  },
+  "undo": {
+    "hint": "You can undo it within 5 minutes.",
+    "action": "Undo",
+    "done": "Move undone.",
+    "last": "Undo last move",
+    "notice": "This booking was just moved: you can still undo the move."
+  },
+  "moveFrom": {
+    "label": "From when",
+    "whole": "Whole stay",
+    "today": "From today",
+    "tomorrow": "From tomorrow",
+    "date": "From a date",
+    "dateLabel": "First day on the new spot"
+  },
+  "swap": {
+    "title": "Swap {{a}} and {{b}}?",
+    "description": "{{a}} moves to {{to}} and {{b}} to {{from}} on the days they share; on the other days each stays where it was.",
+    "noOverlap": "The two bookings share no days: they cannot be swapped.",
+    "period": "Swap from {{from}} to {{to}}",
+    "confirm": "Swap",
+    "done": "Swapped: {{a}} ↔ {{b}}."
+  },
+  "groupMove": {
+    "title_one": "Move {{count}} spot of the group",
+    "title_other": "Move {{count}} spots of the group",
+    "description": "The spots move together and keep their arrangement.",
+    "plan": "New spots",
+    "to": "to",
+    "noPlace": "no spot at that place",
+    "unresolved": "Some spots have no destination: pick another place.",
+    "confirm": "Move the group",
+    "done_one": "{{count}} spot moved.",
+    "done_other": "{{count}} spots moved.",
+    "pickTitle": "Move the group {{group}} ({{label}})",
+    "pickDescription": "Tap the new place of {{label}}: the other spots of the group follow it."
+  },
+  "tools": {
+    "findSpot": "Find a spot",
+    "print": "Print",
+    "printMap": "Map of the day",
+    "printA4": "Day map (A4)",
+    "printA3": "Day map (A3)",
+    "lifeguard": "Lifeguard list"
+  },
+  "print": {
+    "mapTitle": "Map {{name}}",
+    "totals": "Totals",
+    "occupied": "Occupied",
+    "free": "Free",
+    "arrivals": "Arrivals",
+    "departures": "Departures"
+  },
+  "lifeguard": {
+    "title": "Lifeguard list",
+    "description": "{{date}} · {{slot}}: by row, spot, surname, setup, arrivals and departures, balance due.",
+    "row": "Row {{row}}",
+    "print": "Print",
+    "spot": "Spot",
+    "surname": "Surname",
+    "setup": "Setup",
+    "arrivalDeparture": "Arrival or departure",
+    "balance": "Balance",
+    "toCollect": "Balance due"
+  },
+  "range": {
+    "mode": "View",
+    "modeDay": "Day",
+    "modeRange": "Range",
+    "period": "Period",
+    "legend": "Range legend",
+    "state": {
+      "free": "Free",
+      "partial": "Partly free",
+      "taken": "Taken",
+      "unavailable": "Not for sale"
+    },
+    "partialShort": "{{free}}/{{total}}",
+    "partialAria": "free {{free}} days out of {{total}}",
+    "aria": "Map {{name}} from {{from}} to {{to}}",
+    "spotTitle": "Spot {{label}}",
+    "freeDays": "Free days"
+  },
+  "findSpot": {
+    "shownTitle": "Proposal {{rank}} highlighted on the map",
+    "book": "Book",
+    "again": "Other proposals",
+    "hide": "Hide"
+  },
+  "bookingActions": {
+    "more": "More actions",
+    "duplicate": "Duplicate",
+    "changeCustomer": "Change customer",
+    "share": "Summary via WhatsApp",
+    "printSummary": "Print summary",
+    "duplicateTitle": "Duplicate {{code}}",
+    "duplicateDescription": "Same spot, customer, extras and agreement on new dates; the price is recalculated.",
+    "newDates": "New dates",
+    "newTotal": "New total:",
+    "duplicateConfirm": "Create the booking",
+    "check": "Check",
+    "duplicated": "Booking {{code}} created.",
+    "changeCustomerTitle": "Change the customer of {{code}}",
+    "changeCustomerDescription": "Current customer: {{name}}. The price may change (agreement, customer tags).",
+    "newCustomer": "New customer",
+    "changeCustomerConfirm": "Change customer",
+    "customerChanged": "Customer changed: {{name}}.",
+    "shareTitle": "Summary of {{code}}",
+    "shareDescription": "The text opens in WhatsApp with the customer's number: you confirm the sending in your app. Arenile sends nothing.",
+    "shareText": "Text",
+    "copy": "Copy text",
+    "copied": "Text copied.",
+    "copyFailed": "Copy failed: select the text and copy it by hand.",
+    "openWhatsApp": "Open WhatsApp"
   }
 }

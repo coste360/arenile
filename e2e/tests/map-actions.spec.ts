@@ -44,7 +44,7 @@ test("three spots selected on the map become one group booking", async ({ page }
   await page.getByRole("option", { name: "Base", exact: true }).click();
   await form.getByRole("radio", { name: "Nuovo cliente" }).click();
   await form.getByLabel("Cognome").fill("Gruppo");
-  await form.getByRole("textbox", { name: /^Nome/ }).fill("Playwright");
+  await form.getByRole("textbox", { name: /^Nome(?! del gruppo)/ }).fill("Playwright");
   await form.getByLabel("Telefono").fill("+39 333 0000003");
   await expect(form.getByText(/Totale/).first()).toBeVisible();
   const force = form.getByLabel(/Conferma comunque/);

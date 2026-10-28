@@ -1,0 +1,27 @@
+---
+title: Spot calendar
+description: The season of one spot at a glance, months by days with morning and afternoon, to see when it is free, start a booking or open the booking of a day.
+sidebar:
+  order: 21.8
+---
+
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Map** → spot sheet → **Calendar**. **Who:** whoever sees the map; customer names only with
+the permission to see bookings.
+
+The calendar shows the whole season of a spot: one row per month, one column per day. Each day is split in half,
+**morning on the left and afternoon on the right**, with the colour and glyph of the status (free, booked, season
+pass, released, held, blocked, to collect).
+
+<Screenshot name="admin-spot-calendar" alt="Season calendar of a spot with the booked days" />
+
+- **A free day** starts a new booking from that day, with the following free days already proposed (up to 14).
+- **A booked day** opens its booking.
+- On a computer, hovering the **Calendar** button shows a preview.
+
+## Range view
+
+On the map, **Range** instead of **Day** shows a whole period: a spot free only in part shows **free in part N/M**
+(free days out of the total). Tap it to see the free days and start the booking or go to
+[Find a spot](/en/gestore/trova-posto/).

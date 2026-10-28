@@ -22,6 +22,9 @@ type ReleaseInput struct {
 	Dates []calendar.Date
 	Slots calendar.Slots
 	Note  string
+	// Range adds the days of a range, optionally on some weekdays only
+	// (spec 30.8, release_range.go); its days already released are skipped.
+	Range *ReleaseRange
 }
 
 // ListReleases returns every release of a pass (active, resold, revoked).
@@ -67,9 +70,12 @@ func (s *Service) Release(ctx context.Context, p *auth.Principal, ip, establishm
 		if err != nil {
 			return err
 		}
-		days, err := planRelease(&v.Booking, in.Dates, in.Slots, today)
+		days, err := s.planReleaseDays(ctx, tx, es, v, in, today)
 		if err != nil {
 			return err
+		}
+		if len(days) == 0 {
+			return nil // the range is already released: nothing to do
 		}
 		active, err := store.ActiveSeasonReleases(ctx, tx, es, v.LineID, uniqueDates(days))
 		if err != nil {
@@ -78,37 +84,89 @@ func (s *Service) Release(ctx context.Context, p *auth.Principal, ip, establishm
 		if dup := overlapping(days, active); len(dup) > 0 {
 			return fmt.Errorf("%w (%s)", ErrAlreadyReleased, strings.Join(dateStrings(dup), ", "))
 		}
-		if err := s.d.Inventory.RemoveSeasonDays(ctx, tx, es, inventory.SeasonDays{
-			BookingID: passID, BookingLineID: v.LineID, SpotID: v.SpotID, Days: days,
-		}); err != nil {
+		rows, spotIDs, err := s.removeReleasedDays(ctx, tx, es, passID, v, days, note, userID(p))
+		if err != nil {
 			return err
 		}
-		now := s.now()
-		actor := userID(p)
-		rows := make([]store.SeasonRelease, len(days))
-		ids := make([]string, len(days))
-		for i, d := range days {
-			rows[i] = store.SeasonRelease{
-				ID: store.NewID(), EstablishmentID: es.ID(), BookingID: passID, BookingLineID: v.LineID, SpotID: v.SpotID,
-				Date: d.Date, Slot: d.Slot, Note: note, CreatedByUserID: actor, CreatedAt: now, UpdatedAt: now,
-			}
-			ids[i] = rows[i].ID
-		}
-		if err := store.InsertSeasonReleases(ctx, tx, es, rows); err != nil {
-			if errors.Is(err, store.ErrConflict) {
-				return ErrAlreadyReleased
-			}
-			return fmt.Errorf("pass: release: %w", err)
-		}
 		out = rows
+		ids := releaseIDs(rows)
 		dates := dateStrings(days)
 		return s.record(ctx, tx, p, ip, es, "season_pass.days_released", passID,
 			map[string]any{"release_ids": ids, "dates": dates, "slots": slotsOf(days)},
 			event.SeasonDayReleased, event.AllocationChange{
-				Reason: "day_released", BookingID: passID, ReleaseIDs: ids, SpotIDs: []string{v.SpotID}, Dates: dates,
+				Reason: "day_released", BookingID: passID, ReleaseIDs: ids, SpotIDs: spotIDs, Dates: dates,
 			})
 	})
 	return out, err
+}
+
+// removeReleasedDays deletes the season allocations of days spot by spot, as
+// the pass occupies them on each date (a pass moved from a date or swapped
+// has segments, spec 30.7), inserts one release row per half-day with the
+// spot of that half-day and returns the rows and the distinct spots. A
+// half-day the pass does not occupy is inventory.ErrSeasonDaysMismatch.
+func (s *Service) removeReleasedDays(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, passID string, v *store.SeasonPassView,
+	days []availability.DateSlot, note string, actor *string,
+) ([]store.SeasonRelease, []string, error) {
+	from, to := days[0].Date, days[0].Date
+	for _, d := range days {
+		if d.Date.Before(from) {
+			from = d.Date
+		}
+		if d.Date.After(to) {
+			to = d.Date
+		}
+	}
+	held, err := store.SeasonAllocationsOfLine(ctx, tx, es, v.LineID, from, to)
+	if err != nil {
+		return nil, nil, fmt.Errorf("pass: release: %w", err)
+	}
+	spotOf := make(map[availability.DateSlot]string, len(held))
+	for _, a := range held {
+		spotOf[availability.DateSlot{Date: a.Date, Slot: a.Slot}] = a.SpotID
+	}
+	bySpot := map[string][]availability.DateSlot{}
+	var spotIDs []string
+	for _, d := range days {
+		sp, ok := spotOf[d]
+		if !ok {
+			return nil, nil, inventory.ErrSeasonDaysMismatch
+		}
+		if _, seen := bySpot[sp]; !seen {
+			spotIDs = append(spotIDs, sp)
+		}
+		bySpot[sp] = append(bySpot[sp], d)
+	}
+	for _, sp := range spotIDs {
+		if err := s.d.Inventory.RemoveSeasonDays(ctx, tx, es, inventory.SeasonDays{
+			BookingID: passID, BookingLineID: v.LineID, SpotID: sp, Days: bySpot[sp],
+		}); err != nil {
+			return nil, nil, err
+		}
+	}
+	now := s.now()
+	rows := make([]store.SeasonRelease, len(days))
+	for i, d := range days {
+		rows[i] = store.SeasonRelease{
+			ID: store.NewID(), EstablishmentID: es.ID(), BookingID: passID, BookingLineID: v.LineID, SpotID: spotOf[d],
+			Date: d.Date, Slot: d.Slot, Note: note, CreatedByUserID: actor, CreatedAt: now, UpdatedAt: now,
+		}
+	}
+	if err := store.InsertSeasonReleases(ctx, tx, es, rows); err != nil {
+		if errors.Is(err, store.ErrConflict) {
+			return nil, nil, ErrAlreadyReleased
+		}
+		return nil, nil, fmt.Errorf("pass: release: %w", err)
+	}
+	return rows, spotIDs, nil
+}
+
+func releaseIDs(rows []store.SeasonRelease) []string {
+	ids := make([]string, len(rows))
+	for i := range rows {
+		ids[i] = rows[i].ID
+	}
+	return ids
 }
 
 // Revoke cancels a release that has not been resold: under the lock of the

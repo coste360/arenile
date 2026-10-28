@@ -232,6 +232,10 @@ type ExtraInput struct {
 	SortOrder      int
 	Active         *bool
 	VATRateBP      *int64
+	// ShowOnMap / MapLabel (spec 30.4): the extra appears in the spot
+	// setup of the operational map ("2L 1S"); nil keeps the stored value.
+	ShowOnMap *bool
+	MapLabel  *string
 }
 
 // componentFields is a validated ComponentInput.
@@ -339,6 +343,8 @@ type extraFields struct {
 	SortOrder      int
 	Active         *bool
 	VATRateBP      *int64
+	ShowOnMap      *bool
+	MapLabel       *string
 }
 
 // validateExtra checks the self-contained rules of an extra.
@@ -378,5 +384,6 @@ func validateExtra(in ExtraInput, defaultLocale string) (extraFields, *configerr
 	f.Channels = normalizeSet(ve, "channels", in.Channels, Channels, true)
 	validateSortOrder(ve, in.SortOrder)
 	f.VATRateBP = validateVAT(ve, in.VATRateBP)
+	validateMapSetup(ve, &f, in)
 	return f, ve
 }

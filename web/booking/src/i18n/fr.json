@@ -283,5 +283,20 @@
     "conflict": "Les conditions ont été mises à jour : relisez-les et acceptez-les à nouveau.",
     "validation_failed": "Certaines données ne sont pas valides : vérifiez les champs.",
     "payment_provider_test_mode": "Le paiement en ligne n'est pas disponible pour le moment : contactez l'établissement pour réserver."
+  },
+  "agreement": {
+    "label": "Code de convention",
+    "applied": "Convention {{name}} appliquée.",
+    "requirement": "À présenter à la caisse : {{requirement}}.",
+    "notApplicable": "La convention {{code}} ne s'applique pas à cette sélection.",
+    "invalid": "Code de convention non valide.",
+    "quotaExhausted": "Plus de places en convention pour ces dates : le prix normal s'applique.",
+    "unknown": "Le code de convention {{code}} n'est pas valide ou n'est plus actif : vous pouvez réserver au prix normal.",
+    "title": "Convention {{name}}",
+    "titlePartner": "Convention {{name}} · {{partner}}",
+    "validity": "Valable du {{from}} au {{to}}.",
+    "validUntil": "Valable jusqu'au {{to}}.",
+    "applyAria": "Appliquer le code de convention",
+    "removeAria": "Retirer le code de convention"
   }
 }

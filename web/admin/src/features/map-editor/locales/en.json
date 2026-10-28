@@ -69,7 +69,8 @@
     "capacity": "Capacity",
     "max_extra": "Max extra",
     "illustration": "Illustration",
-    "flagColour": "Flag colour"
+    "flagColour": "Flag colour",
+    "onlineBookable": "Sold online"
   },
   "seaSides": {
     "top": "Top",
@@ -155,7 +156,8 @@
     "useDefault": "Use the default illustration",
     "illustrationHint": "The illustration sets the spot kind; changing the kind resets an illustration of another kind to the default.",
     "kindChanged": "Kind changed to {{kind}}: packs that require another kind will no longer be assigned to this spot.",
-    "tileHint": "Walkway tiles are 60 units: straight runs are a whole number of tiles long and, with a grid step that divides 60, they snap to the tile grid."
+    "tileHint": "Walkway tiles are 60 units: straight runs are a whole number of tiles long and, with a grid step that divides 60, they snap to the tile grid.",
+    "onlineBookableHint": "Off: the public page neither shows nor sells the spot; the cash desk always sees it. It applies together with the zone online quota."
   },
   "tools": {
     "label": "Editor tools",

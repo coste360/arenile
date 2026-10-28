@@ -283,5 +283,20 @@
     "conflict": "Die Bedingungen wurden aktualisiert: Bitte lesen und akzeptieren Sie sie erneut.",
     "validation_failed": "Einige Angaben sind ungültig: Bitte prüfen Sie die Felder.",
     "payment_provider_test_mode": "Die Online-Zahlung ist derzeit nicht verfügbar: Bitte wenden Sie sich zur Buchung an den Strandbetrieb."
+  },
+  "agreement": {
+    "label": "Vereinbarungscode",
+    "applied": "Vereinbarung {{name}} angewendet.",
+    "requirement": "An der Kasse vorzulegen: {{requirement}}.",
+    "notApplicable": "Die Vereinbarung {{code}} gilt nicht für diese Auswahl.",
+    "invalid": "Ungültiger Vereinbarungscode.",
+    "quotaExhausted": "Keine Plätze mehr zur Vereinbarung an diesen Tagen: Es gilt der normale Preis.",
+    "unknown": "Der Vereinbarungscode {{code}} ist ungültig oder nicht mehr aktiv: Sie können zum normalen Preis buchen.",
+    "title": "Vereinbarung {{name}}",
+    "titlePartner": "Vereinbarung {{name}} · {{partner}}",
+    "validity": "Gültig vom {{from}} bis {{to}}.",
+    "validUntil": "Gültig bis {{to}}.",
+    "applyAria": "Vereinbarungscode anwenden",
+    "removeAria": "Vereinbarungscode entfernen"
   }
 }

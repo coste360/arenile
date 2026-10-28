@@ -98,6 +98,8 @@ tags:
     description: Chiavi API e webhook in uscita
   - name: printing
     description: Stampanti ESC/POS di rete, instradamento dei documenti e lavori di stampa (edizione desktop, ADR 0021)
+  - name: partners
+    description: Partner, categorie di clienti, verifiche dei requisiti e conto del partner (spec 30.2)
 
 paths:
   /healthz:
@@ -3336,6 +3338,14 @@ paths:
           description: "Include i clienti anonimizzati (default false)."
           schema:
             type: boolean
+        - name: category_id
+          in: query
+          required: false
+          description: Solo i clienti di questa categoria.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/Limit"
       responses:
@@ -3616,6 +3626,29 @@ paths:
           in: query
           required: false
           description: "Codice prenotazione o nome/telefono del cliente."
+          schema:
+            type: string
+            maxLength: 100
+        - name: agreement_id
+          in: query
+          required: false
+          description: Solo le prenotazioni con questa convenzione.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: partner_id
+          in: query
+          required: false
+          description: Solo le prenotazioni di questo partner.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: group_name
+          in: query
+          required: false
+          description: Solo le prenotazioni di questo gruppo (uguaglianza, senza distinzione di maiuscole).
           schema:
             type: string
             maxLength: 100
@@ -12315,6 +12348,1281 @@ paths:
           $ref: "#/components/responses/Conflict"
         "501":
           $ref: "#/components/responses/NotImplemented"
+  # ---- M8: cassa avanzata e convenzioni (spec 30, ADR 0028) ----
+  /api/admin/v1/establishments/{establishmentId}/partners:
+    get:
+      operationId: listPartners
+      tags: [partners]
+      summary: Elenco dei partner
+      description: >-
+        Spec 30.2.1: soggetti con cui il lido ha un accordo (strutture ricettive, enti, aziende, associazioni),
+        separati dai clienti. Permesso bookings.read (la cassa sceglie il partner sulla prenotazione).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: q
+          in: query
+          required: false
+          description: Ricerca per nome, comune o referente.
+          schema:
+            type: string
+            maxLength: 100
+        - name: kind
+          in: query
+          required: false
+          description: Filtra per tipo di partner.
+          schema:
+            $ref: "#/components/schemas/PartnerKind"
+        - name: active
+          in: query
+          required: false
+          description: Filtra per stato.
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createPartner
+      tags: [partners]
+      summary: Crea un partner
+      description: Permesso establishment.configure. Referente, email e telefono non vanno mai nei log.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerInput"
+      responses:
+        "201":
+          description: Partner creato
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/partners/{partnerId}:
+    get:
+      operationId: getPartner
+      tags: [partners]
+      summary: Dettaglio del partner
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+      responses:
+        "200":
+          description: Partner
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updatePartner
+      tags: [partners]
+      summary: Sostituisce il partner
+      description: Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerInput"
+      responses:
+        "200":
+          description: Partner aggiornato
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: deletePartner
+      tags: [partners]
+      summary: Elimina il partner
+      description: >-
+        Solo se nessuna convenzione, prenotazione o pagamento lo usa; altrimenti `409 partner_in_use` e il partner si
+        disattiva (active = false) per conservarne lo storico.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/partners/{partnerId}/statement:
+    get:
+      operationId: getPartnerStatement
+      tags: [partners]
+      summary: Estratto conto del partner per periodo
+      description: >-
+        Spec 30.2.4: prenotazioni a carico del partner (tutte o in parte), giorni-postazione, persone, importi
+        addebitati, pagamenti registrati e saldo. Saldo finale = saldo iniziale + addebitato - pagato (INV-104).
+        Base soggiorno: una prenotazione entra nel periodo con i suoi giorni di soggiorno. Esportazione in Excel
+        (`format=xlsx`) o HTML stampabile (`format=html`, PDF con la stampa del browser, ADR 0019). La fattura resta
+        fuori da Arenile. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - $ref: "#/components/parameters/PrintableFormat"
+      responses:
+        "200":
+          description: Estratto conto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerStatement"
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/html:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/partners/{partnerId}/payments:
+    get:
+      operationId: listPartnerPayments
+      tags: [partners]
+      summary: Pagamenti ricevuti dal partner
+      description: Pagamenti registrati sul conto del partner (decisione 30.13 in ADR 0028). Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagamenti del partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerPaymentList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: recordPartnerPayment
+      tags: [partners]
+      summary: Registra un pagamento del partner
+      description: >-
+        Registra un incasso dal partner (bonifico, contanti...). Non è un movimento di cassa né un documento fiscale:
+        riduce il saldo del conto del partner. Audit nella stessa transazione. Permesso cash.operate.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerPaymentInput"
+      responses:
+        "201":
+          description: Pagamento registrato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerPayment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/partners/{partnerId}/payments/{partnerPaymentId}/void:
+    post:
+      operationId: voidPartnerPayment
+      tags: [partners]
+      summary: Annulla un pagamento del partner registrato per errore
+      description: La riga resta con data, operatore e motivo dell'annullamento; non conta più nel saldo.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PartnerID"
+        - $ref: "#/components/parameters/PartnerPaymentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerPaymentVoid"
+      responses:
+        "200":
+          description: Pagamento annullato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerPayment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customer-categories:
+    get:
+      operationId: listCustomerCategories
+      tags: [partners]
+      summary: Categorie di clienti
+      description: >-
+        Spec 30.2.2: residenti, over 65, persone con disabilità e accompagnatore, famiglie numerose... assegnabili ai
+        clienti e destinatarie di convenzioni. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: active
+          in: query
+          required: false
+          description: Filtra per stato.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Categorie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCategoryList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createCustomerCategory
+      tags: [partners]
+      summary: Crea una categoria di clienti
+      description: Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerCategoryInput"
+      responses:
+        "201":
+          description: Categoria creata
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCategory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customer-categories/{customerCategoryId}:
+    get:
+      operationId: getCustomerCategory
+      tags: [partners]
+      summary: Dettaglio della categoria di clienti
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerCategoryID"
+      responses:
+        "200":
+          description: Categoria
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateCustomerCategory
+      tags: [partners]
+      summary: Sostituisce la categoria di clienti
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerCategoryID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerCategoryInput"
+      responses:
+        "200":
+          description: Categoria aggiornata
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCategory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: deleteCustomerCategory
+      tags: [partners]
+      summary: Elimina la categoria di clienti
+      description: Solo se nessuna convenzione la usa (`409 customer_category_in_use`); i clienti perdono l'appartenenza.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerCategoryID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminata
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/requirement-verifications:
+    get:
+      operationId: listCustomerRequirementVerifications
+      tags: [partners]
+      summary: Verifiche dei requisiti del cliente
+      description: Storico delle verifiche (data e operatore), mai copie dei documenti. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+      responses:
+        "200":
+          description: Verifiche
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequirementVerificationList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: verifyCustomerRequirement
+      tags: [partners]
+      summary: Registra la verifica di un requisito sul cliente
+      description: >-
+        Spec 30.2.2: l'operatore spunta "verificato" (es. residente verificato); si registrano data e operatore, mai
+        una copia del documento. Vale per le prenotazioni successive del cliente finché la convenzione o la categoria
+        non cambiano requisito. Permesso bookings.write; audit nella stessa transazione.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequirementVerificationInput"
+      responses:
+        "201":
+          description: Verifica registrata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequirementVerification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/requirement-verification:
+    post:
+      operationId: verifyBookingRequirement
+      tags: [bookings]
+      summary: Registra la verifica del requisito della convenzione sulla prenotazione
+      description: >-
+        Spec 30.2.2-30.2.3: data e operatore della verifica (es. conferma dell'hotel), mai una copia del documento.
+        Passa da internal/domain/booking (audit ed evento booking.modified nella stessa transazione). Permesso
+        bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequirementVerificationInput"
+      responses:
+        "200":
+          description: Verifica registrata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequirementVerification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}/versions:
+    get:
+      operationId: listAgreementVersions
+      tags: [pricing]
+      summary: Storico delle versioni della convenzione
+      description: >-
+        Spec 30.2.2: ogni modifica delle condizioni, dell'ambito, della validità o del contingente salva una versione.
+        La condizione applicata a una prenotazione resta nel suo price_snapshot (INV-21).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/AgreementID"
+      responses:
+        "200":
+          description: Versioni, la più recente per prima
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementVersionList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}/quota:
+    get:
+      operationId: getAgreementQuotaUsage
+      tags: [pricing]
+      summary: Uso del contingente della convenzione per giorno
+      description: >-
+        Spec 30.2.2: per ogni mezza giornata il contingente riservato, quanto è stato usato e se è già tornato alla
+        vendita generale (release_days_before giorni prima, INV-103). Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/AgreementID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+      responses:
+        "200":
+          description: Uso del contingente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementQuotaUsage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/duplicate:
+    post:
+      operationId: duplicateBooking
+      tags: [bookings]
+      summary: Duplica la prenotazione su nuove date
+      description: >-
+        Spec 30.9: stessa postazione, cliente, extra, convenzione e dati del gruppo; nuove date; prezzo ricalcolato;
+        disponibilità garantita dai vincoli del database (409 se la postazione non è libera). `dry_run = true` mostra
+        prezzo e conflitti senza scrivere. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingDuplicateRequest"
+      responses:
+        "200":
+          description: Anteprima (dry_run)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDuplicateResult"
+        "201":
+          description: Prenotazione creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDuplicateResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/share-summary:
+    post:
+      operationId: createBookingShareSummary
+      tags: [bookings]
+      summary: Riepilogo della prenotazione da inviare al cliente (WhatsApp)
+      description: >-
+        Spec 30.9: testo pronto nella lingua del cliente (date, postazioni, importo, saldo, link di gestione) e link
+        `wa.me` al numero del cliente, solo se ha un telefono. Arenile non invia nulla a terzi: l'operatore conferma
+        l'invio dalla propria app. Il link di gestione è nuovo a ogni chiamata e i precedenti sono revocati (come il
+        link magico): per questo è un `POST` senza corpo, mai un `GET` (nessun prefetch o link può revocare il link
+        del cliente). Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+      responses:
+        "200":
+          description: Riepilogo
+          headers:
+            Cache-Control:
+              description: Sempre no-store (contiene il link di gestione).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingShareSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/summary-print:
+    get:
+      operationId: getBookingSummaryPrint
+      tags: [bookings]
+      summary: Riepilogo stampabile per il cliente con QR
+      description: >-
+        Spec 30.9: documento HTML autonomo (stili di stampa, A4 o 80 mm) con date, postazioni, extra, importi e QR
+        della prenotazione; PDF con la stampa del browser (ADR 0019). Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - name: paper
+          in: query
+          required: false
+          description: Formato carta (default a4).
+          schema:
+            type: string
+            enum: [a4, receipt80]
+      responses:
+        "200":
+          description: Documento
+          content:
+            text/html:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/swap:
+    post:
+      operationId: swapBookings
+      tags: [bookings]
+      summary: Scambia le postazioni di due prenotazioni
+      description: >-
+        Spec 30.7: scambio delle allocazioni di due righe sull'intervallo comune a partire da `from`; fuori
+        dall'intervallo comune ciascuna resta dov'era. Una sola transazione: righe delle prenotazioni bloccate in
+        ordine di ID, allocazioni rilasciate e ricreate senza alcun istante di doppia occupazione (vincolo unico di
+        spot_allocations, INV-101), prezzo ricalcolato se cambia la categoria, audit ed evento booking.modified per
+        entrambe. `dry_run = true` mostra le differenze di prezzo senza scrivere. La risposta riporta `undo` per
+        annullare entro 5 minuti. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingSwapRequest"
+      responses:
+        "200":
+          description: Esito o anteprima dello scambio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingSwapResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/group-move:
+    post:
+      operationId: moveBookingGroup
+      tags: [bookings]
+      summary: Sposta più prenotazioni o righe insieme
+      description: >-
+        Spec 30.7: ogni elemento indica la riga e la postazione di arrivo (il pannello calcola le destinazioni
+        mantenendo la disposizione relativa). Tutto o niente in una sola transazione, a partire da `from`; audit ed
+        evento per ogni prenotazione. `undo` per annullare entro 5 minuti. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupMoveRequest"
+      responses:
+        "200":
+          description: Esito o anteprima
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupMoveResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/moves/last:
+    get:
+      operationId: getLastMove
+      tags: [bookings]
+      summary: Ultimo spostamento annullabile dell'utente
+      description: >-
+        Spec 30.7: l'ultimo spostamento, scambio o spostamento di gruppo fatto dall'utente corrente negli ultimi 5
+        minuti e non ancora annullato; `move` assente se non ce n'è.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Ultimo spostamento
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LastMove"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/moves/{moveId}/undo:
+    post:
+      operationId: undoMove
+      tags: [bookings]
+      summary: Annulla uno spostamento entro 5 minuti
+      description: >-
+        Spec 30.7: riporta le righe sulle postazioni di partenza se sono ancora libere (vincoli del database: 409
+        move_undo_conflict altrimenti, nulla cambia); dopo 5 minuti 410 move_undo_expired. Solo l'utente che ha fatto
+        lo spostamento, e solo se le prenotazioni non sono cambiate nel frattempo (409). Audit ed evento per ogni
+        prenotazione. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/MoveID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Spostamento annullato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoveUndoResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/find-spot:
+    post:
+      operationId: findSpot
+      tags: [availability]
+      summary: Trova posto
+      description: >-
+        Spec 30.6: ricerca della disponibilità per la cassa (nessuna scrittura). Proposte ordinate: prima quelle senza
+        cambi di posto, poi con meno cambi, poi per continuità e vicinanza; ogni proposta ha i segmenti per riga e il
+        prezzo stimato con la convenzione (per un soggiorno spezzato su categorie diverse ogni giorno vale la
+        categoria della postazione occupata, ADR 0028). Riusa l'algoritmo a segmenti dell'assegnazione automatica
+        (spec 7.5) esteso alle zone seat. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FindSpotRequest"
+      responses:
+        "200":
+          description: Proposte
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindSpotResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/find-spot/book:
+    post:
+      operationId: bookFindSpotProposal
+      tags: [availability]
+      summary: Prenota una proposta di Trova posto
+      description: >-
+        Spec 30.6: crea la prenotazione con le allocazioni per segmento in una sola transazione (passa da
+        internal/domain/booking). Se nel frattempo una mezza giornata è stata presa risponde 409 spot_unavailable con
+        i conflitti e il pannello rifà la ricerca; se il prezzo è cambiato rispetto a `expected_total` 409
+        price_changed. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FindSpotBookRequest"
+      responses:
+        "201":
+          description: Prenotazione creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/spots/{spotId}/calendar:
+    get:
+      operationId: getSpotCalendar
+      tags: [operations]
+      summary: Calendario della stagione della postazione
+      description: >-
+        Spec 30.5: per ogni giorno della stagione lo stato di mattina e pomeriggio (libero, prenotato, abbonato,
+        rilasciato, bloccato, in attesa, chiuso) e le prenotazioni coinvolte con il saldo. L'etichetta del cliente
+        (occupant_label) solo con bookings.read, mai negli eventi SSE. Senza `season_id` vale la stagione che contiene
+        oggi o la prossima.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SpotID"
+        - name: season_id
+          in: query
+          required: false
+          description: Stagione (default quella corrente o la prossima).
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: Calendario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpotCalendar"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/operations/lifeguard-list:
+    get:
+      operationId: getLifeguardList
+      tags: [operations]
+      summary: Lista per i bagnini
+      description: >-
+        Spec 30.10: per fila e postazione, cognome dell'occupante, allestimento, arrivo/partenza e da saldare. JSON
+        oppure HTML stampabile (`format=html`, A4, funziona offline). Mai email o telefono. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: date
+          in: query
+          required: true
+          description: Giorno.
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: slot
+          in: query
+          required: false
+          description: Fascia (default FULL).
+          schema:
+            $ref: "#/components/schemas/Slots"
+        - name: map_id
+          in: query
+          required: false
+          description: Solo le postazioni della mappa.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/PrintableFormat"
+      responses:
+        "200":
+          description: Lista
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LifeguardList"
+            text/html:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/partners:
+    get:
+      operationId: getPartnersReport
+      tags: [reports]
+      summary: Rendiconto per partner
+      description: >-
+        Spec 30.2.5: per partner prenotazioni, presenze (persone), giorni-postazione, incasso, sconto concesso,
+        addebitato al partner e pagato, per periodo (base soggiorno). Esclude le prenotazioni di prova. Permesso
+        reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: partner_id
+          in: query
+          required: false
+          description: Solo questo partner.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Rendiconto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnersReport"
+            text/csv:
+              schema:
+                type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/agreements-register:
+    get:
+      operationId: getAgreementsRegister
+      tags: [reports]
+      summary: Registro delle convenzioni per il bando
+      description: >-
+        Spec 30.2.5: per una stagione o un periodo, le convenzioni attive con le loro condizioni e, per ciascuna,
+        prenotazioni, giorni-postazione, persone e valore dello sconto concesso, con i totali per categoria
+        (residenti, strutture ricettive, categorie tutelate...). Excel (`format=xlsx`) o HTML stampabile e
+        firmabile (`format=html`, impaginazione neutra, PDF con la stampa del browser, ADR 0019 e 0028). Coerente
+        con i report di cassa (stessa base dati, prenotazioni di prova escluse). Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: season_id
+          in: query
+          required: false
+          description: Stagione di riferimento per l'intestazione.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/PrintableFormat"
+      responses:
+        "200":
+          description: Registro
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementsRegister"
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/html:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/agreements/{agreementCode}:
+    get:
+      operationId: getPublicAgreement
+      tags: [public]
+      summary: Convenzione dal link o dal codice
+      description: >-
+        Spec 30.2.2: il link della convenzione `/b/{slug}?c={codice}` mostra il nome della convenzione e del partner,
+        la condizione e l'eventuale requisito da presentare in cassa. Solo convenzioni attive, valide e con canale
+        online (codice o link); altrimenti 404 (non rivela se il codice esiste). Il codice si applica poi in
+        preventivo e checkout con `agreement_code`. Nessun dato dei clienti.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/AgreementCode"
+      responses:
+        "200":
+          description: Convenzione
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicAgreement"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
 components:
   securitySchemes:
     cookieAuth:
@@ -12845,6 +14153,62 @@ components:
         type: string
         format: uuid
         x-go-type: string
+    # ---- M8 (spec 30) ----
+    PartnerID:
+      name: partnerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PartnerPaymentID:
+      name: partnerPaymentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    CustomerCategoryID:
+      name: customerCategoryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    MoveID:
+      name: moveId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    SpotID:
+      name: spotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    AgreementCode:
+      name: agreementCode
+      in: path
+      required: true
+      description: Codice della convenzione (senza distinzione tra maiuscole e minuscole).
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9_-]{1,39}$
+    PrintableFormat:
+      name: format
+      in: query
+      required: false
+      description: "Formato (default json; xlsx per Excel, html per il documento stampabile / PDF)."
+      schema:
+        $ref: "#/components/schemas/PrintableFormat"
   responses:
     BadRequest:
       description: Richiesta non valida
@@ -13004,6 +14368,13 @@ components:
         - print_route_missing
         - payment_provider_test_mode
         - email_template_invalid
+        - agreement_quota_exceeded
+        - agreement_not_applicable
+        - swap_conflict
+        - move_undo_expired
+        - move_undo_conflict
+        - partner_in_use
+        - customer_category_in_use
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -14672,6 +16043,14 @@ components:
           type: boolean
         vat_rate_bp:
           $ref: "#/components/schemas/BasisPoints"
+        show_on_map:
+          type: boolean
+          description: Mostra l'extra nell'allestimento della postazione sulla mappa (spec 30.4).
+        map_label:
+          type: string
+          minLength: 1
+          maxLength: 3
+          description: Sigla sulla mappa (es. "L" per lettino, "S" per sdraio).
     Extra:
       type: object
       description: Aggiunta opzionale a un pack o alla prenotazione.
@@ -14736,6 +16115,14 @@ components:
         updated_at:
           type: string
           format: date-time
+        show_on_map:
+          type: boolean
+          description: Mostra l'extra nell'allestimento della postazione sulla mappa (spec 30.4).
+        map_label:
+          type: string
+          minLength: 1
+          maxLength: 3
+          description: Sigla sulla mappa (es. "L" per lettino, "S" per sdraio).
     ExtraList:
       type: object
       required:
@@ -15167,6 +16554,45 @@ components:
           type: boolean
         active:
           type: boolean
+        target:
+          $ref: "#/components/schemas/AgreementTarget"
+        partner_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Partner destinatario (target = partner); partner_name resta per le convenzioni precedenti.
+        customer_category_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Categoria destinataria (target = customer_category).
+        pack_prices:
+          type: array
+          maxItems: 50
+          description: Prezzi fissi per pack (condizione "prezzo fisso per pack", spec 30.2.2).
+          items:
+            $ref: "#/components/schemas/AgreementPackPrice"
+        scope:
+          $ref: "#/components/schemas/AgreementScope"
+        season_ids:
+          type: array
+          description: Stagioni di validità (oltre a valid_from/valid_to); vuoto = tutte.
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        quota:
+          $ref: "#/components/schemas/AgreementQuota"
+        requirement:
+          type: string
+          maxLength: 200
+          description: Requisito da verificare in cassa (es. "conferma dell'hotel"); vuoto = nessuno.
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementChannel"
+        register_category:
+          $ref: "#/components/schemas/RegisterCategory"
     Agreement:
       type: object
       description: "Convenzione: come un codice promozionale, ma assegnata a un cliente o a un partner (hotel)."
@@ -15221,6 +16647,50 @@ components:
         updated_at:
           type: string
           format: date-time
+        target:
+          $ref: "#/components/schemas/AgreementTarget"
+        partner_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Partner destinatario (target = partner); partner_name resta per le convenzioni precedenti.
+        customer_category_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Categoria destinataria (target = customer_category).
+        pack_prices:
+          type: array
+          maxItems: 50
+          description: Prezzi fissi per pack (condizione "prezzo fisso per pack", spec 30.2.2).
+          items:
+            $ref: "#/components/schemas/AgreementPackPrice"
+        scope:
+          $ref: "#/components/schemas/AgreementScope"
+        season_ids:
+          type: array
+          description: Stagioni di validità (oltre a valid_from/valid_to); vuoto = tutte.
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        quota:
+          $ref: "#/components/schemas/AgreementQuota"
+        requirement:
+          type: string
+          maxLength: 200
+          description: Requisito da verificare in cassa (es. "conferma dell'hotel"); vuoto = nessuno.
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementChannel"
+        register_category:
+          $ref: "#/components/schemas/RegisterCategory"
+        partner:
+          $ref: "#/components/schemas/PartnerRef"
+        public_link:
+          type: string
+          description: Percorso del link della convenzione (`/b/{slug}?c={codice}`), con canale online_link e codice.
     AgreementList:
       type: object
       required:
@@ -15692,6 +17162,11 @@ components:
             maxLength: 32
         active:
           type: boolean
+        online_bookable:
+          type: boolean
+          description: >-
+            Vendibile online (spec 30.11), oltre alla quota online della zona; default true. La pagina pubblica mostra
+            e vende solo le postazioni abilitate, la cassa le vede tutte.
     SpotInput:
       type: object
       required:
@@ -15750,6 +17225,11 @@ components:
             maxLength: 32
         active:
           type: boolean
+        online_bookable:
+          type: boolean
+          description: >-
+            Vendibile online (spec 30.11), oltre alla quota online della zona; default true. La pagina pubblica mostra
+            e vende solo le postazioni abilitate, la cassa le vede tutte.
     Decoration:
       type: object
       description: Elemento decorativo non prenotabile.
@@ -16648,7 +18128,7 @@ components:
           $ref: "#/components/schemas/Slot"
         reason:
           type: string
-          enum: [spot_unavailable, pool_exhausted, quota_exceeded, closed, inactive]
+          enum: [spot_unavailable, pool_exhausted, quota_exceeded, closed, inactive, agreement_reserved, agreement_quota]
     MarketingConsent:
       type: object
       description: Consenso marketing separato e facoltativo (spec 23).
@@ -16705,6 +18185,14 @@ components:
           x-go-type: string
         marketing_consent:
           $ref: "#/components/schemas/MarketingConsent"
+        category_ids:
+          type: array
+          maxItems: 20
+          description: Categorie di clienti (residenti, over 65...; spec 30.2.2).
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
     Customer:
       type: object
       required: [id, first_name, last_name, display_name, locale, notes, tags, version, created_at, updated_at]
@@ -16749,6 +18237,14 @@ components:
         updated_at:
           type: string
           format: date-time
+        category_ids:
+          type: array
+          maxItems: 20
+          description: Categorie di clienti (residenti, over 65...; spec 30.2.2).
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
     CustomerList:
       type: object
       required: [items]
@@ -16850,6 +18346,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CustomerCredit"
+        requirement_verifications:
+          type: array
+          description: Verifiche dei requisiti delle convenzioni sul cliente e sulle sue prenotazioni (M8, spec 30.2.2); solo data, operatore, requisito e nota.
+          items:
+            $ref: "#/components/schemas/RequirementVerification"
 
     BookingStatus:
       type: string
@@ -16915,6 +18416,20 @@ components:
         created_at:
           type: string
           format: date-time
+        agreement_name:
+          type: string
+        partner_name:
+          type: string
+        group_name:
+          type: string
+        guest_names:
+          type: array
+          description: Nomi degli ospiti (solo nell'esportazione GDPR del cliente, spec 23).
+          items:
+            type: string
+        group_origin:
+          type: string
+          description: Provenienza del gruppo, testo libero (solo nell'esportazione GDPR del cliente, spec 23).
     BookingList:
       type: object
       required: [items]
@@ -16984,6 +18499,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BookingExtra"
+        segments:
+          type: array
+          description: Segmenti per postazione (soggiorno spezzato o spostamento programmato con from), in ordine di data.
+          items:
+            $ref: "#/components/schemas/BookingLineSegment"
     BookingAllocation:
       type: object
       description: Una riga di spot_allocations o pool_allocations della prenotazione.
@@ -17157,6 +18677,34 @@ components:
         updated_at:
           type: string
           format: date-time
+        agreement:
+          $ref: "#/components/schemas/AgreementRef"
+        partner:
+          $ref: "#/components/schemas/PartnerRef"
+        group_name:
+          type: string
+        group_origin:
+          type: string
+        party_adults:
+          type: integer
+        party_children:
+          type: integer
+        guest_names:
+          type: array
+          items:
+            type: string
+        partner_share:
+          $ref: "#/components/schemas/BookingPartnerShare"
+        partner_amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Importo a carico del partner calcolato da partner_share sul totale corrente.
+        partner_guest_stay:
+          $ref: "#/components/schemas/DateRange"
+        requirement_verification:
+          $ref: "#/components/schemas/RequirementVerification"
+        last_move:
+          $ref: "#/components/schemas/MoveUndoInfo"
     BookingLineInput:
       type: object
       required: [pack_id]
@@ -17184,6 +18732,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SimulateExtra"
+        segments:
+          type: array
+          minItems: 1
+          maxItems: 4
+          description: >-
+            Soggiorno spezzato (Trova posto, spec 30.6): segmenti consecutivi che coprono le date della prenotazione
+            esattamente una volta (INV-102); in alternativa a spot_id.
+          items:
+            $ref: "#/components/schemas/BookingSegmentInput"
     BookingCreate:
       type: object
       description: >-
@@ -17249,6 +18806,43 @@ components:
         force:
           type: boolean
           description: Ignora le violazioni di policy (sempre permesso dal pannello, registrato nell'audit).
+        partner_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Struttura o partner di provenienza (ospite di Hotel Miramare).
+        group_name:
+          type: string
+          maxLength: 100
+        group_origin:
+          type: string
+          maxLength: 200
+          description: Provenienza in testo libero quando non è un partner.
+        party_adults:
+          type: integer
+          minimum: 0
+          maximum: 200
+        party_children:
+          type: integer
+          minimum: 0
+          maximum: 200
+        guest_names:
+          type: array
+          maxItems: 50
+          description: Nomi degli ospiti, facoltativi; nessun altro dato (spec 30.3, 23).
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+        partner_share:
+          $ref: "#/components/schemas/BookingPartnerShare"
+        partner_guest_stay:
+          allOf:
+            - $ref: "#/components/schemas/DateRange"
+          description: Periodo del soggiorno nella struttura del partner, facoltativo.
+        requirement_verified:
+          type: boolean
+          description: Registra nella stessa transazione la verifica del requisito della convenzione (data e operatore).
     BookingQuote:
       type: object
       required: [breakdown, deposit_due, policy, available, conflicts]
@@ -17267,7 +18861,10 @@ components:
             $ref: "#/components/schemas/AllocationConflict"
     BookingPatch:
       type: object
-      description: Campi da modificare; i campi assenti restano invariati. lines sostituisce tutte le righe.
+      description: >-
+        Campi da modificare; i campi assenti restano invariati. lines sostituisce tutte le righe. customer_id cambia
+        il cliente (spec 30.9, anteprima con la differenza di prezzo via dry_run della modifica). agreement_id e
+        partner_id vuoti ("") rimuovono convenzione e partner.
       properties:
         customer_id:
           type: string
@@ -17300,6 +18897,39 @@ components:
         force:
           type: boolean
           description: Ignora i limiti di modifica della policy (registrato nell'audit).
+        agreement_id:
+          type: string
+          maxLength: 36
+          description: Convenzione (UUID); stringa vuota = rimuove la convenzione (spec 10.3, differenza da incassare o rimborsare).
+        partner_id:
+          type: string
+          maxLength: 36
+          description: Partner (UUID); stringa vuota = rimuove il partner.
+        group_name:
+          type: string
+          maxLength: 100
+        group_origin:
+          type: string
+          maxLength: 200
+        party_adults:
+          type: integer
+          minimum: 0
+          maximum: 200
+        party_children:
+          type: integer
+          minimum: 0
+          maximum: 200
+        guest_names:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+        partner_share:
+          $ref: "#/components/schemas/BookingPartnerShare"
+        partner_guest_stay:
+          $ref: "#/components/schemas/DateRange"
     BookingChangeResult:
       type: object
       required: [applied, booking, previous_total, new_total, price_difference, conflicts]
@@ -17319,6 +18949,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AllocationConflict"
+        undo:
+          $ref: "#/components/schemas/MoveUndoInfo"
     BookingActionRequest:
       type: object
       properties:
@@ -18241,6 +19873,17 @@ components:
           description: Mezze giornate occupate nell'intervallo.
           items:
             $ref: "#/components/schemas/AllocationConflict"
+        free_days:
+          type: integer
+          description: Giorni dell'intervallo interamente liberi (stato "libero in parte", spec 30.4).
+        total_days:
+          type: integer
+          description: Giorni dell'intervallo (esclusi i giorni di chiusura).
+        free_dates:
+          type: array
+          description: I giorni interamente liberi, per il dettaglio al clic.
+          items:
+            $ref: "#/components/schemas/Date"
     ZoneAvailability:
       type: object
       required: [zone_id, code, assignment_mode, capacity, available]
@@ -18401,6 +20044,37 @@ components:
           description: Versione della prenotazione per l'If-Match delle azioni dalla mappa (check-in, spostamento).
         ticket:
           $ref: "#/components/schemas/OperationalTicket"
+        is_first_day:
+          type: boolean
+          description: Primo giorno della prenotazione (arrivo, spec 30.4).
+        is_last_day:
+          type: boolean
+          description: Ultimo giorno della prenotazione (partenza).
+        segment_starts_on:
+          allOf:
+            - $ref: "#/components/schemas/Date"
+          description: Primo giorno sulla postazione (soggiorno spezzato).
+        segment_ends_on:
+          allOf:
+            - $ref: "#/components/schemas/Date"
+          description: Ultimo giorno sulla postazione (soggiorno spezzato).
+        setup:
+          type: array
+          description: Allestimento dagli extra con show_on_map.
+          items:
+            $ref: "#/components/schemas/SetupItem"
+        setup_label:
+          type: string
+          description: Allestimento compatto (es. "2L 1S").
+        agreement:
+          $ref: "#/components/schemas/AgreementRef"
+        partner:
+          $ref: "#/components/schemas/PartnerRef"
+        group_name:
+          type: string
+        party_size:
+          type: integer
+          description: Adulti + bambini, se indicati.
     OperationalTicket:
       type: object
       description: >-
@@ -18873,11 +20547,14 @@ components:
             $ref: "#/components/schemas/SeasonRelease"
     SeasonReleaseCreate:
       type: object
+      description: >-
+        Giorni da rilasciare (spec 30.8): `dates` singoli, oppure l'intervallo `from`-`to`, facoltativamente solo nei
+        giorni della settimana `weekdays` ("ogni lunedì di luglio"); le due forme si sommano. Almeno un giorno.
       required: [dates]
       properties:
         dates:
           type: array
-          minItems: 1
+          minItems: 0
           maxItems: 120
           items:
             $ref: "#/components/schemas/Date"
@@ -18886,6 +20563,18 @@ components:
         note:
           type: string
           maxLength: 500
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        weekdays:
+          type: array
+          maxItems: 7
+          description: Giorni ISO (1 = lunedì … 7 = domenica) dell'intervallo; assente = tutti.
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
 
     PaymentMethod:
       type: string
@@ -19755,6 +21444,15 @@ components:
         promo_code:
           type: string
           maxLength: 40
+        agreement_code:
+          type: string
+          maxLength: 40
+          description: Codice o link della convenzione (spec 30.2.2); esito in PublicQuote.agreement.
+        accept_spot_change:
+          type: boolean
+          description: >-
+            Il cliente accetta esplicitamente un soggiorno spezzato su più postazioni (solo se la policy lo consente);
+            i segmenti sono indicati nel preventivo prima del pagamento (spec 30.6).
     PublicBookingCreate:
       allOf:
         - $ref: "#/components/schemas/PublicSelection"
@@ -19782,6 +21480,11 @@ components:
           type: integer
         amount:
           $ref: "#/components/schemas/Money"
+        segments:
+          type: array
+          description: Segmenti della riga quando il soggiorno è spezzato su più postazioni.
+          items:
+            $ref: "#/components/schemas/BookingLineSegment"
     PromoStatus:
       type: object
       required: [code, status]
@@ -19829,6 +21532,8 @@ components:
           $ref: "#/components/schemas/PromoStatus"
         payment_plan:
           $ref: "#/components/schemas/PaymentPlan"
+        agreement:
+          $ref: "#/components/schemas/AgreementStatus"
     CheckoutSessionState:
       type: string
       enum: [open, paying, completed, expired, abandoned]
@@ -20239,13 +21944,15 @@ components:
       properties:
         days:
           type: array
-          minItems: 1
+          minItems: 0
           maxItems: 120
           items:
             $ref: "#/components/schemas/ManageReleaseDay"
         dry_run:
           type: boolean
           description: Default true (solo anteprima); false rilascia.
+        range:
+          $ref: "#/components/schemas/ManageReleaseRange"
     ManageReleaseResult:
       type: object
       required: [applied, released, credit_amount]
@@ -24084,3 +25791,1319 @@ components:
             $ref: "#/components/schemas/PrintJob"
         next_cursor:
           type: string
+    # ---- M8: cassa avanzata e convenzioni (spec 30, ADR 0028) ----
+    PrintableFormat:
+      type: string
+      pattern: ^(json|xlsx|html)$
+      description: >-
+        Formato dei documenti esportabili e stampabili: json, xlsx oppure html (stampa del browser / PDF, ADR 0019).
+        Stringa con pattern e non enum, per non rinominare le costanti generate degli altri formati.
+    PartnerKind:
+      type: string
+      enum: [struttura_ricettiva, ente, azienda, associazione, altro]
+      description: Tipo di partner (spec 30.2.1).
+    AccommodationType:
+      type: string
+      enum: [hotel, bnb, affittacamere, campeggio, casa_vacanze, altro]
+      description: Tipo di struttura ricettiva (solo per kind = struttura_ricettiva).
+    PartnerInput:
+      type: object
+      required: [name, kind]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: '"Hotel Miramare", "Comune di …", "Associazione …".'
+        kind:
+          $ref: "#/components/schemas/PartnerKind"
+        accommodation_type:
+          $ref: "#/components/schemas/AccommodationType"
+        municipality:
+          type: string
+          maxLength: 100
+        address:
+          type: string
+          maxLength: 300
+        contact_name:
+          type: string
+          maxLength: 200
+          description: Referente; mai nei log.
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Mai nei log.
+        phone:
+          type: string
+          pattern: ^\+[1-9][0-9]{6,14}$
+          description: E.164; mai nei log.
+        vat_number:
+          type: string
+          maxLength: 20
+          description: Partita IVA, per l'estratto conto.
+        tax_code:
+          type: string
+          maxLength: 20
+          description: Codice fiscale, per l'estratto conto.
+        notes:
+          type: string
+          maxLength: 2000
+        active:
+          type: boolean
+          description: Default true.
+    Partner:
+      type: object
+      required: [id, name, kind, notes, active, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/PartnerKind"
+        accommodation_type:
+          $ref: "#/components/schemas/AccommodationType"
+        municipality:
+          type: string
+        address:
+          type: string
+        contact_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        vat_number:
+          type: string
+        tax_code:
+          type: string
+        notes:
+          type: string
+        active:
+          type: boolean
+        agreement_count:
+          type: integer
+          description: Convenzioni che hanno questo partner come destinatario.
+        balance:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Saldo del conto del partner (addebitato - pagato), presente con reports.read.
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PartnerList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Partner"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PartnerRef:
+      type: object
+      description: Riferimento breve a un partner (badge sulla mappa, scheda prenotazione).
+      required: [id, name, kind]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/PartnerKind"
+    PartnerPaymentMethod:
+      type: string
+      enum: [bank_transfer, cash, card, other]
+    PartnerPaymentInput:
+      type: object
+      required: [amount, received_on, method]
+      properties:
+        amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          minimum: 1
+        received_on:
+          $ref: "#/components/schemas/Date"
+        method:
+          $ref: "#/components/schemas/PartnerPaymentMethod"
+        reference:
+          type: string
+          maxLength: 200
+          description: Riferimento del bonifico o della fattura (esterna ad Arenile).
+        note:
+          type: string
+          maxLength: 500
+    PartnerPaymentVoid:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    PartnerPayment:
+      type: object
+      required: [id, partner_id, amount, received_on, method, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        partner_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        received_on:
+          $ref: "#/components/schemas/Date"
+        method:
+          $ref: "#/components/schemas/PartnerPaymentMethod"
+        reference:
+          type: string
+        note:
+          type: string
+        recorded_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        voided_at:
+          type: string
+          format: date-time
+        void_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    PartnerPaymentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnerPayment"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PartnerStatementBooking:
+      type: object
+      required: [booking_id, code, status, customer_display_name, starts_on, ends_on, spot_days, people, total_amount, discount_amount, partner_amount]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        customer_display_name:
+          type: string
+          description: Cognome e nome dell'ospite (vuoto se anonimizzato).
+        group_name:
+          type: string
+        agreement_name:
+          type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        spot_days:
+          type: integer
+          description: Giorni-postazione nel periodo (mezza giornata = 0,5 arrotondato per eccesso a livello di riga, ADR 0028).
+        people:
+          type: integer
+          description: Adulti + bambini della prenotazione (0 se non indicati).
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        discount_amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Sconto della convenzione dal price snapshot/current.
+        partner_amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Quota a carico del partner (addebitata sul suo conto).
+    PartnerStatementTotals:
+      type: object
+      required: [bookings, spot_days, people, total_amount, discount_amount, charged, paid, opening_balance, closing_balance]
+      properties:
+        bookings:
+          type: integer
+        spot_days:
+          type: integer
+        people:
+          type: integer
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        discount_amount:
+          $ref: "#/components/schemas/Money"
+        charged:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Somma di partner_amount nel periodo.
+        paid:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Pagamenti del partner non annullati con received_on nel periodo.
+        opening_balance:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Saldo prima di `from` (addebitato - pagato).
+        closing_balance:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: opening_balance + charged - paid (INV-104).
+    PartnerStatement:
+      type: object
+      required: [partner, period, bookings, payments, totals]
+      properties:
+        partner:
+          $ref: "#/components/schemas/Partner"
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnerStatementBooking"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnerPayment"
+        totals:
+          $ref: "#/components/schemas/PartnerStatementTotals"
+    RegisterCategory:
+      type: string
+      enum: [residents, accommodation, protected, companies, associations, other]
+      description: >-
+        Categoria del registro delle convenzioni (spec 30.2.5): residenti, strutture ricettive, categorie tutelate,
+        aziende, associazioni, altro.
+    CustomerCategoryInput:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: '"Residenti", "Over 65", "Persone con disabilità e accompagnatore"...'
+        description:
+          type: string
+          maxLength: 500
+        requirement:
+          type: string
+          maxLength: 200
+          description: Requisito da verificare in cassa (es. "documento di residenza"); vuoto = nessuno.
+        register_category:
+          $ref: "#/components/schemas/RegisterCategory"
+        active:
+          type: boolean
+    CustomerCategory:
+      type: object
+      required: [id, code, name, description, requirement, register_category, active, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        requirement:
+          type: string
+        register_category:
+          $ref: "#/components/schemas/RegisterCategory"
+        active:
+          type: boolean
+        member_count:
+          type: integer
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CustomerCategoryList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerCategory"
+    RequirementVerificationInput:
+      type: object
+      description: >-
+        Verifica di un requisito: si registrano data e operatore, mai una copia del documento (spec 30.2.2, 23). Senza
+        agreement_id e customer_category_id vale la convenzione della prenotazione.
+      properties:
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_category_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        note:
+          type: string
+          maxLength: 200
+          description: Nota libera breve (es. "tessera 2027"); mai numeri di documento.
+    RequirementVerification:
+      type: object
+      required: [id, subject, requirement, verified_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        subject:
+          type: string
+          enum: [booking, customer]
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_category_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        requirement:
+          type: string
+          description: Testo del requisito al momento della verifica.
+        note:
+          type: string
+        verified_at:
+          type: string
+          format: date-time
+        verified_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        verified_by_name:
+          type: string
+    RequirementVerificationList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequirementVerification"
+    AgreementTarget:
+      type: string
+      enum: [partner, customer_category, individual_customers]
+      description: >-
+        Destinatari: un partner e i suoi ospiti, una categoria di clienti, oppure singoli clienti (convenzione
+        predefinita sulla scheda cliente, customers.agreement_id). Assente = customers (convenzioni precedenti a M8).
+    AgreementChannel:
+      type: string
+      enum: [desk, online_code, online_link]
+      description: Canali della convenzione (spec 30.2.2); assenti = solo cassa.
+    AgreementPackPrice:
+      type: object
+      description: 'Prezzo fisso per pack (es. "giornaliero residenti 12 €"): sostituisce il prezzo del pack.'
+      required: [pack_id, amount]
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        per:
+          allOf:
+            - $ref: "#/components/schemas/AmountPer"
+          description: Default day.
+    AgreementScope:
+      type: object
+      description: >-
+        Ambito oltre a `conditions` (che già limita zone, periodi tariffari, giorni della settimana e fasce): pack ed
+        extra a cui si applica. Vuoto = tutti i pack; extra esclusi salvo apply_to_extras.
+      properties:
+        pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        extra_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        apply_to_extras:
+          type: boolean
+    AgreementQuota:
+      type: object
+      description: >-
+        Contingente per mezza giornata (spec 30.2.2): max_per_day limita le postazioni vendibili in convenzione;
+        reserved_per_day riserva capacità alla convenzione come una quota (spec 7.6), garantita dagli stessi vincoli
+        del database (INV-103). La parte riservata non usata torna alla vendita generale release_days_before giorni
+        prima (default 3, ADR 0028).
+      properties:
+        zone_ids:
+          type: array
+          description: Zone del contingente; vuoto = tutte le zone dello stabilimento.
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        max_per_day:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        reserved_per_day:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        release_days_before:
+          type: integer
+          minimum: 0
+          maximum: 120
+    AgreementQuotaDay:
+      type: object
+      required: [date, slot, reserved, used, released]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slot"
+        reserved:
+          type: integer
+        used:
+          type: integer
+        max:
+          type: integer
+        released:
+          type: boolean
+          description: La parte riservata non usata è già tornata alla vendita generale.
+        release_on:
+          $ref: "#/components/schemas/Date"
+    AgreementQuotaUsage:
+      type: object
+      required: [agreement_id, days]
+      properties:
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quota:
+          $ref: "#/components/schemas/AgreementQuota"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementQuotaDay"
+    AgreementVersion:
+      type: object
+      required: [version, changed_at, agreement]
+      properties:
+        version:
+          $ref: "#/components/schemas/Version"
+        changed_at:
+          type: string
+          format: date-time
+        changed_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        changed_by_name:
+          type: string
+        agreement:
+          $ref: "#/components/schemas/AgreementInput"
+    AgreementVersionList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementVersion"
+    AgreementRef:
+      type: object
+      description: Riferimento breve a una convenzione (badge, scheda prenotazione).
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        code:
+          type: string
+        partner_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        partner_name:
+          type: string
+        requirement:
+          type: string
+    AgreementStatus:
+      type: object
+      description: Esito del codice o del link della convenzione sulla pagina pubblica.
+      required: [code, status]
+      properties:
+        code:
+          type: string
+        status:
+          type: string
+          enum: [applied, invalid, not_applicable, quota_exhausted]
+        name:
+          type: string
+        requirement:
+          type: string
+          description: Requisito da presentare in cassa, se la convenzione lo prevede.
+    PublicAgreement:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        partner_name:
+          type: string
+        summary:
+          type: string
+          description: Condizione in breve, nella lingua richiesta (es. "-15% sui giornalieri").
+        valid_from:
+          $ref: "#/components/schemas/Date"
+        valid_to:
+          $ref: "#/components/schemas/Date"
+        requirement:
+          type: string
+    BookingPartnerShare:
+      type: object
+      description: >-
+        Quota della prenotazione a carico del partner (spec 30.2.4): full = tutto, percent = percentuale del totale,
+        amount = importo fisso (al massimo il totale), none = nessuna (rimuove la quota in modifica).
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [none, full, percent, amount]
+        percent:
+          $ref: "#/components/schemas/Decimal"
+        amount:
+          $ref: "#/components/schemas/Money"
+    BookingSegmentInput:
+      type: object
+      description: Parte del soggiorno di una riga su una postazione (soggiorno spezzato, spec 7.5 e 30.6).
+      required: [spot_id, starts_on, ends_on]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+    BookingLineSegment:
+      type: object
+      required: [spot_id, starts_on, ends_on]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        price_category:
+          type: string
+    MoveUndoInfo:
+      type: object
+      description: Spostamento annullabile (spec 30.7) fino a expires_at (5 minuti).
+      required: [move_id, kind, expires_at, booking_ids]
+      properties:
+        move_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          type: string
+          enum: [move, swap, group]
+        expires_at:
+          type: string
+          format: date-time
+        booking_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+    LastMove:
+      type: object
+      properties:
+        move:
+          $ref: "#/components/schemas/MoveUndoInfo"
+    MoveUndoResult:
+      type: object
+      required: [undone, bookings]
+      properties:
+        undone:
+          type: boolean
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingDetail"
+    BookingSwapSide:
+      type: object
+      required: [booking_id, line_id]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        expected_version:
+          allOf:
+            - $ref: "#/components/schemas/Version"
+          description: Versione attesa della prenotazione (412 version_conflict se diversa).
+    BookingSwapRequest:
+      type: object
+      required: [a, b, from]
+      properties:
+        a:
+          $ref: "#/components/schemas/BookingSwapSide"
+        b:
+          $ref: "#/components/schemas/BookingSwapSide"
+        from:
+          allOf:
+            - $ref: "#/components/schemas/Date"
+          description: Primo giorno dello scambio (oggi, domani o una data scelta).
+        dry_run:
+          type: boolean
+    BookingSwapOutcome:
+      type: object
+      required: [booking, from_spot_id, to_spot_id, previous_total, new_total, price_difference]
+      properties:
+        booking:
+          $ref: "#/components/schemas/BookingDetail"
+        from_spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        to_spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        previous_total:
+          $ref: "#/components/schemas/Money"
+        new_total:
+          $ref: "#/components/schemas/Money"
+        price_difference:
+          $ref: "#/components/schemas/Money"
+    BookingSwapResult:
+      type: object
+      required: [applied, from, to, a, b, conflicts]
+      properties:
+        applied:
+          type: boolean
+          description: false con dry_run=true (nessuna scrittura).
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          allOf:
+            - $ref: "#/components/schemas/Date"
+          description: Ultimo giorno dell'intervallo comune scambiato.
+        a:
+          $ref: "#/components/schemas/BookingSwapOutcome"
+        b:
+          $ref: "#/components/schemas/BookingSwapOutcome"
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+        undo:
+          $ref: "#/components/schemas/MoveUndoInfo"
+    GroupMoveItem:
+      type: object
+      required: [booking_id, line_id, spot_id]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        expected_version:
+          $ref: "#/components/schemas/Version"
+    GroupMoveRequest:
+      type: object
+      required: [moves]
+      properties:
+        moves:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/GroupMoveItem"
+        from:
+          allOf:
+            - $ref: "#/components/schemas/Date"
+          description: Primo giorno dello spostamento (default oggi o il primo giorno del soggiorno).
+        dry_run:
+          type: boolean
+    GroupMoveResult:
+      type: object
+      required: [applied, results, conflicts]
+      properties:
+        applied:
+          type: boolean
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingChangeResult"
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+        undo:
+          $ref: "#/components/schemas/MoveUndoInfo"
+    BookingDuplicateRequest:
+      type: object
+      required: [starts_on, ends_on]
+      properties:
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          allOf:
+            - $ref: "#/components/schemas/Slots"
+          description: Default quelle della prenotazione di origine.
+        formula:
+          allOf:
+            - $ref: "#/components/schemas/Formula"
+          description: Default dedotta dalle nuove date.
+        status:
+          type: string
+          enum: [draft, held, confirmed]
+          description: Stato iniziale (default confirmed, come la nuova prenotazione dal pannello).
+        dry_run:
+          type: boolean
+    BookingDuplicateResult:
+      type: object
+      required: [applied, total, conflicts]
+      properties:
+        applied:
+          type: boolean
+        booking:
+          $ref: "#/components/schemas/BookingDetail"
+        total:
+          $ref: "#/components/schemas/Money"
+        price:
+          $ref: "#/components/schemas/PriceBreakdown"
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+    BookingShareSummary:
+      type: object
+      required: [text, locale]
+      properties:
+        text:
+          type: string
+          description: Testo pronto (date, postazioni, importo, saldo, link di gestione).
+        locale:
+          type: string
+        manage_url:
+          type: string
+          format: uri
+        whatsapp_url:
+          type: string
+          format: uri
+          description: '`https://wa.me/<numero>?text=...`, presente solo se il cliente ha un telefono.'
+    SetupItem:
+      type: object
+      description: Un elemento dell'allestimento mostrato sulla mappa (extra con show_on_map).
+      required: [extra_id, map_label, quantity]
+      properties:
+        extra_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_label:
+          type: string
+        quantity:
+          type: integer
+    FindSpotRequest:
+      type: object
+      required: [starts_on, ends_on, slots]
+      properties:
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        count:
+          type: integer
+          minimum: 1
+          maximum: 20
+          description: Numero di postazioni (default 1); per i gruppi preferibilmente vicine.
+        zone_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pack o allestimento; senza pack le proposte non hanno prezzo.
+        spot_kinds:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotKind"
+        attributes:
+          type: array
+          description: Attributi richiesti (prima fila, vicino alla passerella, accessibile...).
+          items:
+            type: string
+            maxLength: 32
+        max_spot_changes:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: Numero massimo di cambi di posto durante il soggiorno (default 0).
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Per prezzo (convenzione predefinita, tag) e continuità con la postazione degli anni scorsi.
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Numero massimo di proposte (default 10).
+    FindSpotSegment:
+      type: object
+      required: [spot_id, spot_label, zone_id, starts_on, ends_on]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        price_category:
+          type: string
+    FindSpotLine:
+      type: object
+      required: [segments]
+      properties:
+        segments:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/FindSpotSegment"
+    FindSpotProposal:
+      type: object
+      required: [id, rank, spot_changes, lines, spot_ids]
+      properties:
+        id:
+          type: string
+          description: Identificativo stabile della proposta (hash dei segmenti), per il pannello.
+        rank:
+          type: integer
+          minimum: 1
+        spot_changes:
+          type: integer
+          description: Cambi di posto totali della proposta.
+        adjacent:
+          type: boolean
+          description: Le postazioni della proposta sono vicine (gruppi).
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/FindSpotLine"
+        spot_ids:
+          type: array
+          description: Postazioni da evidenziare sulla mappa.
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        total:
+          $ref: "#/components/schemas/Money"
+        price:
+          $ref: "#/components/schemas/PriceBreakdown"
+        agreement_applied:
+          type: boolean
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyViolation"
+    FindSpotResult:
+      type: object
+      required: [proposals]
+      properties:
+        proposals:
+          type: array
+          items:
+            $ref: "#/components/schemas/FindSpotProposal"
+        truncated:
+          type: boolean
+          description: Ci sono altre proposte oltre `limit`.
+    FindSpotBookRequest:
+      type: object
+      description: >-
+        La proposta scelta come prenotazione: `booking` è una normale BookingCreate le cui righe portano `segments`
+        (uno per segmento della proposta); expected_total protegge da un prezzo cambiato nel frattempo.
+      required: [booking]
+      properties:
+        booking:
+          $ref: "#/components/schemas/BookingCreate"
+        proposal_id:
+          type: string
+          description: Per l'audit e la diagnostica.
+        expected_total:
+          $ref: "#/components/schemas/Money"
+    SpotCalendarStatus:
+      type: string
+      enum: [free, booked, season_pass, released, held, blocked, closed, inactive]
+      description: Stato di una mezza giornata nel calendario della postazione (spec 30.5).
+    SpotCalendarCell:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: "#/components/schemas/SpotCalendarStatus"
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+    SpotCalendarDay:
+      type: object
+      required: [date, am, pm]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        am:
+          $ref: "#/components/schemas/SpotCalendarCell"
+        pm:
+          $ref: "#/components/schemas/SpotCalendarCell"
+    SpotCalendarBooking:
+      type: object
+      required: [booking_id, code, status, starts_on, ends_on, is_season_pass, balance_due]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        occupant_label:
+          type: string
+          description: Come OperationalBooking.occupant_label (solo con bookings.read, mai email o telefono).
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        is_season_pass:
+          type: boolean
+        balance_due:
+          $ref: "#/components/schemas/Money"
+    SpotCalendar:
+      type: object
+      required: [spot_id, label, season_id, from, to, days, bookings]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotCalendarDay"
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotCalendarBooking"
+    LifeguardRow:
+      type: object
+      required: [row_label, spot_id, spot_label, occupant_label, arriving, departing, balance_due]
+      properties:
+        row_label:
+          type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        occupant_label:
+          type: string
+          description: Cognome (vuoto se libera o cliente anonimizzato).
+        setup_label:
+          type: string
+          description: Allestimento compatto (es. "2L 1S").
+        arriving:
+          type: boolean
+        departing:
+          type: boolean
+        balance_due:
+          type: boolean
+        group_name:
+          type: string
+    LifeguardList:
+      type: object
+      required: [date, slot, rows, totals]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slots"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/LifeguardRow"
+        totals:
+          $ref: "#/components/schemas/OperationsTotals"
+    PartnersReportRow:
+      type: object
+      required: [partner_id, partner_name, kind, bookings, people, spot_days, revenue, discount, charged, paid]
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        partner_name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/PartnerKind"
+        bookings:
+          type: integer
+        people:
+          type: integer
+          description: Presenze (adulti + bambini).
+        spot_days:
+          type: integer
+        revenue:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Totale delle prenotazioni (venduto, base soggiorno).
+        discount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Sconto concesso dalle convenzioni.
+        charged:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Quota addebitata al partner.
+        paid:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Pagamenti del partner nel periodo.
+    PartnersReport:
+      type: object
+      required: [period, rows, totals]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnersReportRow"
+        totals:
+          $ref: "#/components/schemas/PartnersReportTotals"
+    PartnersReportTotals:
+      type: object
+      required: [bookings, people, spot_days, revenue, discount, charged, paid]
+      properties:
+        bookings:
+          type: integer
+        people:
+          type: integer
+        spot_days:
+          type: integer
+        revenue:
+          $ref: "#/components/schemas/Money"
+        discount:
+          $ref: "#/components/schemas/Money"
+        charged:
+          $ref: "#/components/schemas/Money"
+        paid:
+          $ref: "#/components/schemas/Money"
+    AgreementsRegisterEntry:
+      type: object
+      required: [agreement_id, name, target, register_category, conditions_text, bookings, spot_days, people, revenue, discount]
+      properties:
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        code:
+          type: string
+        partner_name:
+          type: string
+        customer_category_name:
+          type: string
+        target:
+          $ref: "#/components/schemas/AgreementTarget"
+        register_category:
+          $ref: "#/components/schemas/RegisterCategory"
+        conditions_text:
+          type: string
+          description: Condizioni in italiano leggibile (condizione economica, ambito, validità, contingente, requisito).
+        valid_from:
+          $ref: "#/components/schemas/Date"
+        valid_to:
+          $ref: "#/components/schemas/Date"
+        bookings:
+          type: integer
+        spot_days:
+          type: integer
+        people:
+          type: integer
+        revenue:
+          $ref: "#/components/schemas/Money"
+        discount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: Valore dello sconto concesso (prezzo di listino - prezzo applicato).
+    AgreementsRegisterCategoryTotal:
+      type: object
+      required: [agreements, bookings, spot_days, people, revenue, discount]
+      description: Totali di una categoria del registro (register_category assente nei totali generali).
+      properties:
+        register_category:
+          $ref: "#/components/schemas/RegisterCategory"
+        agreements:
+          type: integer
+        bookings:
+          type: integer
+        spot_days:
+          type: integer
+        people:
+          type: integer
+        revenue:
+          $ref: "#/components/schemas/Money"
+        discount:
+          $ref: "#/components/schemas/Money"
+    AgreementsRegister:
+      type: object
+      required: [establishment_name, period, generated_at, entries, by_category, totals]
+      properties:
+        establishment_name:
+          type: string
+        establishment_legal_name:
+          type: string
+        establishment_vat_number:
+          type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        season_year:
+          type: integer
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        generated_at:
+          type: string
+          format: date-time
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementsRegisterEntry"
+        by_category:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementsRegisterCategoryTotal"
+        totals:
+          $ref: "#/components/schemas/AgreementsRegisterCategoryTotal"
+    ManageReleaseRange:
+      type: object
+      description: Intervallo di giorni da rilasciare, facoltativamente solo in alcuni giorni della settimana (spec 30.8).
+      required: [from, to]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        weekdays:
+          type: array
+          maxItems: 7
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+        slots:
+          $ref: "#/components/schemas/Slots"

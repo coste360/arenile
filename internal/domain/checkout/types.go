@@ -6,6 +6,7 @@ import (
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
+	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
@@ -159,6 +160,8 @@ type Selection struct {
 	Lines            []booking.LineInput
 	Extras           []booking.ExtraInput
 	PromoCode        string
+	// AgreementCode applies an agreement sold online (M8, agreements.go).
+	AgreementCode string
 }
 
 // Quote item kinds (api.PublicQuoteItem.kind).
@@ -212,6 +215,8 @@ type Quote struct {
 	Violations   []policy.Violation
 	Promo        *PromoStatus
 	Plan         string
+	// Agreement is the outcome of Selection.AgreementCode (M8).
+	Agreement *AgreementStatus
 }
 
 // ---- session (writes) -----------------------------------------------------------
@@ -452,6 +457,10 @@ type ReleaseDay struct {
 type ReleaseInput struct {
 	Days   []ReleaseDay
 	DryRun bool
+	// Range adds a range of days, optionally on some weekdays only, with
+	// RangeSlots (spec 30.8); its days already released are skipped.
+	Range      *pass.ReleaseRange
+	RangeSlots calendar.Slots
 }
 
 // ReleaseOutcome is api.ManageReleaseResult.

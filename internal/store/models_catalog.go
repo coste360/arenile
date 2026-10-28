@@ -75,4 +75,8 @@ type Extra struct {
 	Version         int64     `bun:"version,notnull"`
 	CreatedAt       time.Time `bun:"created_at,notnull"`
 	UpdatedAt       time.Time `bun:"updated_at,notnull"`
+	// M8 (00013, spec 30.4): shown in the spot setup on the operational map
+	// with MapLabel ("L" = lettino, "S" = sdraio).
+	ShowOnMap bool   `bun:"show_on_map,notnull"`
+	MapLabel  string `bun:"map_label,notnull"`
 }

@@ -315,6 +315,9 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 	if writeTicketing(w, r, err) {
 		return
 	}
+	if writeM8(w, r, err) {
+		return
+	}
 	switch {
 	case errors.As(err, &tpl):
 		fields := make([]api.FieldError, len(tpl.Fields))

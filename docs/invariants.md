@@ -79,7 +79,12 @@ Per ogni `season_release` non revocata, non esiste un'allocazione `season` della
 data e fascia; `resold_booking_line_id` è valorizzato solo se esiste un'allocazione `booking` di quella riga.
 Rilascio e revoca avvengono sotto il lock della prenotazione dell'abbonamento (lo stesso di ogni cambio di stato),
 quindi una cancellazione concorrente non lascia mai un'allocazione `season` a un abbonamento cancellato (INV-20).
-Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices`, `TestConcurrency_RevokeVsCancel` (100 revoche contro cancellazioni con i servizi reali, `internal/domain/pass`), tag `integration`. Stato: implemented.
+Uno spostamento, uno scambio, uno spostamento di gruppo o un annulla (M8, spec 30.7) non riallocano mai le mezze
+giornate rilasciate: l'allocazione dei segmenti spostati le salta (`AllocateRequest.Skip`) e la riga del rilascio
+segue l'abbonamento sulla postazione del giorno (`spot_id` aggiornato), così la revoca ripristina il giorno dove
+l'abbonamento si trova in quella data; un rilascio su un abbonamento spostato da una data toglie ogni mezza giornata
+dalla postazione che occupa quel giorno.
+Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices`, `TestConcurrency_RevokeVsCancel` (100 revoche contro cancellazioni con i servizi reali, `internal/domain/pass`), `TestSwap_SeasonPassKeepsReleases`, `TestGroupMove_SeasonPassKeepsReleases` (anche `Move` da una data), `TestUndoMove_SeasonPassKeepsReleases`, `TestRelease_RangeOnMovedPass` (`internal/domain/pass`, servizi reali, SQLite e PostgreSQL), tag `integration`. Stato: implemented.
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 ## Prezzi (spec 8)
@@ -982,3 +987,100 @@ fiscale `queued`/`leased`; i documenti fiscali si conservano); l'azzeramento scr
 `setup_reset`) nella stessa transazione (INV-39), spegne `booking_enabled` e, con `everything`, toglie le stampe non
 ancora fatte e le notifiche su prenotazioni, pagamenti e clienti. Stato: partial (risposte salvate di
 `Idempotency-Key`, per utente e per 24 ore, che puntano a righe cancellate: INV-31).
+
+## Cassa avanzata e convenzioni (spec 30 — M8, ADR 0028)
+
+**INV-101 — Uno scambio non produce mai una doppia allocazione.**
+Lo scambio di due righe (`POST /bookings/swap`), lo spostamento di gruppo e l'annullamento di uno spostamento
+rilasciano e ricreano le allocazioni in una sola transazione, con le prenotazioni bloccate in ordine di ID: in
+nessun istante visibile una postazione ha due allocazioni nella stessa mezza giornata (vincolo unico
+`spot_allocations (spot_id, date, slot)`, INV-01) e una riga non ne ha due (INV-102). Fuori dall'intervallo comune
+ciascuna prenotazione resta dov'era; audit ed evento `booking.modified` per entrambe nella stessa transazione.
+Verificata da: `TestConcurrency_SwapBookings` (100 scambi paralleli e incrociati sulle stesse due righe: dopo, ogni
+mezza giornata ha una sola allocazione per postazione e una per riga, le due prenotazioni coprono le loro date),
+`TestSwap_CommonIntervalFromDate`, `TestGroupMove_AllOrNothing`, `TestUndoMove` (`internal/domain/booking`, tag
+`integration`, SQLite e PostgreSQL); con gli abbonamenti `TestSwap_SeasonPassKeepsReleases`,
+`TestGroupMove_SeasonPassKeepsReleases`, `TestUndoMove_SeasonPassKeepsReleases` (`internal/domain/pass`, INV-10).
+Stato: implemented.
+Verifica di sistema: `TestConcurrency_AcceptanceM8Swaps` (`internal/acceptance`: 120 operazioni in parallelo
+attraverso l'API sulla settimana piena, cioè 60 scambi su sei coppie di prenotazioni, 30 spostamenti da una data e
+30 vendite, più 40 scambi incrociati sulla stessa coppia; su PostgreSQL uno stallo tra due transazioni che
+inseriscono le stesse chiavi in ordine diverso è `409`, mai `500`) e `TestAcceptance_M8CashDeskAndAgreements`
+(scambio, anteprima e annulla) controllano INV-01 e INV-102 sul database.
+
+**INV-102 — I segmenti di un soggiorno spezzato coprono il soggiorno esattamente una volta.**
+Per ogni riga con postazione e ogni mezza giornata del soggiorno c'è una e una sola allocazione (indice unico
+`spot_allocations (booking_line_id, date, slot)`); i segmenti di una riga (Trova posto, spostamento con `from`,
+scambio) sono consecutivi, senza buchi né sovrapposizioni, e il prezzo di ogni giorno usa la categoria della
+postazione occupata quel giorno (ADR 0028).
+Verificata da: `TestMigration00013_ModelsRoundtrip` (`internal/store`, vincolo; implementato),
+`TestFindSpots_SegmentsCoverStay` (proprietà `rapid`, `internal/domain/availability`),
+`TestBookFindSpotProposal_SegmentsAllocated` (`internal/domain/findspot`, tag `integration`),
+`TestConcurrency_FindSpotBook`, `TestCreate_SplitStaySegments`, `TestMove_FromDatePricedPerDay`
+(`internal/domain/booking`), `TestQuote_SegmentsPerDayCategory` (`internal/domain/pricing`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_M8CashDeskAndAgreements` (`internal/acceptance`, SQLite e PostgreSQL): con il
+15 agosto pieno la settimana 10-16 agosto si vende su due postazioni con Trova posto, e nessun percorso della cassa
+(prenotazione, spostamento da una data, proposta non più valida, scambio) occupa due volte una mezza giornata.
+
+**INV-103 — Il contingente riservato a una convenzione non è mai venduto fuori convenzione prima del rilascio.**
+Fino a `release_on` (`release_days_before` giorni prima, predefinito 3) una vendita fuori convenzione non può
+portare le postazioni libere della zona sotto la quota riservata e non ancora usata; una vendita in convenzione non
+supera `max_per_day` (`UPDATE` condizionale su `agreement_quota_usage` e `CHECK used <= max_units`). Entrambi i
+rifiuti sono `409 agreement_quota_exceeded` con i conflitti, mai un controllo applicativo preventivo.
+Il rilascio è implicito nella data, senza job. Le vendite in convenzione e quelle che toccano la capacità riservata
+bloccano le convenzioni coinvolte in ordine di ID e ricontano le unità libere dopo l'inserimento; i contatori tornano
+indietro con il rilascio delle allocazioni (cancellazione, spostamento, hold scaduto). Due riserve sulle stesse zone
+sono garantite ciascuna da sola, non sommate (ADR 0028).
+Verificata da: `TestMigration00013_ModelsRoundtrip` (`CHECK` e `UPDATE` condizionale),
+`TestConcurrency_AgreementReservedQuota` (120 vendite parallele dentro e fuori convenzione sulla stessa zona e mezza
+giornata: mai oltre la parte non riservata fuori convenzione, mai oltre il tetto dentro, contatore uguale al
+dettaglio), `TestAgreementQuota_ReservedBlocksOtherSales`, `TestAgreementQuota_ReleasedBeforeDate`,
+`TestAgreementQuota_MaxPerDayAndRelease`, `TestAgreementQuota_CapEditedAfterFirstSale` (il tetto confrontato è
+quello della convenzione com'è configurata ora, non quello copiato alla prima vendita) (`internal/domain/inventory`,
+tag `integration`, SQLite e PostgreSQL), `TestCheckout_AgreementCode` (`internal/domain/checkout`). Stato: partial.
+Lacune (ADR 0028, limiti noti): un hold del pannello convertito in prenotazione (`ConvertHold`) non consuma il
+contingente, quindi `max_per_day` può essere superato da quella via; la disponibilità pubblica non sottrae la capacità
+riservata (il preventivo può mostrare libera una postazione che la prenotazione poi non ottiene); due riserve sulle
+stesse zone non si sommano; i blocchi delle postazioni e le revoche dei rilasci non passano dal controllo delle
+riserve e possono ridurre le unità libere sotto la riserva.
+
+**INV-104 — Il saldo del partner è addebitato meno pagato.**
+`bookings.partner_amount` è ricalcolato a ogni scrittura della prenotazione nella stessa istruzione del totale
+(`store.PartnerAmountOf`, applicato da ogni insert e update versionato): mai oltre il totale, zero per le
+prenotazioni in bozza, cancellate, scadute o rifiutate (ADR 0028); l'estratto conto ha saldo finale = saldo
+iniziale + addebitato - pagato, dove pagato somma i `partner_payments` non annullati; il registro e il rendiconto per
+partner usano gli stessi importi dei report di cassa.
+Verificata da: `TestPartnerStatement_BalanceIsChargedMinusPaid` (proprietà `rapid` sugli importi,
+`internal/domain/report`), `TestPartnerAmount_FollowsTotal` (`internal/domain/booking`, tag `integration`),
+`TestPartnerAccount_StatementAndPayments` (`internal/domain/partner`, tag `integration`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_M8CashDeskAndAgreements` (`internal/acceptance`): a fine stagione i totali del
+registro delle convenzioni coincidono con il venduto e l'incassato dei report di cassa per le stesse prenotazioni, e
+i totali per categoria sommano ai totali generali.
+
+**INV-105 — Una postazione esclusa dalla vendita online non è mai venduta online.**
+Una postazione con `online_bookable = false` (colonna `spots.online_excluded`, migrazione 00013, scritta dal
+salvataggio della mappa) non compare nella disponibilità pubblica e non la conta; un'allocazione di una prenotazione
+di un canale self-service (`online` e `api`, come per le quote online, INV-09, INV-62) che la tocca, in qualunque
+modalità di zona (checkout pubblico, assegnazione automatica o alla conferma in zona `zone`, modifica dal link di
+gestione), è rifiutata dall'inventario con `409 spot_unavailable`, come una postazione occupata, nella transazione
+dell'allocazione. La cassa la vende e vi sposta o scambia anche una prenotazione nata online (`AllocateRequest.ByDesk`,
+operazioni di un utente del pannello; una chiave API segue le regole online).
+Verificata da: `TestOnlineBookable_Spot` (`internal/domain/inventory`: online, api, zona `zone`, operazione di cassa),
+`TestAutoAssign_Table` (`internal/domain/availability`, la riga self-service evita la postazione esclusa),
+`TestBookingAutoAssign_OnlineSkipsExcludedSpot` (`internal/domain/booking`), `TestCheckoutFlow_SpotNotOnlineBookable`
+(`internal/domain/checkout`, attraverso il checkout pubblico), `TestMappingIntegration_OnlineBookableRoundtrip`
+(`internal/domain/mapping`) e `TestMapsHTTP_OnlineBookable` (`internal/http/admin`, il salvataggio della mappa scrive
+la colonna e la rilegge), tag `integration`, SQLite e PostgreSQL. Stato: implemented.
+
+**INV-106 — Una modifica che non sostituisce le righe conserva i segmenti.**
+Un `PATCH` della prenotazione che non invia `lines` (note, cliente, extra, convenzione, gruppo, date) conserva i
+segmenti di ogni riga ricavati dalle allocazioni: le mezze giornate prima di uno spostamento programmato non
+vengono mai riscritte sulla postazione di destinazione e un soggiorno spezzato non viene riportato su una sola
+postazione; ogni giorno resta prezzato con la postazione di quel giorno (INV-102). Se cambiano le date, i segmenti
+sono adattati al nuovo soggiorno (giorni fuori eliminati, primo e ultimo segmento estesi); se il nuovo soggiorno è
+tutto fuori dai segmenti, la riga va sulla sua postazione. Sostituire `lines` è una scelta esplicita: le righe nuove
+occupano la postazione (o i segmenti) indicati e i vincoli unici decidono (`409`).
+Verificata da: `TestModify_KeepsSegments` (`internal/domain/booking`, tag `integration`, SQLite e PostgreSQL:
+note, extra e date su un soggiorno spezzato e dopo uno spostamento programmato, con l'altra postazione occupata).
+Stato: implemented.
+

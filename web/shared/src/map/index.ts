@@ -35,7 +35,12 @@ export {
   type MapLabelMode,
   type SpotNeighbours,
 } from './captions';
-export { INDICATOR_CLASSES, SPOT_INDICATORS, type SpotIndicator } from './indicators';
+export {
+  INDICATOR_CLASSES,
+  INDICATOR_ICONS,
+  SPOT_INDICATORS,
+  type SpotIndicator,
+} from './indicators';
 export * from './kit';
 export {
   EMPTY_SELECTION,

@@ -42,6 +42,11 @@ func (h *Handlers) ListBookings(w http.ResponseWriter, r *http.Request, establis
 	f.CustomerID = pcStrOr(params.CustomerId)
 	f.SpotID = pcStrOr(params.SpotId)
 	f.Q = pcStrOr(params.Q)
+	f.AgreementID, f.PartnerID, f.GroupName = pcStrOr(params.AgreementId), pcStrOr(params.PartnerId), pcStrOr(params.GroupName)
+	if err := uuidParams(map[string]*string{"agreement_id": params.AgreementId, "partner_id": params.PartnerId}); err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
 	if params.Channel != nil {
 		f.Channel = string(*params.Channel)
 	}
@@ -63,7 +68,12 @@ func (h *Handlers) CreateBooking(w http.ResponseWriter, r *http.Request, establi
 	if !decode(w, r, &req) {
 		return
 	}
-	d, err := h.Bookings.Create(r.Context(), principalOf(r), establishmentID, bkCreateFromAPI(req))
+	in := bkCreateFromAPI(req)
+	if err := bkCreateM8(&in, &req); err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
+	d, err := h.Bookings.Create(r.Context(), principalOf(r), establishmentID, in)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
@@ -137,6 +147,10 @@ func (h *Handlers) UpdateBooking(w http.ResponseWriter, r *http.Request, establi
 	if _, ok := raw["extras"]; ok {
 		in.ExtrasSet = true
 		in.Extras = bkExtrasFromAPI(req.Extras)
+	}
+	if err := bkPatchM8(&in, &req); err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
 	}
 	res, err := h.Bookings.Update(r.Context(), principalOf(r), establishmentID, id, bkExpected(im), in)
 	if err != nil {
@@ -373,7 +387,7 @@ func bkLinesFromAPI(ls []api.BookingLineInput) []booking.LineInput {
 	for _, l := range ls {
 		out = append(out, booking.LineInput{
 			PackID: l.PackId, ZoneID: pcStrOr(l.ZoneId), SpotID: pcStrOr(l.SpotId), Quantity: pcIntOr(l.Quantity, 1),
-			Extras: bkExtrasFromAPI(l.Extras),
+			Extras: bkExtrasFromAPI(l.Extras), Segments: bkSegmentsFromAPI(l.Segments),
 		})
 	}
 	return out
@@ -457,6 +471,7 @@ func bkChangeToAPI(res *booking.ChangeResult) api.BookingChangeResult {
 	return api.BookingChangeResult{
 		Applied: res.Applied, Booking: BookingDetailToAPI(res.Detail), Conflicts: bkConflicts(res.Conflicts),
 		NewTotal: int64(res.NewTotal), PreviousTotal: int64(res.PreviousTotal), PriceDifference: int64(res.PriceDifference()),
+		Undo: undoToAPI(res.Undo),
 	}
 }
 
@@ -486,7 +501,7 @@ func BookingSummaryToAPI(b *store.BookingRow) api.BookingSummary {
 		TotalAmount: int64(b.TotalAmount), PaidAmount: int64(b.PaidAmount), DepositDue: int64(b.DepositDue),
 		BalanceDue: int64(b.BalanceDue()), IsSeasonPass: b.IsSeasonPass, HoldExpiresAt: utcPtr(b.HoldExpiresAt),
 		SpotLabels: nonNil(b.SpotLabels), CreatedAt: b.CreatedAt.UTC(), Version: b.Version,
-		Test: testFlag(b.Test),
+		Test: testFlag(b.Test), AgreementName: b.AgreementName, PartnerName: b.PartnerName, GroupName: strPtr(b.GroupName),
 	}
 }
 
@@ -626,5 +641,7 @@ func BookingDetailToAPI(d *booking.Detail) api.BookingDetail {
 	if len(d.RefundRequests) > 0 {
 		out.Refunds = refundRequestsToAPI(d.RefundRequests, b.Code)
 	}
+	bookingDetailM8(&out, d)
+	bookingDetailSegments(&out, d)
 	return out
 }

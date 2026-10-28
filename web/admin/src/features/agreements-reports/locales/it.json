@@ -1,0 +1,36 @@
+{
+  "title": "Rendiconti delle convenzioni",
+  "description": "Rendiconto per partner e registro delle convenzioni per il bando, per stagione o periodo, in Excel e PDF.",
+  "forbidden": "Per i rendiconti serve il permesso di consultare i report.",
+  "validity": "Valida dal {{from}} al {{to}}",
+  "export": {
+    "label": "Esporta",
+    "xlsx": "Excel",
+    "csv": "CSV",
+    "html": "Stampa o salva in PDF"
+  },
+  "partners": {
+    "title": "Rendiconto per partner",
+    "empty": "Nessuna prenotazione con partner nel periodo"
+  },
+  "register": {
+    "title": "Registro delle convenzioni",
+    "subtitle": "{{name}}, dal {{from}} al {{to}}",
+    "byCategory": "Totali per categoria",
+    "empty": "Nessuna convenzione attiva nel periodo"
+  },
+  "columns": {
+    "agreement": "Convenzione",
+    "agreements": "Convenzioni",
+    "category": "Categoria",
+    "conditions": "Condizioni",
+    "bookings": "Prenotazioni",
+    "spotDays": "Giorni-postazione",
+    "people": "Persone",
+    "revenue": "Incasso",
+    "discount": "Sconto concesso",
+    "partner": "Partner",
+    "charged": "Addebitato",
+    "paid": "Pagato"
+  }
+}

@@ -1,0 +1,54 @@
+---
+title: Trova posto
+description: Cerca la disponibilità per date, fascia e numero di postazioni, anche con uno o più cambi di posto quando nessuna postazione è libera per tutto il soggiorno, con prezzo e convenzione, e prenota la proposta.
+sidebar:
+  order: 21.6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Mappa** → **Trova posto**, oppure dal foglio **Nuova prenotazione**. **Chi:** chi crea
+prenotazioni (titolare, gestore, cassa).
+
+Ad agosto capita che nessuna postazione sia libera per tutta la settimana chiesta dal cliente: il 15 è pieno, ma
+una postazione è libera dal 10 al 14 e un'altra il 15 e il 16. **Trova posto** cerca queste combinazioni e propone
+la settimana su due postazioni, con il prezzo già calcolato.
+
+<Screenshot name="admin-find-spot" alt="Trova posto: ricerca di una settimana con un cambio di posto ammesso e le proposte" />
+
+## Cercare
+
+<Steps>
+
+1. Scegli le **Date** e la **Fascia** (giornata intera, mattina o pomeriggio).
+2. Indica quante **Postazioni** servono: per un gruppo le proposte preferiscono postazioni vicine.
+3. Scegli i **Cambi di posto ammessi**: con **Nessuno** cerchi solo postazioni libere per tutto il soggiorno, con
+   1, 2 o 3 la stessa prenotazione può passare da una postazione all'altra durante il soggiorno.
+4. Se vuoi, limita le **Zone**, scegli il **Pack o allestimento** (serve per vedere il prezzo e prenotare) e la
+   **Convenzione** del cliente.
+5. **Cerca**.
+
+</Steps>
+
+Le proposte sono in ordine: prima quelle con meno cambi di posto, poi quelle che restano più a lungo sulla stessa
+postazione e quelle più vicine; per i gruppi contano anche le postazioni accanto. Ogni proposta mostra i
+**segmenti** (per esempio *B11 dal 10/08 al 14/08, B12 dal 15/08 al 16/08*) e il **totale**, con la convenzione
+applicata se l'hai scelta. Dalla mappa, **Mostra sulla mappa** evidenzia le postazioni della proposta.
+
+## Prenotare una proposta
+
+Premi **Prenota**, scegli il cliente e conferma. La prenotazione nasce con **una sola riga** che occupa le
+postazioni dei segmenti, ciascuna nei suoi giorni: un unico codice, un unico saldo e un unico link di gestione.
+
+- **Prezzo:** ogni giorno è prezzato con la categoria della postazione occupata quel giorno. Se la proposta passa
+  da una prima fila a una seconda fila, i giorni in seconda fila costano come la seconda fila.
+- **Niente sorprese:** se nel frattempo un collega ha venduto una delle postazioni, la prenotazione non viene
+  creata e la ricerca riparte da sola; se il prezzo è cambiato il pannello lo dice prima di confermare.
+
+<Aside type="note" title="Nessun overbooking">
+Trova posto non vende mai una postazione già occupata: ogni segmento è un'allocazione normale, controllata dal
+database come tutte le altre (nessuna mezza giornata può essere venduta due volte).
+</Aside>
+
+Vedi anche: [Spostamenti e scambi](/gestore/spostamenti-e-scambi/), [Calendario della postazione](/gestore/calendario-postazione/).

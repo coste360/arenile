@@ -1,0 +1,36 @@
+{
+  "title": "Abrechnungen der Vereinbarungen",
+  "description": "Abrechnung je Partner und Register der Vereinbarungen für die Ausschreibung, je Saison oder Zeitraum, in Excel und PDF.",
+  "forbidden": "Für die Abrechnungen ist die Berechtigung zum Lesen von Berichten erforderlich.",
+  "validity": "Gültig vom {{from}} bis {{to}}",
+  "export": {
+    "label": "Exportieren",
+    "xlsx": "Excel",
+    "csv": "CSV",
+    "html": "Drucken oder als PDF speichern"
+  },
+  "partners": {
+    "title": "Abrechnung je Partner",
+    "empty": "Keine Buchungen mit Partnern im Zeitraum"
+  },
+  "register": {
+    "title": "Register der Vereinbarungen",
+    "subtitle": "{{name}}, vom {{from}} bis {{to}}",
+    "byCategory": "Summen je Kategorie",
+    "empty": "Keine aktiven Vereinbarungen im Zeitraum"
+  },
+  "columns": {
+    "agreement": "Vereinbarung",
+    "agreements": "Vereinbarungen",
+    "category": "Kategorie",
+    "conditions": "Bedingungen",
+    "bookings": "Buchungen",
+    "spotDays": "Platztage",
+    "people": "Personen",
+    "revenue": "Einnahmen",
+    "discount": "Gewährter Rabatt",
+    "partner": "Partner",
+    "charged": "Belastet",
+    "paid": "Bezahlt"
+  }
+}

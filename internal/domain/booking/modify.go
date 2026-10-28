@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -196,6 +197,9 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 	if err := v.OrNil(); err != nil {
 		return nil, err
 	}
+	if err := applyPatchM8(ctx, tx, es, b, in, diff); err != nil {
+		return nil, err
+	}
 	if in.CustomerID != nil && *in.CustomerID != b.CustomerID {
 		c, err := s.d.Customers.Resolve(ctx, tx, p, es, *in.CustomerID, nil)
 		if err != nil {
@@ -212,17 +216,51 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 	replace := in.Lines != nil
 	if replace {
 		lineIn = in.Lines
+		for i, l := range lineIn {
+			if len(l.Segments) > 0 {
+				if msg := coverError(l.Segments, newStay.StartsOn, newStay.EndsOn); msg != "" {
+					return nil, configerr.Invalid(fmt.Sprintf("lines[%d].segments", i), msg)
+				}
+			}
+		}
 	}
 	if in.ExtrasSet {
 		bookingExtras = in.Extras
 	}
-	cat, err := loadCatalog(ctx, tx, es, lineIn, bookingExtras)
+	// Split stays and scheduled moves (INV-102, INV-106): the lines that are
+	// kept keep their segments, fitted to the new dates when these change;
+	// each day stays priced with the spot of that day and the allocations
+	// before a scheduled move are never rewritten onto the destination.
+	var kept map[string][]SegmentInput
+	spotsIn := lineIn
+	if !replace && st.OccupiesResources() {
+		cur, err := allocSegments(ctx, tx, es, b)
+		if err != nil {
+			return nil, err
+		}
+		kept = map[string][]SegmentInput{}
+		spotsIn = slices.Clone(lineIn)
+		for _, r := range rows {
+			sg := fitSegments(cur[r.ID], newStay.StartsOn, newStay.EndsOn)
+			if len(sg) == 0 {
+				continue
+			}
+			kept[r.ID] = sg
+			for _, x := range sg {
+				spotsIn = append(spotsIn, LineInput{SpotID: x.SpotID})
+			}
+		}
+	}
+	cat, err := loadCatalog(ctx, tx, es, spotsIn, bookingExtras)
 	if err != nil {
 		return nil, err
 	}
 	lines, err := cat.resolve(lineIn, "lines")
 	if err != nil {
 		return nil, err
+	}
+	if kept != nil {
+		withSegments(lines, rows, kept)
 	}
 	pr, err := s.repriceAs(ctx, tx, es, b, newStay, lines, bookingExtras, cat)
 	if err != nil {
@@ -280,11 +318,21 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 		if err != nil {
 			return nil, err
 		}
-		if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, allocRequest(b, kind, exp, rows, newExtras, cat)); err != nil {
-			return nil, err
-		}
-		if err := s.applyAllocation(ctx, tx, es, b, rows, allocated, kind, now); err != nil {
-			return nil, err
+		if hasSegments(pr.lines) {
+			// One allocation per segment (the kept ones, or those of the
+			// replaced lines), the plain lines in one request.
+			if allocated, err = s.allocateSplit(ctx, tx, es, b, kind, exp, rows, newExtras, cat, pr.lines, now, byDesk(p)); err != nil {
+				return nil, err
+			}
+		} else {
+			req := allocRequest(b, kind, exp, rows, newExtras, cat)
+			req.ByDesk = byDesk(p)
+			if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, req); err != nil {
+				return nil, err
+			}
+			if err := s.applyAllocation(ctx, tx, es, b, rows, allocated, kind, now); err != nil {
+				return nil, err
+			}
 		}
 	}
 	if err := s.applyTotals(b, pr, now, diff); err != nil {
@@ -307,6 +355,27 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 		diff["new_breakdown"] = pr.res.Breakdown
 	}
 	return &outcome{action: eventModified, diff: diff, alloc: mergeAlloc(released, allocated)}, nil
+}
+
+// fitSegments fits the segments of a line to a (possibly new) stay from..to:
+// the days outside are dropped, the first segment starts with the stay and
+// the last one ends with it (a stay extended on either side extends the
+// spot of that side). nil when segs is empty or lies entirely outside.
+func fitSegments(segs []SegmentInput, from, to calendar.Date) []SegmentInput {
+	out := clipBefore(clipFrom(segs, from), to.AddDays(1))
+	if len(out) == 0 {
+		return nil
+	}
+	out[0].StartsOn = from
+	out[len(out)-1].EndsOn = to
+	return out
+}
+
+// byDesk reports whether p is a panel user: the cash desk may place a
+// booking of any channel on a spot excluded from online sale (spec 30.11),
+// while an API key or a public-channel actor follows the online rules.
+func byDesk(p *auth.Principal) bool {
+	return p != nil && p.Kind == auth.PrincipalUser
 }
 
 func diffDates(b *store.Booking, st stay) bool {
@@ -448,20 +517,33 @@ func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time, diff 
 // release + allocation happen in one transaction. Requires
 // auth.PermBookingsWrite.
 func (s *Service) Move(ctx context.Context, p *auth.Principal, establishmentID, id string, in MoveInput) (*ChangeResult, error) {
+	return s.move(ctx, p, establishmentID, id, in, true)
+}
+
+// move is Move; undoable writes the 5 minute undo entry (spec 30.7, the
+// panel move; not the auto-assignment).
+func (s *Service) move(ctx context.Context, p *auth.Principal, establishmentID, id string, in MoveInput, undoable bool) (*ChangeResult, error) {
 	if in.LineID == "" {
 		return nil, configerr.Invalid("line_id", "Campo obbligatorio.")
 	}
 	if in.SpotID == "" {
 		return nil, configerr.Invalid("spot_id", "Campo obbligatorio.")
 	}
-	return s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
+	res, err := s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
 		// A ticket booking is placed only through MoveThen (ticket update in
 		// the same transaction).
 		if err := refuseTicketOwned(ctx, tx, es, b); err != nil {
 			return nil, err
 		}
+		if undoable {
+			return s.moveRecorded(ctx, tx, p, es, b, in, res)
+		}
 		return s.moveLocked(ctx, tx, p, es, b, in, res)
 	})
+	if res != nil && !res.Applied {
+		res.Undo = nil // a dry run wrote nothing
+	}
+	return res, err
 }
 
 func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, b *store.Booking, in MoveInput, res *ChangeResult) (*outcome, error) {
@@ -482,6 +564,19 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 	if idx < 0 {
 		return nil, ErrLineNotFound
 	}
+	// The days already past never change (spec 30.7): an explicit from in
+	// the past is refused; a move without from of a stay in progress starts
+	// today and leaves the past days where they were.
+	today, err := s.today(ctx, tx, es)
+	if err != nil {
+		return nil, err
+	}
+	if in.From != nil && in.From.Before(today) {
+		return nil, configerr.Invalid("from", "La data non può essere nel passato.")
+	}
+	if in.From == nil && today.After(b.StartsOn) && !today.After(b.EndsOn) && st.OccupiesResources() {
+		in.From = &today
+	}
 	partial := in.From != nil && in.From.After(b.StartsOn)
 	if in.From != nil && in.From.After(b.EndsOn) {
 		return nil, configerr.Invalid("from", "La data deve rientrare nel periodo della prenotazione.")
@@ -500,6 +595,18 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		}
 		return nil, err
 	}
+	// Split stays (ADR 0028): each day is priced with the spot of that day,
+	// the moved line keeps its spots before from.
+	cur, err := allocSegments(ctx, tx, es, b)
+	if err != nil {
+		return nil, err
+	}
+	if partial {
+		cur[in.LineID] = joinSegments(clipBefore(cur[in.LineID], *in.From), []SegmentInput{{SpotID: in.SpotID, StartsOn: *in.From, EndsOn: b.EndsOn}})
+	} else {
+		delete(cur, in.LineID)
+	}
+	withSegments(lines, rows, cur)
 	st2 := stay{StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, Formula: b.Formula, Channel: b.Channel}
 	if b.IsSeasonPass && b.SeasonID != nil {
 		st2.SeasonID = *b.SeasonID
@@ -549,11 +656,18 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		}
 		// The first line also carries the booking-level components.
 		req := allocRequest(b, kind, b.HoldExpiresAt, rows[idx:idx+1], lineExtras(newExtras, rows[idx].ID, idx == 0), cat)
-		req.StartsOn = from
+		req.StartsOn, req.ByDesk = from, byDesk(p)
+		// A season pass keeps the days its holder released (INV-10).
+		if req.Skip, err = seasonSkips(ctx, tx, es, b, in.LineID, from, b.EndsOn); err != nil {
+			return nil, err
+		}
 		if allocated, err = s.d.Inventory.Allocate(ctx, tx, es, req); err != nil {
 			return nil, err
 		}
 		if err := s.applyAllocation(ctx, tx, es, b, rows[idx:idx+1], allocated, kind, now); err != nil {
+			return nil, err
+		}
+		if err := s.moveSeasonReleases(ctx, tx, es, b, kind, in.LineID, []SegmentInput{{SpotID: in.SpotID, StartsOn: from, EndsOn: b.EndsOn}}); err != nil {
 			return nil, err
 		}
 	}
@@ -658,7 +772,7 @@ func (s *Service) Quote(ctx context.Context, p *auth.Principal, establishmentID 
 	for i := range req.Lines {
 		req.Lines[i].LineID = ""
 	}
-	conflicts, err := s.d.Inventory.Check(ctx, s.d.DB, es, req)
+	conflicts, err := s.checkSplit(ctx, s.d.DB, es, req, pr.lines, cat)
 	if err != nil {
 		return nil, err
 	}
@@ -709,7 +823,7 @@ func (s *Service) AutoAssign(ctx context.Context, p *auth.Principal, establishme
 		return out, nil
 	}
 	for _, a := range plan.assigned {
-		_, err := s.Move(ctx, p, establishmentID, a.BookingID, MoveInput{LineID: a.LineID, SpotID: a.SpotID})
+		_, err := s.move(ctx, p, establishmentID, a.BookingID, MoveInput{LineID: a.LineID, SpotID: a.SpotID}, false)
 		var ce *availability.ConflictError
 		switch {
 		case errors.As(err, &ce), errors.Is(err, availability.ErrSpotUnavailable), errors.Is(err, configerr.ErrVersionConflict):
@@ -790,6 +904,7 @@ func (s *Service) autoAssignPlan(ctx context.Context, es store.EstablishmentScop
 		}
 		engineSpots = append(engineSpots, availability.Spot{
 			ID: id, ZoneID: zid, Label: sp.Label, Row: sp.RowLabel, Number: sp.Number, Kind: sp.Kind, Attributes: sp.Attributes,
+			OnlineExcluded: sp.OnlineExcluded,
 		})
 		free.AddInterval(all, id)
 	}
@@ -814,8 +929,9 @@ func (s *Service) autoAssignPlan(ctx context.Context, es store.EstablishmentScop
 		owners[l.ID] = l.BookingID
 		lines = append(lines, availability.Line{
 			ID: lid, BookingID: bid, CustomerID: cid, ZoneID: zid,
-			Interval:  availability.Interval{From: l.StartsOn, To: l.EndsOn, Slots: l.Slots},
-			SpotKinds: kinds[l.PackID],
+			Interval:    availability.Interval{From: l.StartsOn, To: l.EndsOn, Slots: l.Slots},
+			SpotKinds:   kinds[l.PackID],
+			SelfService: l.Channel != store.ChannelDesk, // never an excluded spot (INV-105)
 		})
 	}
 	res := availability.AutoAssign(availability.AssignInput{Lines: lines, Spots: engineSpots, Free: free})

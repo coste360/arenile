@@ -173,6 +173,13 @@ func buildPlan(req AllocateRequest, snap *snapshot, newID func() string, now tim
 	}
 	iv := availability.Interval{From: req.StartsOn, To: req.EndsOn, Slots: req.Slots}
 	p := &plan{halfDays: snap.closed.openHalfDays(iv)}
+	if len(req.Skip) > 0 {
+		skip := make(map[availability.DateSlot]bool, len(req.Skip))
+		for _, ds := range req.Skip {
+			skip[ds] = true
+		}
+		p.halfDays = slices.DeleteFunc(p.halfDays, func(ds availability.DateSlot) bool { return skip[ds] })
+	}
 	var (
 		conflicts []availability.Conflict
 		ve        configerr.ValidationError
@@ -199,6 +206,15 @@ func buildPlan(req AllocateRequest, snap *snapshot, newID func() string, now tim
 			if !sp.Active {
 				for _, ds := range p.halfDays {
 					conflicts = append(conflicts, availability.Conflict{SpotID: sp.ID, Date: ds.Date, Slot: ds.Slot, Reason: availability.ReasonInactive})
+				}
+			}
+			// Spots excluded from online sale (spec 30.11, INV-105) refuse
+			// every self-service channel (online and api, as the online
+			// quotas) like a taken spot, whatever the zone mode; the desk
+			// sells and moves onto them all.
+			if sp.OnlineExcluded && quotaBound(req.Channel) && !req.ByDesk {
+				for _, ds := range p.halfDays {
+					conflicts = append(conflicts, availability.Conflict{SpotID: sp.ID, Date: ds.Date, Slot: ds.Slot, Reason: availability.ReasonSpotUnavailable})
 				}
 			}
 		}
