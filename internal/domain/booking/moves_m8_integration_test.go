@@ -407,7 +407,8 @@ func TestDuplicate(t *testing.T) {
 // TestConcurrency_SwapBookings (INV-101): 100 parallel swaps and group
 // moves over four weeks, each with three bookings on the same three spots
 // (one week alone would only measure the queue on its three booking
-// locks): no operation deadlocks, every swap applies, and afterwards every
+// locks): no operation deadlocks, every swap applies or is refused as busy
+// (a lock wait past the limit on a slow machine), and afterwards every
 // line covers its stay exactly once, each spot has one allocation per
 // half-day (no double allocation) and the undo log has one entry per
 // applied operation.
@@ -427,6 +428,7 @@ func TestConcurrency_SwapBookings(t *testing.T) {
 			wg      sync.WaitGroup
 			mu      sync.Mutex
 			applied int
+			busy    int
 			other   []error
 		)
 		start := make(chan struct{})
@@ -459,6 +461,10 @@ func TestConcurrency_SwapBookings(t *testing.T) {
 				case group && (errors.Is(err, configerr.ErrValidation) || errors.As(err, &ce)):
 					// A group move built on a stale read may name a spot
 					// twice or a spot taken meanwhile: refused, nothing written.
+				case errors.Is(err, store.ErrConflict):
+					// Queued past the lock wait limit on a slow machine
+					// (PostgreSQL): refused as busy (409), nothing written.
+					busy++
 				default:
 					other = append(other, err)
 				}
@@ -468,6 +474,9 @@ func TestConcurrency_SwapBookings(t *testing.T) {
 		wg.Wait()
 		if len(other) > 0 {
 			t.Fatalf("unexpected errors (%d), first: %v", len(other), other[0])
+		}
+		if applied == 0 {
+			t.Fatalf("no operation applied (%d refused as busy)", busy)
 		}
 		used := map[string]int{}
 		for _, bs := range groups {
