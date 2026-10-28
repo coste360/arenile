@@ -192,7 +192,10 @@ export function BrandLogo({
   return <ArenileLogo className={className} tone={tone} />;
 }
 
-/** Discreet Coste360 signature for app chrome (sidebar footer): small, muted, linked. */
+/**
+ * Discreet Coste360 signature for app chrome (sidebar footer): "Un prodotto
+ * di" + logo, centred, small, muted, linked.
+ */
 export function Coste360Signature({ className }: BrandProps) {
   const { t } = useTranslation();
   return (
@@ -202,10 +205,11 @@ export function Coste360Signature({ className }: BrandProps) {
       rel="noopener noreferrer"
       title={t('brand.lockup')}
       className={cn(
-        'flex w-fit items-center rounded-md px-2 py-1 opacity-60 outline-ring/50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2',
+        'mx-auto flex w-fit items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground opacity-60 outline-ring/50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2',
         className,
       )}
     >
+      <span>{t('brand.madeBy')}</span>
       <Coste360Logo className="h-5" />
     </a>
   );

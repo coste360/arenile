@@ -124,4 +124,11 @@ describe('BrandLogo', () => {
       expect(link).toHaveAttribute('href', 'https://www.coste360.it/');
     }
   });
+
+  it('sidebar signature puts the "made by" label before the logo', () => {
+    render(<Coste360Signature />);
+    const link = screen.getByRole('link');
+    expect(link.firstElementChild?.tagName).toBe('SPAN');
+    expect(link.querySelector('img')).not.toBeNull();
+  });
 });
