@@ -76,6 +76,9 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   page,
   request,
 }) => {
+  // Four steps plus an axe scan: on the WebKit runner in CI this takes
+  // close to the default 30 s and timed out now and then.
+  test.slow();
   const { name } = await demoEstablishment(request);
   // One day per project: the projects run in parallel against the same
   // instance and would otherwise race for the same first free spot.
