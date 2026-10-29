@@ -14,6 +14,7 @@ const PUBLIC_ERRORS = new Set([
   'invalid_transition',
   'version_conflict',
   'conflict',
+  'concurrent_update',
   'validation_failed',
 ]);
 

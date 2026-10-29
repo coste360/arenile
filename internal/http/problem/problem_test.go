@@ -56,6 +56,7 @@ func TestError_Mapping(t *testing.T) {
 		{"forbidden wrapped", fmt.Errorf("x: %w", auth.ErrForbidden), 403, "forbidden"},
 		{"not found", store.ErrNotFound, 404, "not_found"},
 		{"conflict", store.ErrConflict, 409, "conflict"},
+		{"busy", fmt.Errorf("%w: %w: aborted", store.ErrConflict, store.ErrBusy), 409, "concurrent_update"},
 		{"rate limited", &auth.RateLimitError{RetryAfter: 1500 * time.Millisecond}, 429, "rate_limited"},
 		{"unknown", errors.New("db exploded: secret detail"), 500, "internal_error"},
 		{"checkout not found", fmt.Errorf("x: %w", checkout.ErrSessionNotFound), 404, "checkout_not_found"},
@@ -104,6 +105,9 @@ func TestError_Mapping(t *testing.T) {
 			}
 			if tt.status == 500 && w.Body.String() != "" && contains(w.Body.String(), "secret detail") {
 				t.Fatal("internal errors must not leak details")
+			}
+			if tt.typ == "concurrent_update" && (w.Header().Get("Retry-After") != "1" || body["retry_after"].(float64) != 1) {
+				t.Fatalf("concurrent_update retry-after %q %v", w.Header().Get("Retry-After"), body["retry_after"])
 			}
 			if tt.status == 429 && (w.Header().Get("Retry-After") != "2" || body["retry_after"].(float64) != 2) {
 				t.Fatalf("retry-after %q %v", w.Header().Get("Retry-After"), body["retry_after"])

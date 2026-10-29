@@ -2425,6 +2425,7 @@ const (
 	ProblemTypeCashSessionAlreadyOpen     ProblemType = "cash_session_already_open"
 	ProblemTypeCashSessionClosed          ProblemType = "cash_session_closed"
 	ProblemTypeCheckoutNotFound           ProblemType = "checkout_not_found"
+	ProblemTypeConcurrentUpdate           ProblemType = "concurrent_update"
 	ProblemTypeConflict                   ProblemType = "conflict"
 	ProblemTypeCreditInsufficient         ProblemType = "credit_insufficient"
 	ProblemTypeCsrfFailed                 ProblemType = "csrf_failed"
@@ -2505,6 +2506,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeCashSessionClosed:
 		return true
 	case ProblemTypeCheckoutNotFound:
+		return true
+	case ProblemTypeConcurrentUpdate:
 		return true
 	case ProblemTypeConflict:
 		return true
@@ -9429,7 +9432,9 @@ type Problem struct {
 	} `json:"period,omitempty"`
 	RequestId *string `json:"request_id,omitempty"`
 
-	// RetryAfter Secondi da attendere (solo per `rate_limited`).
+	// RetryAfter Secondi da attendere prima di riprovare (`rate_limited`, `payment_provider_unavailable`,
+	// `concurrent_update`). Le risposte con `retry_after` non vengono memorizzate per
+	// `Idempotency-Key`: la stessa richiesta con la stessa chiave viene eseguita di nuovo.
 	RetryAfter *int `json:"retry_after,omitempty"`
 
 	// SpotIds Postazioni con allocazioni future (solo per `spot_has_future_allocations`).

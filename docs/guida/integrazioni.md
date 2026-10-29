@@ -51,6 +51,9 @@ Regole fisse:
 - le prenotazioni e i blocchi temporanei creati con una chiave sono sempre del **canale `api`**, anche se la richiesta
   indica `desk`: consumano e rispettano la **quota online** come la pagina pubblica (ADR 0011);
 - ogni chiave ha un limite di **300 richieste al minuto**; oltre, la risposta è `429` con l'header `Retry-After`;
+- una scrittura che perde una gara con un'altra modifica degli stessi dati risponde `409` con tipo
+  `concurrent_update` e l'header `Retry-After`: ripeti la stessa richiesta (con la stessa `Idempotency-Key`, se la
+  usi) dopo `retry_after` secondi;
 - la **revoca** ha effetto dalla richiesta successiva; l'ultimo utilizzo è aggiornato al massimo una volta al minuto;
 - creazione, modifica e revoca finiscono nel registro attività (mai la chiave né la sua impronta).
 

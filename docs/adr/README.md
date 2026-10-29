@@ -36,6 +36,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0026](0026-verifica-aggiornamenti-manuale.md) | Verifica aggiornamenti su richiesta (`POST /api/admin/v1/system/update/check`, menu dell'app desktop): al massimo un controllo di rete al minuto e mai due insieme, nessuna chiamata con il controllo spento; `pending` nello stato perché il pannello rilegga presto lo stato dopo l'avvio | accettato |
 | [0027](0027-abbinamento-demo-app-mobile.md) | Abbinamento allo stabilimento dimostrativo (`POST /api/device/v1/demo-pairing`): codice per l'utente demo senza login, solo con `ARENILE_DEMO_PAIRING_*`, 5 all'ora per IP, `404` altrove; unica eccezione dell'app al "nessun server predefinito" | accettato |
 | [0028](0028-cassa-avanzata-e-convenzioni.md) | Cassa avanzata e convenzioni (M8): soggiorno spezzato prezzato per giorno con la categoria della postazione, conto del partner con pagamenti registrati, registro delle convenzioni in Excel e HTML stampabile neutro, contingente riservato rilasciato 3 giorni prima; un posto per riga e mezza giornata come vincolo, contingente come quota di capacità, package partner e findspot | accettato |
+| [0029](0029-conflitti-da-riprovare.md) | Conflitti da riprovare: `409 concurrent_update` con `Retry-After` per le transazioni che perdono una gara, risposte con `Retry-After` non conservate per la chiave di idempotenza, code offline che le ritentano | accettato |
 
 ## Come aggiungere un ADR
 
