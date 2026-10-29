@@ -33,7 +33,7 @@ Ogni errore dell'API è un documento `application/problem+json` (RFC 9457):
 |---|---|---|
 | `request_id` | sempre | Lo stesso valore dell'header `X-Request-ID`: citalo nelle segnalazioni |
 | `errors` | `validation_failed` | Errori per campo (`field`, `message`) |
-| `retry_after` | `rate_limited` | Secondi da attendere (anche nell'header `Retry-After`) |
+| `retry_after` | `rate_limited`, `concurrent_update`, `payment_provider_unavailable` | Secondi da attendere (anche nell'header `Retry-After`) |
 | `current_version` | `version_conflict` | Versione corrente della risorsa |
 | `conflicts` | `spot_unavailable`, `pool_exhausted`, `quota_exceeded` | Le mezze giornate non disponibili |
 | `violations` | `policy_violation` | I vincoli della policy violati |
@@ -60,6 +60,7 @@ Ogni errore dell'API è un documento `application/problem+json` (RFC 9457):
 | `csrf_failed` | 403 | `X-CSRF-Token` assente o diverso dal cookie |
 | `not_found` | 404 | Risorsa inesistente (o di un altro stabilimento) |
 | `conflict` | 409 | Conflitto con dati esistenti (es. codice già usato) |
+| `concurrent_update` | 409 | Un'altra modifica era in corso sugli stessi dati: ripeti la stessa richiesta dopo `retry_after` secondi (con `Retry-After`) |
 | `method_not_allowed` | 405 | Metodo non supportato |
 | `unsupported_media_type` | 415 | Serve `application/json` |
 | `rate_limited` | 429 | Troppe richieste |

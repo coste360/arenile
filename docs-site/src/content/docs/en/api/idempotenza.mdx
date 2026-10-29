@@ -26,10 +26,11 @@ curl https://prenota.mio-lido.it/api/public/v1/lido-demo/bookings \
 | Same key, **different request** | `422` `idempotency_key_reused` |
 | Same key while the first is still running | `409` `idempotency_in_progress`: retry shortly |
 | The first request failed with a `5xx` error | No stored response: you can retry with the same key |
+| The first response has the `Retry-After` header (`409` `concurrent_update`, `429` `rate_limited`) | No stored response: retry with the same key after `retry_after` seconds |
 
 - The key must be **8 to 128 characters** long: use a client-generated UUID for each logical operation.
 - Keys are bound to the user or session that used them and last **24 hours**.
-- `4xx` responses are stored like successful ones: fix the request and use a **new** key.
+- Other `4xx` responses are stored like successful ones: fix the request and use a **new** key.
 
 <Aside type="tip" title="One key per operation, not per attempt">
   Generate the key when the user decides to perform the operation (for example on the "Confirm" tap) and reuse it for

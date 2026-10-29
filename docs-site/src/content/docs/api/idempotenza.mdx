@@ -27,10 +27,11 @@ curl https://prenota.mio-lido.it/api/public/v1/lido-demo/bookings \
 | Stessa chiave, **richiesta diversa** | `422` `idempotency_key_reused` |
 | Stessa chiave mentre la prima è ancora in corso | `409` `idempotency_in_progress`: riprova tra poco |
 | La prima richiesta è fallita con un errore `5xx` | Nessuna risposta memorizzata: puoi riprovare con la stessa chiave |
+| La prima risposta ha l'header `Retry-After` (`409` `concurrent_update`, `429` `rate_limited`) | Nessuna risposta memorizzata: riprova con la stessa chiave dopo `retry_after` secondi |
 
 - La chiave deve avere tra **8 e 128 caratteri**: usa un UUID generato dal client per ogni operazione logica.
 - Le chiavi sono legate all'utente o alla sessione che le ha usate e valgono **24 ore**.
-- Le risposte `4xx` vengono memorizzate come quelle di successo: correggi la richiesta e usa una **nuova** chiave.
+- Le altre risposte `4xx` vengono memorizzate come quelle di successo: correggi la richiesta e usa una **nuova** chiave.
 
 <Aside type="tip" title="Una chiave per operazione, non per tentativo">
   Genera la chiave quando l'utente decide di fare l'operazione (ad esempio al tocco su "Conferma") e riusala per
