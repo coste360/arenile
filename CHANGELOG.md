@@ -7,6 +7,17 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 ## [Unreleased]
 
 ### Corretto
+- **Preventivo della vendita giornaliera:** applica le stesse regole di prenotazione della vendita e risponde
+  `422 policy_violation` con `violations` (es. `same_day_closed`) quando la vendita sarebbe rifiutata, invece di un
+  prezzo con `available: true` seguito dal rifiuto all'incasso.
+- **Cassa senza limite orario in giornata nei modelli e nella demo:** la policy «Cassa» dei modelli della
+  configurazione guidata vende in giornata a qualsiasi ora e fascia; il limite delle 13:00 (poi solo pomeriggio) resta
+  per l'online. Le installazioni esistenti non cambiano: il gestore può modificare la policy della cassa dal pannello.
+- **Approvazione richiesta riconoscibile:** un'operazione che richiede l'approvazione del gestore risponde
+  `409 approval_required` invece del generico `conflict`, con un messaggio dedicato nel pannello.
+- Traduzione inglese e tedesca di «Formula non consentita» nelle regole di prenotazione.
+
+### Corretto
 - **Conflitti da riprovare riconoscibili:** quando una modifica perde una gara con un'altra sugli stessi dati
   (PostgreSQL: deadlock, errore di serializzazione, blocco non disponibile, attesa oltre 5 secondi sulla stessa
   prenotazione) la risposta 409 ha ora il tipo

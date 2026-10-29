@@ -56,6 +56,7 @@ func TestError_Mapping(t *testing.T) {
 		{"forbidden wrapped", fmt.Errorf("x: %w", auth.ErrForbidden), 403, "forbidden"},
 		{"not found", store.ErrNotFound, 404, "not_found"},
 		{"conflict", store.ErrConflict, 409, "conflict"},
+		{"approval required", fmt.Errorf("x: %w", booking.ErrApprovalRequired), 409, "approval_required"},
 		{"busy", fmt.Errorf("%w: %w: aborted", store.ErrConflict, store.ErrBusy), 409, "concurrent_update"},
 		{"rate limited", &auth.RateLimitError{RetryAfter: 1500 * time.Millisecond}, 429, "rate_limited"},
 		{"unknown", errors.New("db exploded: secret detail"), 500, "internal_error"},

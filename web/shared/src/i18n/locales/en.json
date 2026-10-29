@@ -22,6 +22,7 @@
       "conflict": "The operation conflicts with existing data (for example a code already in use).",
       "versionConflict": "Another user changed this data. Reload to see the latest version.",
       "concurrentUpdate": "Another change was in progress on the same data. Try again in a moment.",
+      "approvalRequired": "The manager's approval is needed: the pack or zone requires approval and your role cannot give it.",
       "notImplemented": "Feature not available yet.",
       "spotHasFutureAllocations": "The spot has future bookings: you can only deactivate it.",
       "noPrice": "A price is missing for the requested dates.",

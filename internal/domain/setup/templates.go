@@ -254,6 +254,9 @@ var (
 		Rules: policy.Rules{
 			Payment:     &policy.Payment{Mode: policy.Ptr(policy.PaymentNone), BalanceDue: policy.Ptr(policy.BalanceDueOnArrival)},
 			MinLeadTime: &policy.MinLeadTime{Days: policy.Ptr(0)},
+			// The desk sells today at any time and for any slot: the default
+			// same-day cut-off (13:00, then afternoon only) is for online.
+			SameDayBooking: &policy.SameDayBooking{Enabled: policy.Ptr(true), Until: policy.Ptr("23:59"), OnlySlot: policy.Ptr("")},
 		},
 		Priority: 10,
 	}

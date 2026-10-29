@@ -21,6 +21,8 @@ export function problemMessageKey(error: unknown): string {
       return 'common.errors.versionConflict';
     case 'concurrent_update':
       return 'common.errors.concurrentUpdate';
+    case 'approval_required':
+      return 'common.errors.approvalRequired';
     case 'not_implemented':
       return 'common.errors.notImplemented';
     case 'spot_has_future_allocations':

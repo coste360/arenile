@@ -2419,6 +2419,7 @@ func (e PrinterUnavailableReason) Valid() bool {
 const (
 	ProblemTypeAgreementNotApplicable     ProblemType = "agreement_not_applicable"
 	ProblemTypeAgreementQuotaExceeded     ProblemType = "agreement_quota_exceeded"
+	ProblemTypeApprovalRequired           ProblemType = "approval_required"
 	ProblemTypeAssignmentConflict         ProblemType = "assignment_conflict"
 	ProblemTypeBadRequest                 ProblemType = "bad_request"
 	ProblemTypeBookingOutsidePeriod       ProblemType = "booking_outside_period"
@@ -2494,6 +2495,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeAgreementNotApplicable:
 		return true
 	case ProblemTypeAgreementQuotaExceeded:
+		return true
+	case ProblemTypeApprovalRequired:
 		return true
 	case ProblemTypeAssignmentConflict:
 		return true

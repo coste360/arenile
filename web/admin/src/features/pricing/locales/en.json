@@ -334,7 +334,7 @@
     "cutoff_passed": "Today's cutoff time has passed.",
     "duration_too_long": "Longer than the maximum allowed.",
     "duration_too_short": "Shorter than the minimum allowed.",
-    "formula_not_allowed": "Duration not allowed.",
+    "formula_not_allowed": "Formula not allowed.",
     "lead_time_too_long": "Booked too far in advance.",
     "lead_time_too_short": "Minimum lead time not met.",
     "same_day_closed": "Same-day bookings are closed.",

@@ -22,6 +22,7 @@
       "conflict": "L'opération est en conflit avec des données existantes (par exemple un code déjà utilisé).",
       "versionConflict": "Un autre utilisateur a modifié ces données. Rechargez pour voir la dernière version.",
       "concurrentUpdate": "Une autre modification était en cours sur les mêmes données. Réessayez dans un instant.",
+      "approvalRequired": "L'approbation du gérant est nécessaire : le pack ou la zone exige une approbation que votre rôle ne peut pas donner.",
       "notImplemented": "Fonction pas encore disponible.",
       "spotHasFutureAllocations": "L'emplacement a des réservations futures : vous pouvez seulement le désactiver.",
       "noPrice": "Il manque un prix pour les dates demandées.",

@@ -15,6 +15,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/inventory"
+	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/money"
@@ -218,6 +219,11 @@ func (s *Service) QuoteDaily(ctx context.Context, p *auth.Principal, establishme
 	q, err := s.d.Bookings.Quote(ctx, p, establishmentID, createInput(in, "", w.zone.ID, spotID))
 	if err != nil {
 		return nil, err
+	}
+	// The sale would be refused by the booking rules (same-day cut-off, lead
+	// time, ...): say so now, before the cashier takes the money.
+	if len(q.Result.Violations) > 0 {
+		return nil, &policy.ViolationError{Violations: q.Result.Violations}
 	}
 	out.Result, out.Conflicts = q.Result, q.Conflicts
 	out.Available = len(q.Conflicts) == 0
