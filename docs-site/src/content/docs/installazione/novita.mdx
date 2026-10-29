@@ -15,6 +15,16 @@ repository. Questa pagina racconta le novità dal punto di vista di chi usa il p
   valgono da qui in avanti.
 </Aside>
 
+## 1.1.2 — Vendita giornaliera e cassa
+
+- Il prezzo della vendita giornaliera mostra subito se le regole di prenotazione la impediscono (per esempio la
+  vendita in giornata chiusa), invece di rifiutarla solo all'incasso.
+- Nelle nuove installazioni e nella demo la cassa vende in giornata a qualsiasi ora; il limite delle 13:00 resta per
+  la prenotazione online. Le installazioni esistenti non cambiano: la policy della cassa si modifica dal pannello.
+- Messaggio chiaro quando un'operazione richiede l'approvazione del gestore (`409 approval_required`,
+  [errori](/api/errori/)).
+- Nessuna migrazione.
+
 ## 1.1.1 — Conflitti da riprovare
 
 - Quando due modifiche si scontrano sugli stessi dati (su PostgreSQL), la coda offline del pannello e dell'app mobile

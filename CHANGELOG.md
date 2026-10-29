@@ -6,7 +6,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-## [1.1.1] - 2026-10-29
+## [1.1.2] - 2026-10-29
 
 ### Corretto
 - **Preventivo della vendita giornaliera:** applica le stesse regole di prenotazione della vendita e risponde
@@ -20,6 +20,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   `409 approval_required` invece del generico `conflict`, con un messaggio dedicato nel pannello e nell'area
   di gestione della prenotazione del cliente.
 - Traduzione inglese e tedesca di «Formula non consentita» nelle regole di prenotazione.
+
+## [1.1.1] - 2026-10-29
 
 ### Corretto
 - **Conflitti da riprovare riconoscibili:** quando una modifica perde una gara con un'altra sugli stessi dati
@@ -1068,7 +1070,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.1...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.2...main
+[1.1.2]: https://github.com/coste360/arenile/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/coste360/arenile/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/coste360/arenile/compare/v1.0.6...v1.1.0
 [1.0.6]: https://github.com/coste360/arenile/compare/v1.0.5...v1.0.6

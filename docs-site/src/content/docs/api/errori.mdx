@@ -60,6 +60,7 @@ Ogni errore dell'API è un documento `application/problem+json` (RFC 9457):
 | `csrf_failed` | 403 | `X-CSRF-Token` assente o diverso dal cookie |
 | `not_found` | 404 | Risorsa inesistente (o di un altro stabilimento) |
 | `conflict` | 409 | Conflitto con dati esistenti (es. codice già usato) |
+| `approval_required` | 409 | L'operazione richiede l'approvazione del gestore, che il ruolo dell'utente non può dare |
 | `concurrent_update` | 409 | Un'altra modifica era in corso sugli stessi dati: ripeti la stessa richiesta dopo `retry_after` secondi (con `Retry-After`) |
 | `method_not_allowed` | 405 | Metodo non supportato |
 | `unsupported_media_type` | 415 | Serve `application/json` |
