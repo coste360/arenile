@@ -60,6 +60,7 @@ Every API error is an `application/problem+json` document (RFC 9457):
 | `csrf_failed` | 403 | `X-CSRF-Token` missing or different from the cookie |
 | `not_found` | 404 | Resource does not exist (or belongs to another establishment) |
 | `conflict` | 409 | Conflict with existing data (e.g. code already in use) |
+| `approval_required` | 409 | The operation needs the manager's approval, which the user's role cannot give |
 | `concurrent_update` | 409 | Another change was running on the same data: repeat the same request after `retry_after` seconds (with `Retry-After`) |
 | `method_not_allowed` | 405 | Method not supported |
 | `unsupported_media_type` | 415 | `application/json` is required |
