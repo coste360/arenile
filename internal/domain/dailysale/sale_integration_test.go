@@ -8,14 +8,15 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
-	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/dailysale"
 	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
@@ -522,6 +523,16 @@ func TestDailySale_QuoteAppliesBookingRules(t *testing.T) {
 		}
 		if _, err := e.sales.CreateDaily(ctx, f.Cashier, est, e.spotSale(f.Spots[0])); !errors.As(err, &ve) {
 			t.Fatalf("sale: want the same violation, got %v", err)
+		}
+
+		// An API key sells on channel api (ADR 0011): its quote follows the
+		// api rules (default: same day allowed at 09:00), not the desk ones.
+		key := &auth.Principal{
+			Kind: auth.PrincipalAPIKey, APIKeyID: store.NewID(), APIKeyEstablishmentID: est, APIKeyOrganizationID: f.Est.OrganizationID,
+			Scopes: []auth.Permission{auth.PermBookingsRead, auth.PermBookingsWrite, auth.PermCashOperate},
+		}
+		if q, err := e.sales.QuoteDaily(ctx, key, est, e.spotSale(f.Spots[0])); err != nil || !q.Available {
+			t.Fatalf("api key quote: want the api rules, got %v", err)
 		}
 	})
 }

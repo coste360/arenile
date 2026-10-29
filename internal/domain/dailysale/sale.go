@@ -190,6 +190,19 @@ func (s *Service) QuoteDaily(ctx context.Context, p *auth.Principal, establishme
 	if in.Date.IsZero() {
 		return nil, configerr.Invalid("date", "Campo obbligatorio.")
 	}
+	// The same refusals as CreateDaily, so the quote never promises a sale.
+	if err := s.checkDate(ctx, es, in.Date); err != nil {
+		return nil, err
+	}
+	if in.Target.ZoneFirst() {
+		st, err := s.Settings(ctx, p, establishmentID)
+		if err != nil {
+			return nil, err
+		}
+		if !st.ZoneFirstEnabled {
+			return nil, configerr.Invalid("zone_id", "La vendita per zona è disattivata nelle impostazioni.")
+		}
+	}
 	w, err := s.resolve(ctx, s.d.DB, p, es, in)
 	if err != nil {
 		return nil, err

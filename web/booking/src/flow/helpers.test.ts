@@ -17,6 +17,7 @@ describe('problemMessageKey', () => {
     [problem('payment_provider_unavailable', 503), 'public:errors.payment_provider_unavailable'],
     [problem('payment_provider_test_mode', 409), 'public:errors.payment_provider_test_mode'],
     [problem('concurrent_update', 409), 'public:errors.concurrent_update'],
+    [problem('approval_required', 409), 'public:errors.approval_required'],
     [new ApiProblem({ type: 'network_error', status: 0, title: 'x' }), 'common.errors.network'],
     [problem('internal_error', 500), 'common.errors.generic'],
     [new Error('boom'), 'common.errors.generic'],

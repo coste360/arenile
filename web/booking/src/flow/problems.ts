@@ -15,6 +15,7 @@ const PUBLIC_ERRORS = new Set([
   'version_conflict',
   'conflict',
   'concurrent_update',
+  'approval_required',
   'validation_failed',
 ]);
 
