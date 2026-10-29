@@ -188,7 +188,7 @@ func LockBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, ids []
 		if _, err := db.NewUpdate().Model((*Booking)(nil)).Set("version = version").
 			Where("id = ?", id).Where("establishment_id = ?", es.ID()).Exec(ctx); err != nil {
 			if isQueryCanceled(err) && ctx.Err() == nil {
-				return fmt.Errorf("%w: store: lock bookings: waited more than %s: %w", ErrConflict, lockWaitLimit, err)
+				return fmt.Errorf("%w: %w: store: lock bookings: waited more than %s: %w", ErrConflict, ErrBusy, lockWaitLimit, err)
 			}
 			return fmt.Errorf("store: lock bookings: %w", err)
 		}

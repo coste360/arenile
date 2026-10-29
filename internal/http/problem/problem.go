@@ -42,6 +42,10 @@ import (
 // ContentType is the media type of problem responses.
 const ContentType = "application/problem+json"
 
+// busyRetryAfter is the wait suggested with concurrent_update: the race that
+// aborted the transaction is over once the other one commits.
+const busyRetryAfter = time.Second
+
 // Type slugs (mirrors the ProblemType enum of api/openapi.yaml).
 const (
 	BadRequest            = api.ProblemType("bad_request")
@@ -56,6 +60,7 @@ const (
 	CSRFFailed            = api.ProblemType("csrf_failed")
 	NotFound              = api.ProblemType("not_found")
 	Conflict              = api.ProblemType("conflict")
+	ConcurrentUpdate      = api.ProblemType("concurrent_update")
 	MethodNotAllowed      = api.ProblemType("method_not_allowed")
 	UnsupportedMediaType  = api.ProblemType("unsupported_media_type")
 	RateLimited           = api.ProblemType("rate_limited")
@@ -137,6 +142,7 @@ var catalog = map[api.ProblemType]meta{
 	CSRFFailed:            {http.StatusForbidden, "Token CSRF mancante o non valido"},
 	NotFound:              {http.StatusNotFound, "Risorsa non trovata"},
 	Conflict:              {http.StatusConflict, "Conflitto con lo stato attuale"},
+	ConcurrentUpdate:      {http.StatusConflict, "Un'altra modifica è in corso sugli stessi dati: riprova"},
 	MethodNotAllowed:      {http.StatusMethodNotAllowed, "Metodo non consentito"},
 	UnsupportedMediaType:  {http.StatusUnsupportedMediaType, "Formato del contenuto non supportato"},
 	RateLimited:           {http.StatusTooManyRequests, "Troppe richieste, riprova più tardi"},
@@ -468,6 +474,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, CashSessionOpen)
 	case errors.Is(err, payment.ErrRefundInProgress):
 		Write(w, r, RefundInProgress)
+	case errors.Is(err, store.ErrBusy):
+		Write(w, r, ConcurrentUpdate, RetryAfter(busyRetryAfter))
 	case errors.Is(err, store.ErrConflict):
 		Write(w, r, Conflict)
 	case ClientGone(r, err):

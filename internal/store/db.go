@@ -150,7 +150,7 @@ func RunInTx(ctx context.Context, db bun.IDB, fn func(ctx context.Context, tx bu
 		if IsSerializationFailure(err) {
 			// The transaction lost a race with another one (deadlock or
 			// serialization failure): a conflict, not a server error.
-			return fmt.Errorf("%w: transaction aborted by a concurrent one: %w", ErrConflict, err)
+			return fmt.Errorf("%w: %w: transaction aborted by a concurrent one: %w", ErrConflict, ErrBusy, err)
 		}
 		return err
 	}

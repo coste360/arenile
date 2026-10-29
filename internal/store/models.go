@@ -18,6 +18,11 @@ var (
 	ErrNotFound = errors.New("store: not found")
 	// ErrConflict is returned on unique constraint violations.
 	ErrConflict = errors.New("store: conflict")
+	// ErrBusy marks a conflict that is transient: the transaction lost a
+	// race with a concurrent one (deadlock, serialization failure, lock wait
+	// limit) and the same request can be retried as is. It is always wrapped
+	// together with ErrConflict, so callers checking ErrConflict keep working.
+	ErrBusy = errors.New("store: busy")
 )
 
 // NewID returns a new UUIDv7 as a string.

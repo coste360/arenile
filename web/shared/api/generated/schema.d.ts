@@ -5101,7 +5101,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing" | "payment_provider_test_mode" | "email_template_invalid" | "agreement_quota_exceeded" | "agreement_not_applicable" | "swap_conflict" | "move_undo_expired" | "move_undo_conflict" | "partner_in_use" | "customer_category_in_use";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing" | "payment_provider_test_mode" | "email_template_invalid" | "agreement_quota_exceeded" | "agreement_not_applicable" | "swap_conflict" | "move_undo_expired" | "move_undo_conflict" | "partner_in_use" | "customer_category_in_use" | "concurrent_update";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -5110,7 +5110,11 @@ export interface components {
             detail?: string;
             instance?: string;
             request_id?: string;
-            /** @description Secondi da attendere (solo per `rate_limited`). */
+            /**
+             * @description Secondi da attendere prima di riprovare (`rate_limited`, `payment_provider_unavailable`,
+             *     `concurrent_update`). Le risposte con `retry_after` non vengono memorizzate per
+             *     `Idempotency-Key`: la stessa richiesta con la stessa chiave viene eseguita di nuovo.
+             */
             retry_after?: number;
             errors?: components["schemas"]["FieldError"][];
             /**
@@ -11406,7 +11410,12 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
-        /** @description Conflitto con lo stato corrente */
+        /**
+         * @description Conflitto con lo stato corrente. Con `concurrent_update` la richiesta ha perso una gara con
+         *     un'altra modifica degli stessi dati ed è da riprovare uguale (stessa `Idempotency-Key`) dopo
+         *     `retry_after` secondi; gli altri tipi (`conflict`, `spot_unavailable`, …) non cambiano
+         *     riprovando.
+         */
         Conflict: {
             headers: {
                 [name: string]: unknown;

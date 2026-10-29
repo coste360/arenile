@@ -192,7 +192,9 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			// never persist it for replay. The key is released, so a retry
 			// executes the request again. Cache-Control: no-store alone is not
 			// the signal: SecurityHeaders sets it on every /api/ response.
-			if status >= 500 || rec.overflow || rec.noReplay {
+			// A response with Retry-After (rate_limited, concurrent_update) is
+			// transient: storing it would replay the failure to every retry.
+			if status >= 500 || rec.overflow || rec.noReplay || rec.Header().Get("Retry-After") != "" {
 				return
 			}
 			if err := store.CompleteIdempotencyKey(context.WithoutCancel(ctx), o.DB, scope, key, status, rec.Header().Get("Content-Type"), rec.buf.Bytes()); err != nil {

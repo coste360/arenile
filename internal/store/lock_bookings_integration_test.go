@@ -77,8 +77,8 @@ func TestLockBookings_WaitEndsAsConflict(t *testing.T) {
 		return store.LockBookings(ctx, tx, es, []string{bk.ID})
 	})
 	waited := time.Since(start)
-	if !errors.Is(err, store.ErrConflict) {
-		t.Fatalf("queued lock: want ErrConflict, got %v", err)
+	if !errors.Is(err, store.ErrConflict) || !errors.Is(err, store.ErrBusy) {
+		t.Fatalf("queued lock: want ErrConflict and ErrBusy, got %v", err)
 	}
 	if waited >= 9*time.Second {
 		t.Fatalf("queued lock waited %s, want less than the driver read timeout", waited)

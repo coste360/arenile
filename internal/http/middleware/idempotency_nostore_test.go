@@ -12,6 +12,7 @@ import (
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/http/middleware"
+	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
 )
@@ -92,5 +93,41 @@ func TestIdempotency_NoStoreHeaderStillReplays(t *testing.T) {
 	_ = post("/api/admin/v1/establishments/e/api-keys", "key-secret-03")
 	if again := post("/api/admin/v1/establishments/e/api-keys", "key-secret-03"); again.Header().Get("Idempotent-Replayed") != "" || calls.Load() != before+2 {
 		t.Fatalf("a secret shown once was replayed: %v (calls %d)", again.Header(), calls.Load()-before)
+	}
+}
+
+// TestIdempotency_NeverStoresRetryAfterResponses: a transient failure
+// (concurrent_update, rate_limited: the response carries Retry-After) is not
+// stored, so the offline queue retrying with the same key runs the request
+// again instead of getting the failure replayed.
+func TestIdempotency_NeverStoresRetryAfterResponses(t *testing.T) {
+	db := storetest.SQLite(t)
+	c := clock.NewFake(time.Date(2027, 7, 1, 9, 0, 0, 0, time.UTC))
+	var calls atomic.Int32
+	h := middleware.RequestContext(nil)(middleware.Idempotency(middleware.IdempotencyOptions{DB: db, Clock: c})(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if calls.Add(1) == 1 {
+				problem.Error(w, r, nil, fmt.Errorf("%w: %w: aborted", store.ErrConflict, store.ErrBusy))
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		})))
+	post := func() *httptest.ResponseRecorder {
+		r := httptest.NewRequest(http.MethodPost, "/api/admin/v1/establishments/e/bookings/b/check-in", strings.NewReader(`{}`))
+		r.Header.Set("Idempotency-Key", "key-busy-0001")
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+	if w := post(); w.Code != http.StatusConflict || !strings.Contains(w.Body.String(), `"concurrent_update"`) {
+		t.Fatalf("first: %d %s", w.Code, w.Body.String())
+	}
+	if w := post(); w.Code != http.StatusOK || w.Header().Get("Idempotent-Replayed") != "" || calls.Load() != 2 {
+		t.Fatalf("retry must execute again: %d %v (calls %d)", w.Code, w.Header(), calls.Load())
+	}
+	if w := post(); w.Header().Get("Idempotent-Replayed") != "true" || calls.Load() != 2 {
+		t.Fatalf("the success must be replayed: %v (calls %d)", w.Header(), calls.Load())
 	}
 }
