@@ -15,6 +15,14 @@ repository. Questa pagina racconta le novità dal punto di vista di chi usa il p
   valgono da qui in avanti.
 </Aside>
 
+## 1.1.1 — Conflitti da riprovare
+
+- Quando due modifiche si scontrano sugli stessi dati (su PostgreSQL), la coda offline del pannello e dell'app mobile
+  ripete l'operazione da sola invece di mostrarla come conflitto; il messaggio dice "riprova tra un istante".
+- Per chi integra le API: nuovo tipo di errore `409 concurrent_update` con `Retry-After`, da ripetere con la stessa
+  `Idempotency-Key` ([errori](/api/errori/), [idempotenza](/api/idempotenza/)).
+- Nessuna migrazione.
+
 ## 1.1.0 — Cassa avanzata e convenzioni (M8)
 
 - **Partner e convenzioni:** hotel, B&B e associazioni con rendiconto e saldo; convenzioni per partner, per categoria di

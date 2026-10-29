@@ -14,6 +14,14 @@ Arenile follows semantic versioning; the full list of changes, item by item, is 
   **Arenile 1.0** is the first stable version and includes every milestone below. Upgrade notes apply from here on.
 </Aside>
 
+## 1.1.1 — Retryable conflicts
+
+- When two changes collide on the same data (on PostgreSQL), the offline queue of the panel and of the mobile app
+  repeats the operation by itself instead of showing it as a conflict; the message says "try again in a moment".
+- For API integrators: new `409 concurrent_update` error type with `Retry-After`, to repeat with the same
+  `Idempotency-Key` ([errors](/en/api/errori/), [idempotency](/en/api/idempotenza/)).
+- No migration.
+
 ## 1.1.0 — Advanced cash desk and agreements (M8)
 
 - **Partners and agreements:** hotels, B&Bs and associations with statement and balance; agreements for a partner, a
