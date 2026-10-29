@@ -6,6 +6,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Corretto
+- **Contratto della verifica del requisito sulla prenotazione:** `POST /bookings/{bookingId}/requirement-verification`
+  è documentata come la risposta reale del server, cioè la prenotazione aggiornata (`BookingDetail` con `ETag`), non
+  la sola verifica (`RequirementVerification`); documentato anche il `409` su una prenotazione chiusa o annullata.
+  Il comportamento del server non cambia.
+
 ## [1.1.2] - 2026-10-29
 
 ### Corretto

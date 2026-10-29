@@ -167,12 +167,7 @@ describe('BookingAgreementCard', () => {
       [`GET ${estPath('/partners')}`]: () => list([PARTNER]),
       [`GET ${estPath(`/bookings/${detail.id}`)}`]: () => json(200, detail),
       [`POST ${estPath(`/bookings/${detail.id}/requirement-verification`)}`]: () =>
-        json(200, {
-          id: 'rv1',
-          subject: 'booking',
-          requirement: 'Documento di residenza',
-          verified_at: '2026-07-15T08:00:00Z',
-        }),
+        json(200, { ...detail, version: 5 }),
       [`PATCH ${estPath(`/bookings/${detail.id}`)}`]: (req) => {
         const dry = new URL(req.url).searchParams.get('dry_run') === 'true';
         return json(200, {

@@ -12958,11 +12958,14 @@ paths:
               $ref: "#/components/schemas/RequirementVerificationInput"
       responses:
         "200":
-          description: Verifica registrata
+          description: Verifica registrata; la risposta è la prenotazione aggiornata
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RequirementVerification"
+                $ref: "#/components/schemas/BookingDetail"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -12971,6 +12974,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "412":
           $ref: "#/components/responses/PreconditionFailed"
         "422":

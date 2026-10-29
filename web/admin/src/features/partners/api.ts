@@ -255,7 +255,7 @@ export function useVerifyBookingRequirement(establishmentId: string) {
   const client = useApiClient();
   const qc = useQueryClient();
   return useMutation<
-    RequirementVerification,
+    Schemas['BookingDetail'],
     ApiProblem,
     { bookingId: string; version: number; input?: RequirementVerificationInput }
   >({

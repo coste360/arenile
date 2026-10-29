@@ -3,6 +3,7 @@
 package admin_test
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -77,6 +78,17 @@ func TestPartnersHTTP_Flow(t *testing.T) {
 		if status != 200 || body["partner"].(map[string]any)["id"] != pid || body["partner_amount"].(float64) != 3600 ||
 			body["agreement"].(map[string]any)["requirement"] != "conferma dell'hotel" || body["group_name"] != "Famiglia Bianchi" {
 			t.Fatalf("booking detail: %d %v", status, body)
+		}
+
+		// The verification answers with the updated booking (contract: BookingDetail + ETag).
+		ifMatch := fmt.Sprintf(`"%d"`, d.Booking.Version)
+		status, hdr, body = callTarget(t, f.Owner, http.MethodPost, "/", map[string]any{}, func(w http.ResponseWriter, r *http.Request) {
+			h.VerifyBookingRequirement(w, r, est, d.Booking.ID, api.VerifyBookingRequirementParams{IfMatch: &ifMatch})
+		})
+		rv, _ := body["requirement_verification"].(map[string]any)
+		if status != 200 || body["id"] != d.Booking.ID || hdr.Get("ETag") != fmt.Sprintf(`"%d"`, d.Booking.Version+1) ||
+			rv == nil || rv["requirement"] != "conferma dell'hotel" || rv["verified_by_name"] == nil {
+			t.Fatalf("verify requirement: %d %s %v", status, hdr.Get("ETag"), body)
 		}
 
 		status, _, body = callTarget(t, f.Owner, http.MethodDelete, "/", nil, func(w http.ResponseWriter, r *http.Request) {
