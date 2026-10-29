@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
@@ -15,6 +16,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/dailysale"
 	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
@@ -493,6 +495,44 @@ func TestTicketing_ListWholeDay(t *testing.T) {
 		l, err := e.tickets.List(ctx, f.Viewer, est, ticketing.ListInput{Date: bookingtest.D(day), Limit: -1})
 		if err != nil || len(l.Items) != 1 || l.Items[0].State != ticketing.StateVoided {
 			t.Fatalf("list %v %+v", err, l)
+		}
+	})
+}
+
+// TestDailySale_QuoteAppliesBookingRules: a sale the booking rules refuse
+// (here: no same-day sales at the desk) is refused by the quote too, with
+// the same violations, before the cashier takes the money.
+func TestDailySale_QuoteAppliesBookingRules(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		f, ctx, est := e.f, e.f.Ctx, e.f.Est.ID
+		now := f.Clock.Now()
+		if _, err := db.NewInsert().Model(&store.BookingPolicy{
+			ID: store.NewID(), EstablishmentID: est, SeasonID: f.Season.ID, Name: "Cassa: niente in giornata",
+			Scope: store.JSON(`{"channels":["desk"]}`), Rules: store.JSON(`{"same_day_booking":{"enabled":false}}`),
+			Priority: 10, Active: true, Version: 1, CreatedAt: now, UpdatedAt: now,
+		}).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		e.openSession("")
+
+		var ve *policy.ViolationError
+		_, err := e.sales.QuoteDaily(ctx, f.Cashier, est, e.spotSale(f.Spots[0]))
+		if !errors.As(err, &ve) || len(ve.Violations) != 1 || ve.Violations[0].Code != policy.CodeSameDayClosed {
+			t.Fatalf("quote: want same_day_closed, got %v", err)
+		}
+		if _, err := e.sales.CreateDaily(ctx, f.Cashier, est, e.spotSale(f.Spots[0])); !errors.As(err, &ve) {
+			t.Fatalf("sale: want the same violation, got %v", err)
+		}
+
+		// An API key sells on channel api (ADR 0011): its quote follows the
+		// api rules (default: same day allowed at 09:00), not the desk ones.
+		key := &auth.Principal{
+			Kind: auth.PrincipalAPIKey, APIKeyID: store.NewID(), APIKeyEstablishmentID: est, APIKeyOrganizationID: f.Est.OrganizationID,
+			Scopes: []auth.Permission{auth.PermBookingsRead, auth.PermBookingsWrite, auth.PermCashOperate},
+		}
+		if q, err := e.sales.QuoteDaily(ctx, key, est, e.spotSale(f.Spots[0])); err != nil || !q.Available {
+			t.Fatalf("api key quote: want the api rules, got %v", err)
 		}
 	})
 }

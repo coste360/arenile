@@ -254,6 +254,10 @@ var (
 		Rules: policy.Rules{
 			Payment:     &policy.Payment{Mode: policy.Ptr(policy.PaymentNone), BalanceDue: policy.Ptr(policy.BalanceDueOnArrival)},
 			MinLeadTime: &policy.MinLeadTime{Days: policy.Ptr(0)},
+			// The desk sells today until 23:59 and for any slot: the default
+			// same-day cut-off (13:00, then afternoon only) is for online.
+			// Merge cannot unset Until, so a late time lifts the cut-off.
+			SameDayBooking: &policy.SameDayBooking{Enabled: policy.Ptr(true), Until: policy.Ptr("23:59"), OnlySlot: policy.Ptr("")},
 		},
 		Priority: 10,
 	}

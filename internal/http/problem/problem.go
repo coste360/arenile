@@ -61,6 +61,7 @@ const (
 	NotFound              = api.ProblemType("not_found")
 	Conflict              = api.ProblemType("conflict")
 	ConcurrentUpdate      = api.ProblemType("concurrent_update")
+	ApprovalRequired      = api.ProblemType("approval_required")
 	MethodNotAllowed      = api.ProblemType("method_not_allowed")
 	UnsupportedMediaType  = api.ProblemType("unsupported_media_type")
 	RateLimited           = api.ProblemType("rate_limited")
@@ -143,6 +144,7 @@ var catalog = map[api.ProblemType]meta{
 	NotFound:              {http.StatusNotFound, "Risorsa non trovata"},
 	Conflict:              {http.StatusConflict, "Conflitto con lo stato attuale"},
 	ConcurrentUpdate:      {http.StatusConflict, "Un'altra modifica è in corso sugli stessi dati: riprova"},
+	ApprovalRequired:      {http.StatusConflict, "Serve l'approvazione del gestore"},
 	MethodNotAllowed:      {http.StatusMethodNotAllowed, "Metodo non consentito"},
 	UnsupportedMediaType:  {http.StatusUnsupportedMediaType, "Formato del contenuto non supportato"},
 	RateLimited:           {http.StatusTooManyRequests, "Troppe richieste, riprova più tardi"},
@@ -419,6 +421,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, Conflict, Detail("Lo stabilimento ha scontrini emessi dal registratore telematico: i documenti fiscali vanno conservati, quindi non si può azzerare. Per ripartire crea un nuovo stabilimento."))
 	case errors.Is(err, setup.ErrHasOperations):
 		Write(w, r, Conflict, Detail("Lo stabilimento ha prenotazioni, incassi o altri dati operativi: per ricominciare va azzerato tutto."))
+	case errors.Is(err, booking.ErrApprovalRequired):
+		Write(w, r, ApprovalRequired)
 	case errors.Is(err, configerr.ErrConflict):
 		Write(w, r, Conflict, Detail(err.Error()))
 	case errors.As(err, &npe):

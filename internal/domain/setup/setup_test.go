@@ -9,6 +9,7 @@ import (
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -356,5 +357,27 @@ func TestDemoSeason_ReachesSixtyDaysAhead(t *testing.T) {
 				t.Fatalf("season %s – %s does not cover today and the next %d days in at most a year", opens, closes, demoAheadDays)
 			}
 		})
+	}
+}
+
+// TestTemplatePolicies_DeskSellsSameDayAfterCutoff: over the default rules
+// (same day until 13:00, then afternoon only) the desk policy of the
+// templates sells a full day at 15:00, online keeps the cut-off.
+func TestTemplatePolicies_DeskSellsSameDayAfterCutoff(t *testing.T) {
+	rome, err := time.LoadLocation("Europe/Rome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2027, 7, 10, 15, 0, 0, 0, rome)
+	day := calendar.In(now, rome)
+	req := policy.Request{StartsOn: day, EndsOn: day, Slots: calendar.SlotsFull, Formula: policy.FormulaDay, SpotCount: 1}
+	if v := policy.Validate(req, policy.Merge(policy.DefaultRules(), policyDesk.Rules), now, rome); !v.OK() {
+		t.Fatalf("desk at 15:00: %+v", v.Violations)
+	}
+	if err := policyDesk.Rules.CheckConfig(); err != nil {
+		t.Fatalf("desk rules invalid: %v", err)
+	}
+	if v := policy.Validate(req, policy.Merge(policy.DefaultRules(), policyOnline.Rules), now, rome); v.OK() {
+		t.Fatal("online at 15:00 must keep the same-day cut-off")
 	}
 }

@@ -726,6 +726,7 @@ func (s *Service) Quote(ctx context.Context, p *auth.Principal, establishmentID 
 	if err != nil {
 		return nil, err
 	}
+	in.Channel = auth.ChannelFor(p, in.Channel) // the channel the creation would use (ADR 0011)
 	if err := validateCreate(&in); err != nil {
 		return nil, err
 	}

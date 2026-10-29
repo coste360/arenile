@@ -4235,7 +4235,9 @@ paths:
       summary: "Prezzo e disponibilità di una vendita giornaliera (nessuna scrittura)"
       description: >-
         Vendita giornaliera (biglietto): prezzo dal motore dei prezzi per il giorno, la fascia, il pack e gli extra,
-        e disponibilità della postazione (spot-first) o della zona (zone-first, posti liberi residui). Permesso bookings.write.
+        e disponibilità della postazione (spot-first) o della zona (zone-first, posti liberi residui). Valuta le stesse
+        regole di prenotazione della vendita: se la vendita sarebbe rifiutata risponde 422 `policy_violation` con
+        `violations` (es. `same_day_closed`). Permesso bookings.write.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -14385,6 +14387,7 @@ components:
         - partner_in_use
         - customer_category_in_use
         - concurrent_update
+        - approval_required
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).

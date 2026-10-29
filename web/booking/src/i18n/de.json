@@ -282,6 +282,7 @@
     "version_conflict": "Die Buchung wurde inzwischen aktualisiert: Bitte laden Sie die Seite neu.",
     "conflict": "Die Bedingungen wurden aktualisiert: Bitte lesen und akzeptieren Sie sie erneut.",
     "concurrent_update": "Die Buchung wird gerade aktualisiert: Versuchen Sie es gleich noch einmal.",
+    "approval_required": "Diese Änderung muss vom Betrieb genehmigt werden: Bitte kontaktieren Sie ihn.",
     "validation_failed": "Einige Angaben sind ungültig: Bitte prüfen Sie die Felder.",
     "payment_provider_test_mode": "Die Online-Zahlung ist derzeit nicht verfügbar: Bitte wenden Sie sich zur Buchung an den Strandbetrieb."
   },

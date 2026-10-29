@@ -334,7 +334,7 @@
     "cutoff_passed": "Annahmeschluss für heute überschritten.",
     "duration_too_long": "Länger als das erlaubte Maximum.",
     "duration_too_short": "Kürzer als das erlaubte Minimum.",
-    "formula_not_allowed": "Dauer nicht erlaubt.",
+    "formula_not_allowed": "Formel nicht erlaubt.",
     "lead_time_too_long": "Zu weit im Voraus gebucht.",
     "lead_time_too_short": "Mindestvorlauf nicht eingehalten.",
     "same_day_closed": "Buchungen für heute geschlossen.",
