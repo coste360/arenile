@@ -8,11 +8,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Corretto
 - **Conflitti da riprovare riconoscibili:** quando una modifica perde una gara con un'altra sugli stessi dati
-  (PostgreSQL: deadlock, serializzazione, attesa del blocco oltre 5 secondi) la risposta 409 ha ora il tipo
+  (PostgreSQL: deadlock, errore di serializzazione, blocco non disponibile, attesa oltre 5 secondi sulla stessa
+  prenotazione) la risposta 409 ha ora il tipo
   `concurrent_update` con `retry_after` e l'intestazione `Retry-After`, invece del generico `conflict`; i client
   (per esempio la coda offline dell'app mobile) possono riprovare la stessa richiesta con la stessa
   `Idempotency-Key`. Le risposte con `Retry-After` (`concurrent_update`, `rate_limited`) non vengono più
-  memorizzate per la chiave di idempotenza: prima un nuovo tentativo riceveva di nuovo lo stesso errore.
+  memorizzate per la chiave di idempotenza: prima un nuovo tentativo riceveva di nuovo lo stesso errore. La coda
+  offline del pannello ritenta `concurrent_update` e `idempotency_in_progress` invece di segnarli come conflitti
+  (ADR 0029).
 
 ## [1.1.0] - 2026-10-28
 

@@ -67,6 +67,10 @@ export function classifyFailure(err: unknown): ClassifiedFailure {
   const message = err.detail || err.title;
   if (err.isNetworkError || err.status === 0) return { outcome: 'retry', message };
   if (err.status === 401) return { outcome: 'auth', message };
+  // Transient conflicts: the same request (same idempotency key) succeeds later.
+  if (err.type === 'concurrent_update' || err.type === 'idempotency_in_progress') {
+    return { outcome: 'retry', message };
+  }
   if (err.status === 409 || err.status === 412 || err.status === 422) {
     return { outcome: 'conflict', message };
   }

@@ -11418,6 +11418,8 @@ export interface components {
          */
         Conflict: {
             headers: {
+                /** @description Secondi da attendere (solo con `concurrent_update`) */
+                "Retry-After"?: number;
                 [name: string]: unknown;
             };
             content: {

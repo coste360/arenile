@@ -50,6 +50,11 @@ describe('classifyFailure', () => {
     expect(classifyFailure(err).outcome).toBe(outcome);
   });
 
+  it.each(['concurrent_update', 'idempotency_in_progress'] as const)('409 %s → retry', (type) => {
+    const err = new ApiProblem({ type, status: 409, title: 'T' });
+    expect(classifyFailure(err).outcome).toBe('retry');
+  });
+
   it('uses the problem detail as message', () => {
     expect(classifyFailure(problem(409, 'Cassa chiusa')).message).toBe('Cassa chiusa');
   });

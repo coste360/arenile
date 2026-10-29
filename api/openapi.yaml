@@ -14240,6 +14240,11 @@ components:
         un'altra modifica degli stessi dati ed è da riprovare uguale (stessa `Idempotency-Key`) dopo
         `retry_after` secondi; gli altri tipi (`conflict`, `spot_unavailable`, …) non cambiano
         riprovando.
+      headers:
+        Retry-After:
+          description: Secondi da attendere (solo con `concurrent_update`)
+          schema:
+            type: integer
       content:
         application/problem+json:
           schema:

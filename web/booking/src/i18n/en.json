@@ -281,6 +281,7 @@
     "invalid_transition": "This is no longer possible for this booking.",
     "version_conflict": "The booking has been updated in the meantime: reload the page.",
     "conflict": "The conditions have been updated: read and accept them again.",
+    "concurrent_update": "The booking is being updated right now: try again in a moment.",
     "validation_failed": "Some details are not valid: check the fields.",
     "payment_provider_test_mode": "Online payment is not available at the moment: please contact the beach club to book."
   },

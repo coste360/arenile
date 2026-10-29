@@ -281,6 +281,7 @@
     "invalid_transition": "Operazione non più possibile per questa prenotazione.",
     "version_conflict": "La prenotazione è stata aggiornata nel frattempo: ricarica la pagina.",
     "conflict": "Le condizioni sono state aggiornate: rileggile e accettale di nuovo.",
+    "concurrent_update": "La prenotazione è in aggiornamento in questo momento: riprova tra un istante.",
     "validation_failed": "Alcuni dati non sono validi: controlla i campi.",
     "payment_provider_test_mode": "Il pagamento online non è disponibile in questo momento: contatta lo stabilimento per prenotare."
   },

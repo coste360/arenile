@@ -21,6 +21,7 @@
       "validation": "Einige Angaben sind ungültig: Bitte prüfen Sie die markierten Felder.",
       "conflict": "Der Vorgang steht im Konflikt mit vorhandenen Daten (z. B. ein bereits verwendeter Code).",
       "versionConflict": "Ein anderer Benutzer hat diese Daten geändert. Laden Sie neu, um die aktuelle Version zu sehen.",
+      "concurrentUpdate": "Eine andere Änderung an denselben Daten war gerade im Gange. Versuchen Sie es gleich noch einmal.",
       "notImplemented": "Funktion noch nicht verfügbar.",
       "spotHasFutureAllocations": "Der Platz hat zukünftige Buchungen: Er kann nur deaktiviert werden.",
       "noPrice": "Für die gewählten Daten fehlt ein Preis.",

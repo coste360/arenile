@@ -207,7 +207,7 @@ Verificata da: `TestAuditLog_InsertOnly` (`internal/store`, tag `integration`: U
 
 **INV-31 — Idempotenza delle creazioni.**
 Due `POST` con la stessa `Idempotency-Key` creano una sola risorsa e restituiscono la stessa risposta.
-Verificata da: `TestIdempotency_ReplayMismatchAndRetry`, `TestConcurrency_IdempotencyKey`, `TestConcurrency_IdempotencyKey_ExpiredReclaim` (`internal/http/middleware`), `TestIdempotencyKeys_Claim` e `TestConcurrency_IdempotencyKeyClaim` (`internal/store`, tag `integration`). Stato: implemented.
+Verificata da: `TestIdempotency_ReplayMismatchAndRetry`, `TestIdempotency_NeverStoresRetryAfterResponses`, `TestConcurrency_IdempotencyKey`, `TestConcurrency_IdempotencyKey_ExpiredReclaim` (`internal/http/middleware`), `TestIdempotencyKeys_Claim` e `TestConcurrency_IdempotencyKeyClaim` (`internal/store`, tag `integration`). Stato: implemented.
 
 ## Eventi (spec 18)
 
@@ -954,12 +954,15 @@ prenotazione esistente dichiarano `Idempotency-Key` nel contratto e passano dal 
 l'ingresso al varco, verificato sul percorso). Ripetuti con il token del dispositivo e la stessa
 chiave (entro 24 ore, per lo stesso utente) restituiscono la risposta originale byte per byte con
 `Idempotent-Replayed: true` e nessun nuovo effetto; la stessa chiave con un altro corpo risponde
-`422 idempotency_key_reused`. Le risposte 5xx non sono memorizzate e si possono ritentare con la stessa chiave; una
-risposta memorizzata sotto 500, compresi i rifiuti 4xx, è definitiva per quella chiave, e quando l'utente corregge la
+`422 idempotency_key_reused`. Le risposte 5xx e quelle con `Retry-After` (`409 concurrent_update`,
+`429 rate_limited`) non sono memorizzate e si possono ritentare con la stessa chiave; ogni altra risposta sotto 500,
+compresi i rifiuti 4xx, è definitiva per quella chiave, e quando l'utente corregge la
 causa e invia di nuovo la coda usa una chiave nuova. 100 invii paralleli della stessa nota o dello stesso incasso
 producono un solo effetto e solo risposte identiche o `409 idempotency_in_progress`.
 Verificata da: `TestAcceptance_OfflineQueueReplay`, `TestConcurrency_OfflineQueueReplay` (`internal/acceptance`, tag
-`integration`, SQLite e PostgreSQL), `TestOfflineQueueContract_IdempotencyKey` (`internal/http`), oltre a INV-31.
+`integration`, SQLite e PostgreSQL), `TestOfflineQueueContract_IdempotencyKey` (`internal/http`),
+`TestIdempotency_NeverStoresRetryAfterResponses` (`internal/http/middleware`), `classifyFailure`
+(`web/shared/src/offline/queue.test.ts`), oltre a INV-31.
 Stato: implemented.
 
 ## Ricomincia da zero (spec 15.2)

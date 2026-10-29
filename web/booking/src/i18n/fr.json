@@ -281,6 +281,7 @@
     "invalid_transition": "Cette opération n'est plus possible pour cette réservation.",
     "version_conflict": "La réservation a été mise à jour entre-temps : rechargez la page.",
     "conflict": "Les conditions ont été mises à jour : relisez-les et acceptez-les à nouveau.",
+    "concurrent_update": "La réservation est en cours de mise à jour : réessayez dans un instant.",
     "validation_failed": "Certaines données ne sont pas valides : vérifiez les champs.",
     "payment_provider_test_mode": "Le paiement en ligne n'est pas disponible pour le moment : contactez l'établissement pour réserver."
   },
