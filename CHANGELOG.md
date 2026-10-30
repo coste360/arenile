@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-10-30
+
 ### Corretto
 - **Contratto della verifica del requisito sulla prenotazione:** `POST /bookings/{bookingId}/requirement-verification`
   è documentata come la risposta reale del server, cioè la prenotazione aggiornata (`BookingDetail` con `ETag`), non
@@ -1076,7 +1078,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.2...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.3...main
+[1.1.3]: https://github.com/coste360/arenile/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/coste360/arenile/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/coste360/arenile/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/coste360/arenile/compare/v1.0.6...v1.1.0
