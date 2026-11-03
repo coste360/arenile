@@ -6,6 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-11-03
+
+### Modificato
+- **Test su Windows.** La CI esegue la suite Go anche su Windows: test unitari, di integrazione su SQLite e dell'app
+  desktop, più un controllo dei fusi orari nelle stesse condizioni del binario distribuito (compilato con `-trimpath`,
+  senza l'installazione di Go), che avrebbe intercettato il problema corretto nella 1.1.4.
+- I file del repository hanno sempre fine riga LF, anche nei checkout su Windows (`.gitattributes`): i modelli e le
+  migrazioni incorporati nell'app desktop per Windows sono identici a quelli delle altre piattaforme.
+
 ## [1.1.4] - 2026-11-03
 
 ### Corretto
@@ -1085,7 +1094,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.4...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.5...main
+[1.1.5]: https://github.com/coste360/arenile/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/coste360/arenile/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/coste360/arenile/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/coste360/arenile/compare/v1.1.1...v1.1.2
