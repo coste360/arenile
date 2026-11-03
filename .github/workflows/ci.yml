@@ -112,24 +112,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           go test -c -trimpath -o "$RUNNER_TEMP/app.test.exe" ./internal/app/
-          env -u GOROOT "$RUNNER_TEMP/app.test.exe" -test.run 'TestTZData_' -test.v
-
-      # TEMPORARY (remove before merge): the same check on the 1.1.3 code,
-      # without the embedded database. Expected to FAIL.
-      - name: "[temporary] Time zones on 1.1.3 (expected to fail)"
-        if: ${{ !cancelled() }}
-        run: |
-          rm internal/app/tzdata.go internal/app/tzdata_test.go
-          if go test -run 'TestTZData_' ./internal/app/; then
-            echo "::notice::1.1.3 code, plain go test: Europe/Rome loaded (bug hidden by the Go installation)"
-          fi
-          go test -c -trimpath -o "$RUNNER_TEMP/app113.test.exe" ./internal/app/
-          if env -u GOROOT "$RUNNER_TEMP/app113.test.exe" -test.run 'TestTZData_' -test.v; then
-            echo "::warning::1.1.3 code loaded Europe/Rome: the bug would NOT have shown"
-          else
-            echo "::notice::1.1.3 code rejected Europe/Rome: the Windows job would have caught the bug"
-          fi
-          git checkout -- internal/app/
+          env -u GOROOT "$RUNNER_TEMP/app.test.exe" -test.run 'TestTZData_ValidatesEuropeRome' -test.v
 
       # Window and tray layer (cgo with the runner's MinGW gcc, WebView2).
       - name: Desktop-tag tests

@@ -1,0 +1,4 @@
+# Keep LF everywhere, also in Windows checkouts: embedded templates, migrations
+# and golden files must be byte-identical on every OS (CI and release builds
+# check out on Windows runners too).
+* text=auto eol=lf

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -193,7 +194,7 @@ func TestParse_DevGeneratesKeyOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if st.Mode().Perm() != 0o600 {
+	if runtime.GOOS != "windows" && st.Mode().Perm() != 0o600 { // Windows has no Unix permission bits
 		t.Fatalf("key file perms %v", st.Mode().Perm())
 	}
 	if err := cfg.ValidateServe(); err != nil {

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -65,6 +66,9 @@ func TestAutostart_FileStrategies(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.env["APPIMAGE"] != "" && runtime.GOOS == "windows" {
+				t.Skip("APPIMAGE is a Unix path, not absolute on a Windows host")
+			}
 			a, err := NewAutostart(tt.goos, home, "/opt/arenile", []string{"-data-dir", "/srv/arenile"}, env(tt.env), nil)
 			if err != nil {
 				t.Fatal(err)
