@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -24,7 +25,7 @@ func TestLoadOrCreateSecretKey_FallbackAndReuse(t *testing.T) {
 		t.Fatalf("first run: %v %q %d", err, src, len(k1))
 	}
 	st, err := os.Stat(path)
-	if err != nil || st.Mode().Perm() != 0o600 {
+	if err != nil || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o600) {
 		t.Fatalf("secret file mode %v %v", st, err)
 	}
 	k2, _, err := LoadOrCreateSecretKey(ctx, brokenStore{}, file)

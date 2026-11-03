@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -29,7 +30,7 @@ func TestRotatingFile_Rotation(t *testing.T) {
 	_ = r.Close()
 	for _, p := range []string{path, path + ".1", path + ".2"} {
 		st, err := os.Stat(p)
-		if err != nil || st.Size() != 60 || st.Mode().Perm() != 0o600 {
+		if err != nil || st.Size() != 60 || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o600) {
 			t.Fatalf("%s: %v %v", p, st, err)
 		}
 	}

@@ -76,6 +76,51 @@ jobs:
           go-package: ./...
           cache: false
 
+  # The desktop edition ships to Windows: run the Go suite there too, so that
+  # OS differences (time zone database, file locking, paths, errno values)
+  # surface before a release. PostgreSQL and the race detector stay on Linux
+  # (no Linux service containers on Windows runners); SQLite runs here.
+  windows:
+    name: Go on Windows (unit, SQLite integration, desktop)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download modules
+        run: go mod download
+
+      - name: Unit tests
+        run: go test ./...
+
+      - name: Integration tests (SQLite)
+        # Run even when a previous step failed: show every Windows failure at once.
+        if: ${{ !cancelled() }}
+        run: go test -tags=integration ./...
+
+      # The shipped binary is built with -trimpath and runs where Go is not
+      # installed, so Go's own zoneinfo.zip is not reachable: reproduce that.
+      - name: Time zones without the Go installation
+        if: ${{ !cancelled() }}
+        run: |
+          go test -c -trimpath -o "$RUNNER_TEMP/app.test.exe" ./internal/app/
+          env -u GOROOT "$RUNNER_TEMP/app.test.exe" -test.run 'TestTZData_ValidatesEuropeRome' -test.v
+
+      # Window and tray layer (cgo with the runner's MinGW gcc, WebView2).
+      - name: Desktop-tag tests
+        if: ${{ !cancelled() }}
+        env:
+          CGO_ENABLED: "1"
+        run: go test -tags desktop ./cmd/arenile-desktop/... ./internal/desktop/...
+
   web:
     name: Web (lint, typecheck, test, build, budget)
     runs-on: ubuntu-latest

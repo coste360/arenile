@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"testing"
 )
@@ -46,7 +47,7 @@ func TestInstanceInfo_RoundTrip(t *testing.T) {
 	if err := WriteInstanceInfo(dir, in); err != nil {
 		t.Fatal(err)
 	}
-	if st, _ := os.Stat(filepath.Join(dir, instanceFile)); st.Mode().Perm() != 0o600 {
+	if st, _ := os.Stat(filepath.Join(dir, instanceFile)); runtime.GOOS != "windows" && st.Mode().Perm() != 0o600 {
 		t.Fatalf("mode %v", st.Mode())
 	}
 	got, err := ReadInstanceInfo(dir)

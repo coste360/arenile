@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -47,7 +48,7 @@ func TestWindowState_PersistRoundTrip(t *testing.T) {
 		t.Fatalf("round trip: %+v", got)
 	}
 	st, err := os.Stat(filepath.Join(dir, stateFileName))
-	if err != nil || st.Mode().Perm() != 0o600 {
+	if err != nil || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o600) {
 		t.Fatalf("file mode: %v %v", st, err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, stateFileName), []byte("{broken"), 0o600); err != nil {

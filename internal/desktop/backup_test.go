@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -173,7 +174,7 @@ func TestBackuper_BackupValidateRestore_SQLite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if st, err := os.Stat(filepath.Join(dir, first.Name)); err != nil || st.Mode().Perm() != 0o600 || first.SizeBytes == 0 {
+	if st, err := os.Stat(filepath.Join(dir, first.Name)); err != nil || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o600) || first.SizeBytes == 0 {
 		t.Fatalf("backup file %v %v %+v", st, err, first)
 	}
 	// Same second: a distinct name, never an overwrite.

@@ -13,6 +13,7 @@ import (
 	"net/mail"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -190,7 +191,7 @@ func TestFileTransport_WritesEML(t *testing.T) {
 		t.Fatalf("files %v, id %q", entries, id)
 	}
 	info, _ := entries[0].Info()
-	if info.Mode().Perm() != 0o600 {
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 { // no Unix permission bits on Windows
 		t.Fatalf("mode %v", info.Mode())
 	}
 	raw, _ := os.ReadFile(filepath.Join(dir, id))

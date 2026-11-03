@@ -2,12 +2,18 @@ package desktop
 
 import (
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
-// abs builds an absolute path from components on the current OS.
+// abs builds an absolute path from components on the current OS (with a
+// drive on Windows, where a path without one is not absolute).
 func abs(parts ...string) string {
-	return filepath.Join(append([]string{string(filepath.Separator)}, parts...)...)
+	root := string(filepath.Separator)
+	if runtime.GOOS == "windows" {
+		root = `C:\`
+	}
+	return filepath.Join(append([]string{root}, parts...)...)
 }
 
 func TestDataDir_PerOS(t *testing.T) {
