@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Corretto
+- **Fuso orario sconosciuto.** Il binario (server e app desktop) incorpora ora il database dei fusi orari IANA: sui
+  sistemi che non lo forniscono (app desktop per Windows, immagini minimali) qualsiasi fuso, anche `Europe/Rome`,
+  veniva rifiutato e non si poteva creare lo stabilimento.
+
 ## [1.1.3] - 2026-10-30
 
 ### Corretto
