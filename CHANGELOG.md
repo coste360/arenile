@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-11-03
+
 ### Corretto
 - **Fuso orario sconosciuto.** Il binario (server e app desktop) incorpora ora il database dei fusi orari IANA: sui
   sistemi che non lo forniscono (app desktop per Windows, immagini minimali) qualsiasi fuso, anche `Europe/Rome`,
@@ -1083,7 +1085,8 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.3...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.1.4...main
+[1.1.4]: https://github.com/coste360/arenile/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/coste360/arenile/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/coste360/arenile/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/coste360/arenile/compare/v1.1.0...v1.1.1
