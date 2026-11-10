@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Grazie per la proposta. Controlla prima la [roadmap](https://github.com/coste360/arenile#roadmap) e la [specifica](https://github.com/coste360/arenile/blob/main/docs/spec/README.md): la funzionalità potrebbe essere già prevista.
+        Grazie per la proposta. Controlla prima la [stato delle funzionalità](https://docs.arenile.app/installazione/cos-e-arenile/#cosa-cè-oggi) e la [specifica](https://github.com/coste360/arenile/blob/main/docs/spec/README.md): la funzionalità potrebbe essere già prevista.
         Ricorda il principio del progetto: **configurazione come dati**. Le differenze tra lidi si esprimono con risorse, pack, regole di prezzo e policy, non con casi speciali nel codice.
   - type: textarea
     id: problema

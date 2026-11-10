@@ -1,0 +1,100 @@
+---
+title: Domande frequenti
+description: Arenile è gratuito? Ci sono commissioni? Funziona con WordPress, senza internet, con più lidi? Le risposte alle domande più comuni sul gestionale per stabilimenti balneari.
+sidebar:
+  order: 19
+---
+
+## Esiste un gestionale lido gratuito?
+
+Sì, Arenile è un gestionale lido gratuito con codice sorgente disponibile: un software per la gestione di
+stabilimenti balneari che installi sul tuo server senza canoni né licenze a pagamento. Comprende mappa ombrelloni,
+prenotazione ombrelloni online, listini, cassa e abbonamenti stagionali.
+
+## Arenile è davvero gratuito?
+
+Sì, per chi gestisce il proprio stabilimento. Arenile ha licenza BSL 1.1: se lo usi per i lidi che possiedi o
+gestisci direttamente non ci sono canoni, versioni a pagamento o limiti sul numero di ombrelloni, prenotazioni o
+utenti. L'unico costo è l'hosting (un VPS da pochi euro al mese o un computer che hai già). Una licenza commerciale
+serve solo a chi vuole offrire Arenile come servizio a terzi. Dettagli in [Licenza](/sviluppo/licenza/).
+
+## Sono un'agenzia o un tecnico: posso installarlo per i miei clienti?
+
+Non senza una licenza commerciale. La licenza gratuita copre solo gli stabilimenti che possiedi o gestisci
+direttamente. Installare, configurare, personalizzare, ospitare (hosting o SaaS), mantenere o assistere Arenile per
+conto di altri stabilimenti a pagamento, o rivenderlo, richiede una licenza commerciale di Coste360 SRL: scrivi a
+**info@coste360.it**. Se invece sei un gestore, puoi far installare Arenile dai tuoi dipendenti o installarlo tu
+stesso su un server che hai noleggiato.
+
+Se realizzi il sito del lido puoi inserirci il widget o il link alla pagina di prenotazione senza licenza, purché non
+installi, ospiti, configuri o assisti Arenile. Aiutare gratis un gestore a installarlo è permesso solo se non fa parte
+di un'offerta a pagamento, o non serve a promuoverla, legata ad Arenile o alla gestione, alle prenotazioni o al sito
+dello stabilimento.
+
+## Siamo un consorzio di lidi: possiamo usarlo per i soci?
+
+Ogni lido socio può installare e usare Arenile gratis per sé. Un consorzio o un'associazione che non controlla i lidi
+soci non li gestisce direttamente, quindi per installare, ospitare o assistere Arenile per i soci serve una licenza
+commerciale di Coste360 SRL: scrivi a **info@coste360.it**.
+
+## Perché la licenza BSL e non una licenza open source?
+
+Perché vogliamo che Arenile resti gratuito per i gestori e che nessuno possa prenderlo e rivenderlo come servizio a
+pagamento agli stessi stabilimenti a cui lo diamo gratis. La Business Source License 1.1 protegge questo uso gratuito
+dai rivenditori, ma lascia il codice leggibile, modificabile e aperto ai contributi. Ogni versione passa poi alla
+licenza **AGPL-3.0 o successiva** tre anni dopo il suo primo rilascio pubblico.
+
+## Ci sono commissioni sulle prenotazioni online?
+
+No: con Arenile le prenotazioni sono senza commissioni. A differenza dei portali di prenotazione a commissione, i
+pagamenti online passano dal tuo account Stripe e l'incasso arriva direttamente a te: paghi solo le commissioni del
+circuito di pagamento, nessuna percentuale alla piattaforma. Puoi anche non attivare i pagamenti online e incassare
+tutto alla cassa. Vedi [Pagamenti online](/gestore/pagamenti-online/).
+
+## Posso usarlo con il mio sito WordPress?
+
+Sì. Il widget di prenotazione ombrelloni si incolla in un blocco "HTML personalizzato" di WordPress, oppure in Wix,
+Joomla, Squarespace o qualsiasi sito, con uno script di una riga o un iframe. Puoi anche usare il link diretto alla
+pagina di prenotazione sui social o su Google Business. Vedi
+[Incorpora il widget nel tuo sito](/gestore/pagina-pubblica/#incorpora-il-widget-nel-tuo-sito).
+
+## Serve un registratore telematico?
+
+Arenile **non è un registratore telematico** e non trasmette corrispettivi all'Agenzia delle Entrate: il documento
+commerciale si emette con il tuo dispositivo, mentre Arenile gestisce cassa, incassi ed esportazione dei corrispettivi
+per il commercialista. Le ricevute generate da Arenile sono non fiscali. La conformità della configurazione (aliquote
+IVA, emissione dei documenti, conservazione) resta responsabilità del gestore e del suo consulente. Vedi
+[Corrispettivi](/gestore/corrispettivi/).
+
+## Funziona senza internet?
+
+Il server può girare anche in rete locale (ad esempio l'[app desktop](/gestore/app-desktop/), un mini PC o un
+Raspberry Pi nel lido), ma le prenotazioni online richiedono che sia raggiungibile da internet. Se la connessione cade
+il pannello permette di consultare la mappa del giorno e registrare check-in, note e incassi in contanti, che vengono
+sincronizzati al ritorno della rete. Le nuove prenotazioni richiedono invece la connessione, per garantire che non ci
+siano doppie vendite. Vedi [Uso offline](/gestore/uso-offline/).
+
+## Che differenza c'è tra un gestionale balneare e un portale di prenotazione?
+
+Un portale di prenotazione ombrelloni vende i tuoi posti sul proprio sito e trattiene una percentuale su ogni
+prenotazione. Un gestionale balneare come Arenile è il software con cui gestisci lo stabilimento (spiaggia, listini,
+cassa, clienti) e pubblichi la prenotazione ombrelloni online sul tuo sito: le prenotazioni sono senza commissioni e il
+rapporto con il cliente resta tuo.
+
+## Posso gestire più lidi?
+
+Sì. Un'unica installazione gestisce più stabilimenti balneari, ciascuno con la propria mappa, i propri listini, le
+proprie policy e la propria pagina di prenotazione. Per molte strutture è consigliato
+[PostgreSQL](/installazione/database/).
+
+## Quali tipi di stabilimento supporta?
+
+Lidi con ombrelloni a file e posti numerati, spiagge attrezzate a quantità (es. lettini sfusi), zone con assegnazione
+del posto da parte del gestore, gazebo, tende, palme e aree piscina. Le modalità si possono combinare nello stesso
+stabilimento. Vedi [Zone](/gestore/zone/).
+
+## I dati dei miei clienti sono al sicuro e conformi al GDPR?
+
+I dati restano sul server che scegli tu: nessuno, nemmeno Coste360, vi accede. Arenile raccoglie solo i dati
+necessari, versiona i consensi, consente esportazione e anonimizzazione dei dati del cliente e non registra email o
+telefoni in chiaro nei log. Il titolare del trattamento resta il gestore. Vedi [Privacy](/installazione/privacy/).

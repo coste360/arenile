@@ -3,7 +3,7 @@
 Questa guida spiega come installare il gestionale Arenile sul tuo server, come proteggerlo con HTTPS, come fare backup e ripristino e come aggiornarlo.
 
 > [!NOTE]
-> Arenile non è ancora stato rilasciato (la versione 1.0.0 è in preparazione). L'immagine `ghcr.io/coste360/arenile` verrà pubblicata al primo rilascio; fino ad allora si può compilare dai sorgenti (vedi il [README](../../README.md#sviluppo)). Le istruzioni seguenti descrivono l'installazione prevista.
+> La guida aggiornata, in italiano e in inglese, è nel sito della documentazione: [Installazione e operatività](https://docs.arenile.app/installazione/). Per compilare dai sorgenti vedi [Compilare dai sorgenti](https://docs.arenile.app/installazione/compilare-dai-sorgenti/).
 
 ## Indice
 
@@ -83,7 +83,7 @@ Nessun altro servizio è necessario: niente Redis, niente code esterne, niente o
 
 Per esplorare il programma con dati di esempio puoi caricare lo stabilimento dimostrativo: `docker compose exec arenile /arenile seed demo`. Fallo su un'istanza di prova, non su quella di produzione.
 
-Tutte le variabili di configurazione sono nella [tabella del README](../../README.md#configurazione).
+Tutte le variabili di configurazione sono nella [pagina Configurazione](https://docs.arenile.app/installazione/configurazione/).
 
 ## Installazione su VPS
 

@@ -3,7 +3,7 @@
 Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno stabilimento balneare e vuole installare e usare **Arenile**, il gestionale gratuito e a codice sorgente disponibile per la gestione della spiaggia, delle prenotazioni di ombrelloni e lettini e della cassa.
 
 > [!IMPORTANT]
-> Tutte le milestone da M0 a M6 sono completate e la versione 1.0.0 è disponibile. Queste guide descrivono il funzionamento attuale e vengono aggiornate a ogni rilascio. Per un'installazione verificata e con assistenza scrivi a [Coste360](https://www.coste360.it/contatti). Lo stato delle funzionalità è nella [tabella del README](../../README.md#stato-delle-funzionalità).
+> Tutte le milestone da M0 a M6 sono completate e la versione 1.0.0 è disponibile. Queste guide descrivono il funzionamento attuale e vengono aggiornate a ogni rilascio. Per un'installazione verificata e con assistenza scrivi a [Coste360](https://www.coste360.it/contatti). Lo stato delle funzionalità è nella [pagina Cos'è Arenile](https://docs.arenile.app/installazione/cos-e-arenile/).
 
 ## Indice
 
@@ -22,7 +22,7 @@ Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno 
 
 - **Gratuito e senza commissioni**: Arenile non trattiene percentuali sulle prenotazioni. I pagamenti online passano dal tuo account Stripe; paghi solo le commissioni del circuito di pagamento.
 - **I dati restano tuoi**: il programma gira su un server scelto da te (un VPS, un mini PC, un Raspberry Pi) e puoi esportare tutto in qualsiasi momento.
-- **Prenotazioni dal tuo sito**: la pagina di prenotazione si incorpora nel sito del lido con un iframe o con lo script `embed.js` (vedi il [README](../../README.md#incorporare-il-widget-nel-tuo-sito)).
+- **Prenotazioni dal tuo sito**: la pagina di prenotazione si incorpora nel sito del lido con un iframe o con lo script `embed.js` (vedi [Incorpora il widget](https://docs.arenile.app/gestore/pagina-pubblica/#incorpora-il-widget-nel-tuo-sito)).
 - **Tu resti responsabile** degli aspetti fiscali e privacy della tua attività: Arenile ti fornisce gli strumenti, ma la configurazione va verificata con il tuo commercialista e, se necessario, con un consulente privacy.
 
 ## Serve aiuto?
