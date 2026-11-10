@@ -6,6 +6,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Modificato
+- **App mobile disponibile.** README e sito della documentazione portano all'app per lo staff su
+  [App Store](https://apps.apple.com/it/app/arenile/id6828818893) e
+  [Google Play](https://play.google.com/store/apps/details?id=app.arenile.mobile);
+  la milestone M7 è segnata come completata.
+
 ## [1.1.5] - 2026-11-03
 
 ### Modificato
