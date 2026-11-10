@@ -17,6 +17,10 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   Configurazione documenta anche `ARENILE_INSTALL`, `ARENILE_EDITION`, `ARENILE_WEBHOOKS_ALLOW_PRIVATE` e
   `ARENILE_PRINTERS_ALLOW_LOOPBACK`.
 
+### Sicurezza
+- Aggiornata la dipendenza indiretta `golang.org/x/net` alla v0.62.0 per correggere CVE-2026-78661 (negazione del
+  servizio tramite HTML costruito ad arte in `golang.org/x/net/html`).
+
 ## [1.1.5] - 2026-11-03
 
 ### Modificato
