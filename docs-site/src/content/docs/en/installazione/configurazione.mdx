@@ -30,6 +30,8 @@ and the expected format: better not to start than to start misconfigured.
 |---|---|---|
 | `ARENILE_AUTO_MIGRATE` | `true` | Applies database migrations when `serve` starts. With `false`, run `arenile migrate up` before starting. |
 | `ARENILE_DEV` | `false` | Development mode (like `arenile serve --dev`): `ARENILE_BASE_URL` optional, secret key generated and saved in `ARENILE_DATA_DIR/dev-secret.key`, non-`Secure` cookies over `http`. **Never in production.** |
+| `ARENILE_INSTALL` | `binary` | Set by the official Docker image (`docker`): it only picks the instructions shown by the new version notice (`docker compose pull`). No need to set it. |
+| `ARENILE_EDITION` | `server` | Set by the desktop app, never by the operator: `desktop` is the loopback profile, with `ARENILE_BASE_URL` optional and `Secure` cookies only on TLS requests. |
 
 ## Email
 
@@ -57,6 +59,8 @@ and the expected format: better not to start than to start misconfigured.
 | `ARENILE_TLS_AUTOCERT_DOMAINS` | empty | Comma-separated domains for automatic TLS certificates (Let's Encrypt). Arenile listens directly on 80 and 443. Leave empty if you use a reverse proxy. |
 | `ARENILE_TRUSTED_PROXIES` | empty | Comma-separated CIDRs of trusted reverse proxies (e.g. `127.0.0.1/32,172.18.0.0/16`), from which the real client IP is read. Required behind a proxy, otherwise per-IP limits hit everyone at once. |
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Makes two-step verification mandatory for owner users. |
+| `ARENILE_WEBHOOKS_ALLOW_PRIVATE` | `false` (`true` with `ARENILE_DEV`) | Lets [outgoing webhooks](/en/api/eventi-e-webhook/) reach private and loopback addresses (receivers on the same local network). Link-local and cloud metadata addresses stay blocked. |
+| `ARENILE_PRINTERS_ALLOW_LOOPBACK` | `false` (`true` with `ARENILE_DEV`) | Accepts an ESC/POS [printer](/en/gestore/stampanti/) with a loopback address (virtual printer on the same PC): development and tests only. |
 
 ## Logs and telemetry
 

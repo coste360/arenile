@@ -89,9 +89,9 @@ model.
   are explained on the [License](/en/sviluppo/licenza/) page.
 </Aside>
 
-## What is there today and what is coming
+## What is there today
 
-**1.0.0** is available: every feature below is released and covered by tests.
+**1.1.5** is available: features marked as available are released and covered by tests.
 
 | Area | Status |
 |---|---|
@@ -103,6 +103,16 @@ model.
 | Full reports, panel usable offline, configurable outgoing webhooks, API keys | <Badge text="Available (M5)" variant="success" /> |
 | [Daily sale](/en/gestore/vendita-giornaliera/) with numbered tickets, [entry tickets](/en/gestore/biglietti-d-ingresso/) with gate check-in, network ESC/POS [printers](/en/gestore/stampanti/) from the desktop app | <Badge text="Available" variant="success" /> |
 | [Desktop edition](/en/gestore/app-desktop/) for Windows, macOS and Linux, with local network mode; device pairing | <Badge text="Available (M6)" variant="success" /> |
-| Mobile app for staff | <Badge text="Coming (M7)" variant="caution" /> |
+| Mobile app for staff on the [App Store](https://apps.apple.com/app/arenile/id6828818893) and [Google Play](https://play.google.com/store/apps/details?id=app.arenile.mobile) | <Badge text="Available (M7)" variant="success" /> |
+| [Agreements and partners](/en/gestore/convenzioni-e-partner/) (hotels, B&Bs, residents) with a register for public tenders; advanced cash desk: [find a spot](/en/gestore/trova-posto/), [moves and swaps](/en/gestore/spostamenti-e-scambi/), [spot calendar](/en/gestore/calendario-postazione/), [map printout](/en/gestore/stampa-mappa/) | <Badge text="Available (M8)" variant="success" /> |
+| Satispay and other payment providers, drivers for fiscal printers, WhatsApp and SMS, bar and restaurant charged to the spot | <Badge text="Planned" variant="note" /> |
+
+### Known limits
+
+- Online payment uses Stripe Checkout: the embedded Stripe Elements payment is not available.
+- The operator gets no notice when a cash desk closes with a difference.
+- Late payments are always refunded; the change penalty set by the policy is not charged.
+- Inside a plain `<iframe>` (without `embed.js`) the payment result does not come back to the widget.
+- ESC/POS printers over USB or Bluetooth and the print bridge for server installations are not available yet.
 
 <LinkCard title="Next: choose how to install" href="/en/installazione/scegli-come-installare/" description="Four ways to run Arenile, with the pros and limits of each." />

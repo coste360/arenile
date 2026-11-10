@@ -90,9 +90,9 @@ Arenile è distribuito con la **Business Source License 1.1** (identificativo SP
   sono spiegate nella pagina [Licenza](/sviluppo/licenza/).
 </Aside>
 
-## Cosa c'è oggi e cosa arriva
+## Cosa c'è oggi
 
-La **1.0.0** è disponibile: tutte le funzioni qui sotto sono rilasciate e coperte da test.
+La **1.1.5** è disponibile: le funzioni segnate come disponibili sono rilasciate e coperte da test.
 
 | Area | Stato |
 |---|---|
@@ -104,6 +104,16 @@ La **1.0.0** è disponibile: tutte le funzioni qui sotto sono rilasciate e coper
 | Report completi, pannello utilizzabile offline, webhook in uscita configurabili, chiavi API | <Badge text="Disponibile (M5)" variant="success" /> |
 | [Vendita giornaliera](/gestore/vendita-giornaliera/) con ticket numerati, [biglietti d'ingresso](/gestore/biglietti-d-ingresso/) con controllo al varco, [stampanti](/gestore/stampanti/) ESC/POS di rete dall'app desktop | <Badge text="Disponibile" variant="success" /> |
 | [Edizione desktop](/gestore/app-desktop/) per Windows, macOS e Linux, con modalità rete locale; abbinamento dei dispositivi | <Badge text="Disponibile (M6)" variant="success" /> |
-| App mobile per lo staff | <Badge text="In arrivo (M7)" variant="caution" /> |
+| App mobile per lo staff su [App Store](https://apps.apple.com/it/app/arenile/id6828818893) e [Google Play](https://play.google.com/store/apps/details?id=app.arenile.mobile) | <Badge text="Disponibile (M7)" variant="success" /> |
+| [Convenzioni e partner](/gestore/convenzioni-e-partner/) (hotel, B&B, residenti) con registro per i bandi; cassa avanzata: [trova posto](/gestore/trova-posto/), [spostamenti e scambi](/gestore/spostamenti-e-scambi/), [calendario della postazione](/gestore/calendario-postazione/), [stampa della mappa](/gestore/stampa-mappa/) | <Badge text="Disponibile (M8)" variant="success" /> |
+| Satispay e altri provider di pagamento, driver per registratori telematici, WhatsApp e SMS, bar e ristorante con addebito sulla postazione | <Badge text="Pianificato" variant="note" /> |
+
+### Limiti noti
+
+- Il pagamento online usa Stripe Checkout: il pagamento incorporato con Stripe Elements non c'è.
+- Il gestore non riceve una notifica quando una cassa chiude con una differenza.
+- I pagamenti arrivati in ritardo sono sempre rimborsati; la penale di modifica prevista dalla policy non viene addebitata.
+- Dentro un `<iframe>` semplice (senza `embed.js`) l'esito del pagamento non torna nel widget.
+- Stampanti ESC/POS via USB o Bluetooth e ponte di stampa per le installazioni su server non sono ancora disponibili.
 
 <LinkCard title="Avanti: scegli come installare" href="/installazione/scegli-come-installare/" description="Quattro modi di far girare Arenile, con pregi e limiti di ciascuno." />

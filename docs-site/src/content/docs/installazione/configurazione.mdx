@@ -30,6 +30,8 @@ variabile e il formato atteso: meglio non partire che partire configurato male.
 |---|---|---|
 | `ARENILE_AUTO_MIGRATE` | `true` | Applica le migrazioni del database all'avvio di `serve`. Con `false` usa `arenile migrate up` prima di avviare. |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (come `arenile serve --dev`): `ARENILE_BASE_URL` facoltativa, chiave segreta generata e salvata in `ARENILE_DATA_DIR/dev-secret.key`, cookie non `Secure` su `http`. **Mai in produzione.** |
+| `ARENILE_INSTALL` | `binary` | Impostata dall'immagine Docker ufficiale (`docker`): sceglie solo le istruzioni mostrate dall'avviso di nuova versione (`docker compose pull`). Non serve impostarla. |
+| `ARENILE_EDITION` | `server` | Impostata dall'app desktop, mai dall'operatore: `desktop` è il profilo su loopback, con `ARENILE_BASE_URL` facoltativa e cookie `Secure` solo sulle richieste TLS. |
 
 ## Email
 
@@ -57,6 +59,8 @@ variabile e il formato atteso: meglio non partire che partire configurato male.
 | `ARENILE_TLS_AUTOCERT_DOMAINS` | vuoto | Domini separati da virgola per i certificati TLS automatici (Let's Encrypt). Arenile ascolta direttamente su 80 e 443. Lascia vuota se usi un reverse proxy. |
 | `ARENILE_TRUSTED_PROXIES` | vuoto | CIDR dei reverse proxy fidati, separati da virgola (es. `127.0.0.1/32,172.18.0.0/16`), da cui leggere l'IP reale del client. Necessaria dietro un proxy, altrimenti i limiti per IP colpiscono tutti insieme. |
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Rende obbligatoria la verifica in due passaggi per gli utenti proprietari. |
+| `ARENILE_WEBHOOKS_ALLOW_PRIVATE` | `false` (`true` con `ARENILE_DEV`) | Permette ai [webhook in uscita](/api/eventi-e-webhook/) di raggiungere indirizzi privati e di loopback (ricevitori sulla stessa rete locale). Link-local e metadati cloud restano bloccati. |
+| `ARENILE_PRINTERS_ALLOW_LOOPBACK` | `false` (`true` con `ARENILE_DEV`) | Ammette una [stampante](/gestore/stampanti/) ESC/POS con indirizzo di loopback (stampante virtuale sullo stesso PC): solo sviluppo e test. |
 
 ## Log e telemetria
 

@@ -33,7 +33,7 @@ Arenile **non richiede** dati particolari (art. 9). Evita di inserire nelle note
 
 ## Come Arenile ti aiuta
 
-Funzioni previste dalla specifica (vedi la [tabella di stato](../../README.md#stato-delle-funzionalità)):
+Funzioni previste dalla specifica (vedi la [pagina Cos'è Arenile](https://docs.arenile.app/installazione/cos-e-arenile/)):
 
 - **Minimizzazione**: per una prenotazione online bastano nome, cognome, email o telefono. Nessun account obbligatorio per il cliente.
 - **Testi versionati**: condizioni e informativa sono versionate e ogni prenotazione salva la versione accettata.

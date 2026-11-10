@@ -6,6 +6,21 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Modificato
+- **README essenziale.** Il README riassume cos'è Arenile, dove si scarica (immagine Docker, app desktop, app mobile
+  per lo staff su [App Store](https://apps.apple.com/it/app/arenile/id6828818893) e
+  [Google Play](https://play.google.com/store/apps/details?id=app.arenile.mobile)), la prova in locale e la licenza, e
+  rimanda a [docs.arenile.app](https://docs.arenile.app) per tutto il resto: stato delle funzionalità, roadmap,
+  configurazione, widget, architettura e sviluppo non sono più duplicati.
+- **Documentazione.** L'app mobile per lo staff risulta disponibile (M7 completata); nuova pagina
+  [Domande frequenti](https://docs.arenile.app/installazione/domande-frequenti/) con le FAQ prima nel README; la pagina
+  Configurazione documenta anche `ARENILE_INSTALL`, `ARENILE_EDITION`, `ARENILE_WEBHOOKS_ALLOW_PRIVATE` e
+  `ARENILE_PRINTERS_ALLOW_LOOPBACK`.
+
+### Sicurezza
+- Aggiornata la dipendenza indiretta `golang.org/x/net` alla v0.62.0 per correggere CVE-2026-78661 (negazione del
+  servizio tramite HTML costruito ad arte in `golang.org/x/net/html`).
+
 ## [1.1.5] - 2026-11-03
 
 ### Modificato
