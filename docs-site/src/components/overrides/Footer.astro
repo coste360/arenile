@@ -1,10 +1,13 @@
 ---
 // Starlight footer plus the product line: brand lockup "Arenile — Coste360.it"
 // with the Coste360 logo (primary in light, white in dark), maintainer, licence
-// (source available, BSL 1.1, never "open source") and the release the docs describe.
+// (source available, BSL 1.1, never "open source"), the release the docs describe
+// and the privacy notice (arenile.app's).
 import Default from '@astrojs/starlight/components/Footer.astro';
+import { PRIVACY_URL } from '~/lib/constants.mjs';
 
 const version = import.meta.env.ARENILE_DOCS_VERSION || process.env.ARENILE_DOCS_VERSION || '';
+const privacy = PRIVACY_URL[Astro.locals.starlightRoute.lang === 'en' ? 'en' : 'it'];
 const brand = (file: string) => `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}brand/${file}`;
 ---
 
@@ -34,6 +37,7 @@ const brand = (file: string) => `${import.meta.env.BASE_URL.replace(/\/?$/, '/')
     {Astro.locals.t('arenile.footer.product')}
     {version && <span> · {Astro.locals.t('arenile.footer.version', { version })}</span>}
   </p>
+  <p><a href={privacy} class="arenile-footer-privacy">{Astro.locals.t('arenile.footer.privacy')}</a></p>
 </div>
 
 <style>
@@ -61,6 +65,9 @@ const brand = (file: string) => `${import.meta.env.BASE_URL.replace(/\/?$/, '/')
   }
   .arenile-footer-brand a:hover {
     text-decoration: underline;
+  }
+  .arenile-footer-privacy {
+    color: inherit;
   }
   .arenile-footer-logo {
     display: inline-flex;
