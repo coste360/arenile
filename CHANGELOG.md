@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- **Statistiche di visita sulla documentazione.** docs.arenile.app conta le visite con Matomo sul server di Coste360
+  (analytics.coste360.it), senza cookie e rispettando «Do Not Track», solo sul sito pubblicato; il piè di pagina
+  rimanda all'informativa di arenile.app. Il programma Arenile non cambia.
+
 ### Modificato
 - **README essenziale.** Il README riassume cos'è Arenile, dove si scarica (immagine Docker, app desktop, app mobile
   per lo staff su [App Store](https://apps.apple.com/it/app/arenile/id6828818893) e

@@ -3,7 +3,8 @@
  * Starlight's Head plus the structured data of the home pages (frontmatter
  * `home`): a schema.org SoftwareApplication (free, Web/Windows/macOS/Linux,
  * published by Coste360 SRL). The FAQPage data is emitted by <Faq> next to the
- * visible questions, so text and markup cannot drift apart.
+ * visible questions, so text and markup cannot drift apart. Every page also
+ * loads the visit statistics (src/scripts/analytics.ts).
  */
 import Default from '@astrojs/starlight/components/Head.astro';
 
@@ -40,3 +41,6 @@ const jsonLd = data.home
 
 <Default />
 {jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />}
+<script>
+  import '~/scripts/analytics';
+</script>
