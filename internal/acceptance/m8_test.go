@@ -15,6 +15,7 @@ import (
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/store"
+	"github.com/coste360/arenile/internal/store/storetest"
 )
 
 // M8 acceptance (spec 28, spec 30): advanced cash desk and agreements,
@@ -176,11 +177,7 @@ func (m *m8) fullWeek() api.BookingDetail {
 		d.Lines[0].Segments == nil || len(*d.Lines[0].Segments) != 2 {
 		t.Fatalf("split booking %+v", d)
 	}
-	if took := time.Since(started); took > time.Minute {
-		t.Fatalf("find spot and book took %s, the budget is one minute (spec 28)", took)
-	} else {
-		t.Logf("find spot and book: %s", took.Round(time.Millisecond))
-	}
+	storetest.Budget(t, "find spot and book (spec 28)", time.Since(started), time.Minute)
 	// The same proposal again: the spots are gone (INV-01).
 	m.expectRefused(m.bookProposal(*p, aug(10), aug(16)), "stale proposal")
 	return d

@@ -1,9 +1,20 @@
 name: CI
 
+# Two depths (ADR 0030). On a pull request only the essentials run: lint,
+# unit tests, SQLite integration, web checks, generated code and the essential
+# Playwright specs (make e2e-smoke). On a push to main, every night and on
+# manual runs the full suite runs: PostgreSQL integration, race detector,
+# govulncheck, Windows, Docker + Trivy, every Playwright spec and the M4
+# acceptance on the real binary. Time budgets are never a gate: they run in
+# perf.yml. On main a failed Go test is rerun once on its own (gotestsum);
+# Playwright retries a failed test once in CI.
+
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "23 2 * * *"
   workflow_dispatch:
 
 permissions:
@@ -18,10 +29,15 @@ env:
   NODE_VERSION: "22"
   # Use exactly the toolchain declared in go.mod.
   GOTOOLCHAIN: local
+  GOTESTSUM_VERSION: v1.13.0
+  # scripts/gotest.sh: on main rerun only the failed Go tests, once; never on a PR.
+  GOTEST_RERUN_FAILS: ${{ github.event_name != 'pull_request' && '1' || '' }}
+  FULL: ${{ github.event_name != 'pull_request' }}
 
 jobs:
   go:
     name: Go (lint, test, integration, race, vulns)
+    # PR: lint, unit, SQLite integration. main: + PostgreSQL, race, govulncheck.
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -49,6 +65,10 @@ jobs:
       - name: Download modules
         run: go mod download
 
+      - name: Install gotestsum (per-test reruns)
+        if: env.FULL == 'true'
+        run: go install gotest.tools/gotestsum@${{ env.GOTESTSUM_VERSION }}
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
@@ -59,17 +79,24 @@ jobs:
           args: --timeout=5m
 
       - name: Unit tests
-        run: go test ./...
+        run: scripts/gotest.sh ./...
+
+      - name: Integration tests (SQLite)
+        if: env.FULL != 'true'
+        run: scripts/gotest.sh -tags=integration ./...
 
       - name: Integration tests (SQLite + PostgreSQL)
+        if: env.FULL == 'true'
         env:
           ARENILE_TEST_POSTGRES_URL: postgres://arenile:arenile@localhost:5432/arenile_test?sslmode=disable
         run: make test-db
 
       - name: Concurrency tests with the race detector
+        if: env.FULL == 'true'
         run: make test-race
 
       - name: govulncheck
+        if: env.FULL == 'true'
         uses: golang/govulncheck-action@v1
         with:
           go-version-file: go.mod
@@ -82,6 +109,7 @@ jobs:
   # (no Linux service containers on Windows runners); SQLite runs here.
   windows:
     name: Go on Windows (unit, SQLite integration, desktop)
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     timeout-minutes: 30
     defaults:
@@ -98,13 +126,16 @@ jobs:
       - name: Download modules
         run: go mod download
 
+      - name: Install gotestsum (per-test reruns)
+        run: go install gotest.tools/gotestsum@${{ env.GOTESTSUM_VERSION }}
+
       - name: Unit tests
-        run: go test ./...
+        run: scripts/gotest.sh ./...
 
       - name: Integration tests (SQLite)
         # Run even when a previous step failed: show every Windows failure at once.
         if: ${{ !cancelled() }}
-        run: go test -tags=integration ./...
+        run: scripts/gotest.sh -tags=integration ./...
 
       # The shipped binary is built with -trimpath and runs where Go is not
       # installed, so Go's own zoneinfo.zip is not reachable: reproduce that.
@@ -191,6 +222,7 @@ jobs:
 
   docker:
     name: Docker image (build + Trivy scan)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -221,8 +253,52 @@ jobs:
           vuln-type: os,library
           severity: CRITICAL,HIGH
 
+  e2e-essential:
+    name: End-to-end (Playwright, essential)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm --prefix web ci
+          npm --prefix e2e ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: make e2e-smoke
+        run: make e2e-smoke
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7
+
   e2e:
-    name: End-to-end (Playwright, M4 acceptance, Lighthouse)
+    name: End-to-end (Playwright)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -266,19 +342,6 @@ jobs:
       - name: M4 acceptance on the real binary (curl, fake Stripe, signed webhook)
         if: steps.detect.outputs.present == 'true'
         run: make acceptance-m4
-
-      - name: Lighthouse (mobile, throttled) on the public page
-        if: steps.detect.outputs.present == 'true'
-        run: make lighthouse
-
-      - name: Upload Lighthouse scores
-        if: always() && steps.detect.outputs.present == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: lighthouse
-          path: e2e/lighthouse/results.json
-          retention-days: 30
-          if-no-files-found: ignore
 
       - name: Upload Playwright report
         if: failure() && steps.detect.outputs.present == 'true'

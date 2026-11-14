@@ -37,6 +37,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0027](0027-abbinamento-demo-app-mobile.md) | Abbinamento allo stabilimento dimostrativo (`POST /api/device/v1/demo-pairing`): codice per l'utente demo senza login, solo con `ARENILE_DEMO_PAIRING_*`, 5 all'ora per IP, `404` altrove; unica eccezione dell'app al "nessun server predefinito" | accettato |
 | [0028](0028-cassa-avanzata-e-convenzioni.md) | Cassa avanzata e convenzioni (M8): soggiorno spezzato prezzato per giorno con la categoria della postazione, conto del partner con pagamenti registrati, registro delle convenzioni in Excel e HTML stampabile neutro, contingente riservato rilasciato 3 giorni prima; un posto per riga e mezza giornata come vincolo, contingente come quota di capacità, package partner e findspot | accettato |
 | [0029](0029-conflitti-da-riprovare.md) | Conflitti da riprovare: `409 concurrent_update` con `Retry-After` per le transazioni che perdono una gara, risposte con `Retry-After` non conservate per la chiave di idempotenza, code offline che le ritentano | accettato |
+| [0030](0030-test-deterministici-e-ci.md) | Test deterministici, CI a due livelli, budget di tempo fuori dai gate: pull request essenziali, suite completa su `main`, budget di tempo solo con `ARENILE_PERF_BUDGETS=1` nel workflow Performance, nuovo tentativo del singolo test | accettato |
 
 ## Come aggiungere un ADR
 

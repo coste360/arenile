@@ -30,6 +30,8 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
+  // In CI a failing test is retried once on its own, against infrastructure
+  // faults; a test reported as flaky gets fixed, not tolerated (ADR 0030).
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {

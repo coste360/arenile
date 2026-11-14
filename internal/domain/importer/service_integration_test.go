@@ -525,16 +525,15 @@ func TestImport_Customers_AtMaxRows(t *testing.T) {
 		const budget = 20 * time.Second
 		t0 := time.Now()
 		j, rep := e.preview(j, importer.Options{})
-		if d := time.Since(t0); d > budget || rep.ToCreate != importer.MaxRows {
-			t.Fatalf("preview of %d rows took %v (to_create %d)", importer.MaxRows, d, rep.ToCreate)
+		if rep.ToCreate != importer.MaxRows {
+			t.Fatalf("preview of %d rows: to_create %d", importer.MaxRows, rep.ToCreate)
 		}
+		storetest.Budget(t, fmt.Sprintf("preview of %d rows", importer.MaxRows), time.Since(t0), budget)
 		t1 := time.Now()
 		if _, err := e.svc.Apply(e.Ctx, e.Owner, "", e.Est.ID, j.ID, &j.Version); err != nil {
 			t.Fatal(err)
 		}
-		if d := time.Since(t1); d > budget {
-			t.Fatalf("apply of %d rows took %v", importer.MaxRows, d)
-		}
+		storetest.Budget(t, fmt.Sprintf("apply of %d rows", importer.MaxRows), time.Since(t1), budget)
 		if n := e.Count((*store.Customer)(nil), "last_name LIKE ?", "Rossi%"); n != importer.MaxRows {
 			t.Fatalf("customers imported %d", n)
 		}
