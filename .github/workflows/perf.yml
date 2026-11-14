@@ -1,0 +1,96 @@
+name: Performance
+
+# Time budgets of the specification (ADR 0030): Lighthouse on the public page
+# (spec 12.6), the M4 booking time (spec 28) and the Go performance tests,
+# all with ARENILE_PERF_BUDGETS=1. Nightly and manual only: a red run here is
+# a signal to measure, never a blocked pull request, merge or release. Look at
+# the last run before a release.
+
+on:
+  schedule:
+    - cron: "47 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: perf-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  GOTOOLCHAIN: local
+
+jobs:
+  go:
+    name: Go time budgets (make test-perf)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: arenile
+          POSTGRES_PASSWORD: arenile
+          POSTGRES_DB: arenile_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U arenile -d arenile_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: make test-perf
+        env:
+          ARENILE_TEST_POSTGRES_URL: postgres://arenile:arenile@localhost:5432/arenile_test?sslmode=disable
+        run: make test-perf
+
+  e2e:
+    name: End-to-end time budgets (make e2e-perf, Lighthouse)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm --prefix web ci
+          npm --prefix e2e ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: make e2e-perf
+        run: make e2e-perf
+
+      - name: Upload Lighthouse scores
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse
+          path: e2e/lighthouse/results.json
+          retention-days: 30
+          if-no-files-found: ignore

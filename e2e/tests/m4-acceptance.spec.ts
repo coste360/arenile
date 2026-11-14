@@ -261,7 +261,11 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     console.log(
       `M4 acceptance: embedded booking confirmed in ${(elapsed / 1000).toFixed(1)} s`,
     );
-    expect(elapsed).toBeLessThan(120_000);
+    // Spec 28 budget: logged always, enforced only with ARENILE_PERF_BUDGETS=1
+    // (Performance workflow), never in the gates.
+    if (process.env.ARENILE_PERF_BUDGETS === "1") {
+      expect(elapsed).toBeLessThan(120_000);
+    }
 
     // The host page received arenile:booked with the code only (no PII).
     await expect

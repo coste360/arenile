@@ -9,6 +9,8 @@ The specification (Italian) lives in `docs/spec/`, one file per section; it is a
 - `make setup` once, `make dev` to run locally, `make seed` for demo data
 - `make check` after every change (must pass before you say you are done; < 2 min)
 - `make check-full` before opening a pull request (adds `test-db`, `test-race`, `e2e`)
+- CI (ADR 0030): a pull request runs `make e2e-smoke` (the `E2E_SMOKE` specs), `main` the full suite;
+  time budgets only with `ARENILE_PERF_BUDGETS=1` (`make test-perf`, `make e2e-perf`, nightly `perf.yml`)
 - `make gen` after any change to `api/openapi.yaml`
 - `make fmt` formats Go (gofumpt, goimports) and frontend (Prettier); in Claude Code a hook does it
 - Focused runs: `make test` (Go unit + Vitest), `make test-db` (integration, SQLite + PostgreSQL),

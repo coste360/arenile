@@ -23,6 +23,17 @@ POSTGRES_IMAGE        ?= postgres:17-alpine
 DESKTOP_TAGS          ?=
 # Go packages for test/test-db/lint; narrow it for focused runs: make test PKG=./internal/money/...
 PKG                   ?= ./...
+# go test, or gotestsum with per-test reruns when GOTEST_RERUN_FAILS is set (CI)
+GOTEST                := scripts/gotest.sh
+# make test-race: explicit go test timeout (the default 10m is too close under -race)
+TEST_RACE_TIMEOUT     ?= 30m
+# The essential end-to-end specs of a pull request (make e2e-smoke): the demo
+# boots, sign-in and the admin shell, setup, the public booking (desktop and
+# phone) and the embed, the beach map, the daily sale at the desk, operations
+# and reports. main runs every spec (make e2e).
+E2E_SMOKE             := tests/smoke.spec.ts tests/admin-shell.spec.ts tests/admin-setup.spec.ts \
+                         tests/booking.spec.ts tests/embed.spec.ts tests/map-actions.spec.ts \
+                         tests/daily-sale.spec.ts tests/operations.spec.ts tests/reports.spec.ts
 
 BIN_DIR       := $(CURDIR)/bin
 GOLANGCI_LINT := $(shell if [ -x "$(BIN_DIR)/golangci-lint" ]; then echo "$(BIN_DIR)/golangci-lint"; else command -v golangci-lint 2>/dev/null; fi)
@@ -212,14 +223,14 @@ endif
 
 .PHONY: test
 test: ## Test unitari Go e Vitest
-	go test $(PKG)
+	$(GOTEST) $(PKG)
 ifneq ($(HAS_WEB),)
 	npm --prefix web run test
 endif
 
 .PHONY: test-db
 test-db: ## Test di integrazione su SQLite e PostgreSQL (container effimero)
-	@POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-db go test -tags=integration $(PKG)
+	@POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-db $(GOTEST) -tags=integration $(PKG)
 
 .PHONY: test-race
 test-race: ## Test di concorrenza TestConcurrency_* con -race su SQLite e PostgreSQL (container effimero; fallisce se non ne trova nessuno)
@@ -227,7 +238,7 @@ test-race: ## Test di concorrenza TestConcurrency_* con -race su SQLite e Postgr
 	n="$$(go test -tags=integration -list '^TestConcurrency' ./internal/... | grep -c '^TestConcurrency' || true)"; \
 	if [ "$${n:-0}" -eq 0 ]; then echo "test-race: nessun test TestConcurrency_* trovato" >&2; exit 1; fi; \
 	echo "test-race: $$n test di concorrenza"; \
-	POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-race go test -race -tags=integration -run '^TestConcurrency' ./internal/...
+	POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-race $(GOTEST) -race -timeout $(TEST_RACE_TIMEOUT) -tags=integration -run '^TestConcurrency' ./internal/...
 
 .PHONY: test-desktop
 test-desktop: ## Test del launcher desktop con il tag "desktop" (CGO, finestra e tray: su macOS e Windows)
@@ -241,9 +252,28 @@ else
 	@echo "e2e/ not present yet: skipping end-to-end tests"
 endif
 
+.PHONY: e2e-smoke
+e2e-smoke: web-build ## Spec Playwright essenziali di una pull request (E2E_SMOKE)
+ifneq ($(HAS_E2E),)
+	cd e2e && npx playwright test $(E2E_SMOKE)
+else
+	@echo "e2e/ not present yet: skipping end-to-end tests"
+endif
+
 .PHONY: lighthouse
-lighthouse: build ## Lighthouse mobile (rete e CPU rallentate) sulla pagina pubblica: performance >= 90, a11y/best practices/SEO >= 95
+lighthouse: build ## Lighthouse mobile (rete e CPU rallentate) sulla pagina pubblica: stampa punteggi e LCP con gli obiettivi della specifica (solo avvisi)
 	node e2e/lighthouse/run.mjs
+
+.PHONY: test-perf
+test-perf: ## Budget di tempo dei test Go con ARENILE_PERF_BUDGETS=1 (workflow Performance, non bloccante)
+	@ARENILE_PERF_BUDGETS=1 POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-perf go test -count=1 -tags=integration $(PKG)
+
+.PHONY: e2e-perf
+e2e-perf: build ## Budget di tempo end-to-end con ARENILE_PERF_BUDGETS=1: Lighthouse e prenotazione M4 (workflow Performance, non bloccante)
+	ARENILE_PERF_BUDGETS=1 node e2e/lighthouse/run.mjs
+ifneq ($(HAS_E2E),)
+	cd e2e && ARENILE_PERF_BUDGETS=1 npx playwright test tests/m4-acceptance.spec.ts
+endif
 
 .PHONY: acceptance-m4
 acceptance-m4: build ## Accettazione M4 sul binario reale con curl (checkout, Stripe finto con webhook firmato, link magico, rimborso)
