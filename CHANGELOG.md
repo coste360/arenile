@@ -12,6 +12,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   rimanda all'informativa di arenile.app. Il programma Arenile non cambia.
 
 ### Modificato
+- **CI a due livelli e test deterministici (ADR 0030).** Una pull request esegue solo i controlli essenziali (lint,
+  test unitari, integrazione su SQLite, web, codice generato e le spec Playwright essenziali di `make e2e-smoke`);
+  dopo il merge su `main`, ogni notte e a mano gira la suite completa (PostgreSQL, race detector con timeout di
+  30 minuti, govulncheck, Windows, Docker con Trivy, tutte le spec Playwright, accettazione M4). I budget di tempo
+  (Lighthouse, tempi delle accettazioni M4 e M8, import a righe massime) non bloccano più: sono sempre stampati e
+  fanno fallire solo con `ARENILE_PERF_BUDGETS=1`, nel nuovo workflow notturno Performance (`make test-perf`,
+  `make e2e-perf`). Un test fallito viene ritentato una volta da solo: Playwright in CI, i test Go su `main`
+  (`scripts/gotest.sh` con gotestsum).
 - **README essenziale.** Il README riassume cos'è Arenile, dove si scarica (immagine Docker, app desktop, app mobile
   per lo staff su [App Store](https://apps.apple.com/it/app/arenile/id6828818893) e
   [Google Play](https://play.google.com/store/apps/details?id=app.arenile.mobile)), la prova in locale e la licenza, e

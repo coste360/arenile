@@ -64,3 +64,15 @@ func Perf(t testing.TB, qc *QueryCounter, name string, maxQueries int, budget ti
 		t.Fatalf("%s took %s (budget %s, %s=1)", name, el, budget, EnvPerfBudgets)
 	}
 }
+
+// Budget logs how long a step took and, only with ARENILE_PERF_BUDGETS=1,
+// fails when it exceeds budget. Use it for the time budgets of the
+// specification inside tests that also check correctness: the result of the
+// gate must not depend on the speed of the machine.
+func Budget(t testing.TB, name string, elapsed, budget time.Duration) {
+	t.Helper()
+	t.Logf("%s: %s (budget %s)", name, elapsed.Round(time.Millisecond), budget)
+	if os.Getenv(EnvPerfBudgets) == "1" && elapsed > budget {
+		t.Fatalf("%s took %s (budget %s, %s=1)", name, elapsed, budget, EnvPerfBudgets)
+	}
+}
