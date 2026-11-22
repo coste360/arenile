@@ -100,11 +100,23 @@ export function baseRoutes(role: TestRole, est = establishment()): Record<string
   };
 }
 
+/**
+ * The production query client (same retry policy) without the backoff between
+ * retries: a 5xx is retried twice with 1 s + 2 s of real waiting, which alone
+ * eats most of the findBy* budget on a loaded CI runner.
+ */
+export function createTestQueryClient(): QueryClient {
+  const qc = createQueryClient();
+  const defaults = qc.getDefaultOptions();
+  qc.setDefaultOptions({ ...defaults, queries: { ...defaults.queries, retryDelay: 0 } });
+  return qc;
+}
+
 /** Renders the whole admin app at `path` with a fetch double routing "METHOD /path". */
 export function renderApp(
   path: string,
   routes: Record<string, Handler>,
-  queryClient: QueryClient = createQueryClient(),
+  queryClient: QueryClient = createTestQueryClient(),
 ) {
   const fetchMock = vi.fn(async (req: Request) => {
     const url = new URL(req.url);
