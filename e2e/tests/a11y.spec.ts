@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DEMO_SLUG, login } from "./helpers";
-import { bookableDay } from "./demo-dates";
+import { bookableDay, daysBetween, isoOfCalendarName } from "./demo-dates";
 
 /**
  * Accessibility pass (WCAG 2.1 AA, European Accessibility Act for consumer
@@ -285,8 +285,11 @@ test("a public booking can be completed with the keyboard only", async ({ page }
   await page.goto(`/b/${DEMO_SLUG}`);
   await expect(page.getByRole("button", { name: /Date del soggiorno/ })).toBeVisible();
 
-  // 1. Quando: open the calendar, move a month at a time with PageDown, then
-  // by day with the arrows; Enter twice on the same day = a single day.
+  // 1. Quando: open the calendar, walk to the day with the arrows (disabled
+  // days are skipped); Enter twice on the same day = a single day. No
+  // PageDown: react-day-picker leaves the focus where it is when the same day
+  // of the next month is full or past the season, so a month jump depends on
+  // the date the suite runs on. The arrows always reach the target, an enabled day.
   await tabTo(page, /Date del soggiorno/);
   await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog", { name: "Date del soggiorno" })).toBeVisible();
@@ -296,15 +299,11 @@ test("a public booking can be completed with the keyboard only", async ({ page }
     if (inGrid) break;
     await page.keyboard.press("Tab");
   }
-  for (let i = 0; i < 14; i++) {
-    if (target.month.test((await focusedName(page)).name)) break;
-    await page.keyboard.press("PageDown");
-  }
-  for (let i = 0; i < 40; i++) {
-    const n = (await focusedName(page)).name;
-    if (target.name.test(n)) break;
-    const current = Number(/\b(\d{1,2}) \p{L}+ \d{4}/u.exec(n)?.[1] ?? 0);
-    await page.keyboard.press(current < target.day ? "ArrowRight" : "ArrowLeft");
+  for (let i = 0; i < 120; i++) {
+    const current = isoOfCalendarName((await focusedName(page)).name);
+    if (current === target.iso) break;
+    const ahead = current ? daysBetween(current, target.iso) : 1;
+    await page.keyboard.press(ahead > 0 ? "ArrowRight" : "ArrowLeft");
   }
   expect((await focusedName(page)).name).toMatch(target.name);
   await page.keyboard.press("Enter");

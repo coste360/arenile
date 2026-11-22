@@ -30,6 +30,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   Configurazione documenta anche `ARENILE_INSTALL`, `ARENILE_EDITION`, `ARENILE_WEBHOOKS_ALLOW_PRIVATE` e
   `ARENILE_PRINTERS_ALLOW_LOOPBACK`.
 
+### Corretto
+- **CI di `main` indipendente dalla data e dal carico.** Il test end-to-end della prenotazione da sola tastiera
+  arriva al giorno scelto con le frecce invece che con PagGiù, che restava fermo quando lo stesso giorno del mese
+  successivo era pieno o fuori stagione (dal 22 novembre: 22/12 pieno, 22/01 dopo la chiusura). I test del pannello
+  che simulano un errore 5xx non aspettano più le pause reali fra i tentativi (1 s + 2 s), che sotto carico in CI
+  superavano il tempo di attesa di Testing Library. Il programma Arenile non cambia.
+
 ### Sicurezza
 - Aggiornata la dipendenza indiretta `golang.org/x/net` alla v0.62.0 per correggere CVE-2026-78661 (negazione del
   servizio tramite HTML costruito ad arte in `golang.org/x/net/html`).

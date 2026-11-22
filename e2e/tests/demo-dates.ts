@@ -66,6 +66,23 @@ export interface CalendarDay {
   display: string;
 }
 
+/**
+ * "YYYY-MM-DD" of a day as the booking calendar names it ("Today, domenica
+ * 22 novembre 2026, ultimi posti" → "2026-11-22"); undefined when the name
+ * carries no Italian date.
+ */
+export function isoOfCalendarName(name: string): string | undefined {
+  const m = new RegExp(`\\b(\\d{1,2}) (${IT_MONTHS.join("|")}) (\\d{4})\\b`).exec(name);
+  if (!m) return undefined;
+  const month = IT_MONTHS.indexOf(m[2]!) + 1;
+  return `${m[3]}-${String(month).padStart(2, "0")}-${m[1]!.padStart(2, "0")}`;
+}
+
+/** Calendar days from `a` to `b` (negative when b is earlier), both "YYYY-MM-DD". */
+export function daysBetween(a: string, b: string): number {
+  return Math.round((Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86_400_000);
+}
+
 export function calendarDay(iso: string): CalendarDay {
   const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
   const month = IT_MONTHS[m - 1];
