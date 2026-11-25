@@ -139,7 +139,7 @@ La sezione **Rimborsi automatici** del dettaglio mostra ogni rimborso con lo sta
 attesa di conferma** (inviato, in attesa della conferma del gestore di pagamento), **Rimborsato**, **Non
 riuscito**. Arenile ritenta da solo con attese crescenti (da 1 minuto a 12 ore, fino a
 `ARENILE_REFUND_MAX_ATTEMPTS` tentativi, default 10). Se i tentativi finiscono il rimborso passa a **Non
-riuscito**, il titolare riceve una [notifica](/gestore/notifiche/) e **Riprova** lo rimette in coda. Il cliente
+riuscito**, titolare e gestore ricevono una [notifica](/gestore/notifiche/) e **Riprova** lo rimette in coda. Il cliente
 vede lo stato del rimborso nel suo link di gestione.
 
 ### Cancellare

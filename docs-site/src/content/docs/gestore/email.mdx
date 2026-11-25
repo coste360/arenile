@@ -57,11 +57,12 @@ consegna configura **SPF, DKIM e DMARC** sul dominio del mittente.
     | **Pagamento fallito** | Un pagamento online non è andato a buon fine |
     | **Errore di invio** | Un'email non è stata consegnata dopo tutti i tentativi |
     | **Chiusura di cassa con differenza** | *Non ancora disponibile* (prevista dalla specifica) |
-    | **Errore di consegna di un webhook** | *Non ancora disponibile* (prevista dalla specifica) |
+    | **Webhook disattivato** | Un endpoint webhook è stato disattivato in automatico dopo troppe consegne fallite di fila: l'email va all'indirizzo di ogni titolare (non all'email del gestore) |
   </TabItem>
 </Tabs>
 
-Ogni notifica si attiva o disattiva singolarmente.
+Ogni notifica si attiva o disattiva singolarmente, tranne **Errore di invio** e **Webhook disattivato**, che
+dipendono entrambe dall'opzione **Errore del webhook di pagamento**.
 
 ## Email di prova
 

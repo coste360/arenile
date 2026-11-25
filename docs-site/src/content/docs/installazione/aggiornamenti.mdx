@@ -46,7 +46,7 @@ nuova versione e riavviare.
     In produzione fissa una versione precisa in `.env` e cambiala tu quando decidi di aggiornare:
 
     ```ini title=".env"
-    ARENILE_VERSION=0.4.2
+    ARENILE_VERSION=1.1.5
     ```
   </TabItem>
   <TabItem label="Sempre l'ultima">
@@ -55,7 +55,7 @@ nuova versione e riavviare.
   </TabItem>
   <TabItem label="Dai sorgenti">
     ```bash
-    git fetch --tags && git checkout v0.4.2
+    git fetch --tags && git checkout v1.1.5
     make build
     sudo systemctl stop arenile
     sudo install bin/arenile /usr/local/bin/arenile

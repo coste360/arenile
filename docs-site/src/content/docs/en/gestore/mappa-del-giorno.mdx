@@ -1,6 +1,6 @@
 ---
 title: Map of the day
-description: The operational view of the beach for any date and slot - statuses and symbols, legend, search, spot sheet, check-in, moves, releases and payments.
+description: "The operational view of the beach for any date and slot: statuses and symbols, legend, search, spot sheet, check-in, moves, releases and payments."
 sidebar:
   order: 21
 ---
@@ -8,8 +8,8 @@ sidebar:
 import { Steps, Aside } from '@astrojs/starlight/components';
 import { Screenshot, LiveMap, StatusBadges } from '~/components';
 
-**Where:** Operations → **Map**. **Who:** every role views; check-ins and releases also beach staff; bookings, moves
-and payments cashiers, managers and owners.
+**Where:** Operations → **Map**. **Who:** every role views; check-ins, releases and blocks also beach staff; bookings,
+moves and payments cashiers, managers and owners (see [Team and roles](/en/gestore/team-e-ruoli/)).
 
 The operational map is the beach of one day, spot by spot, with the status of each. It is shared in real time
 between the desk, the beach and online bookings.
@@ -49,17 +49,20 @@ Additional indicators show **Extras**, **Note** and **VIP** customers (customer 
 
 <LiveMap />
 
-## Labels: code, customer or both
+## Labels: code, customer, end, setup
 
 <Screenshot name="admin-map-labels" alt="Operational map with the code of each spot and the surname of who occupies it" />
 
-Above the map, **Labels** chooses what is written under each spot:
+Above the map, **Labels** chooses what is written under each spot of the on-screen map. The items combine (at least
+one stays on; **Code** and **Customer** by default) and also apply to [printing the map](/en/gestore/stampa-mappa/),
+which shows what you see:
 
-| Choice | What it shows |
+| Item | What it shows |
 |---|---|
-| **Code** | Only the spot code (A1, B7...) |
+| **Code** | The spot code (A1, B7...) |
 | **Customer** | The surname of who occupies the spot; free spots keep their code |
-| **Both** | The code and, below it, the surname (default) |
+| **End** | The last day of the stay on the spot (16/8) |
+| **Setup** | The setup of the booking (for example *2L 1S*) |
 
 The name is the **surname** of the booking's customer (the first name when there is no surname): the holder for
 season passes, the main customer for groups; an anonymised customer shows as **Anonymous**. Never email or
@@ -72,7 +75,7 @@ sidebar open, many spots close together) the codes stay and the hint suggests zo
 room of the code. In the **List** the name is always next to the spot.
 
 <Aside type="note" title="Who sees the names">
-  Every role that views the map and the bookings (permission *bookings.read*, **viewer** included). An API key
+  Every role that views the map and the bookings (permission *bookings.read*, **Read only** included). An API key
   without that permission sees neither the map nor the names. Live updates carry no names: the map reads them
   again from the server.
 </Aside>
@@ -108,7 +111,9 @@ Actions depend on the status and your role:
 2. Tap a free spot.
 3. Read the preview: Arenile checks availability and price (*The price does not change*, *Difference to collect*,
    *Difference to refund*) and lists any conflicts day by day.
-4. **Move**. The move applies from the day shown for the rest of the stay.
+4. In **From when** choose the day the move applies from (**Whole stay**, **From today**, **From tomorrow** or
+   **From a date**; the day shown is usually already proposed) and press **Move**. Details, swaps and group moves
+   in [Moves and swaps](/en/gestore/spostamenti-e-scambi/).
 
 </Steps>
 

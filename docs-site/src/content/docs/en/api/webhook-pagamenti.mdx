@@ -1,6 +1,6 @@
 ---
 title: Payment webhooks
-description: The payment provider webhook endpoint - mandatory signature, de-duplication, atomic update, handled Stripe events and reconciliation.
+description: "The payment provider webhook endpoint: mandatory signature, de-duplication, atomic update, handled Stripe events and reconciliation."
 sidebar:
   order: 6
 ---
@@ -44,10 +44,14 @@ rotation).
 
 | Stripe event | Effect in Arenile |
 |---|---|
-| `checkout.session.completed` | Payment succeeded → confirmation |
+| `checkout.session.completed` | Payment succeeded → confirmation; with a delayed method (for example SEPA) the payment stays pending |
+| `checkout.session.async_payment_succeeded` | Delayed payment succeeded → confirmation |
+| `checkout.session.async_payment_failed` | Delayed payment failed |
+| `checkout.session.expired` | Payment session expired without a payment |
 | `payment_intent.succeeded` | Payment succeeded → confirmation |
-| `payment_intent.payment_failed` | Payment failed (reason: error code only, never the message) |
-| `charge.refunded` | Refund (amount refunded with that event) |
+| `payment_intent.payment_failed` | Attempt failed, the payment stays open (reason: error code only, never the message) |
+| `charge.refunded` | Refund (total refunded so far on the charge) |
+| `refund.failed` | Refund failed |
 | others | Ignored (`200`) |
 
 Checkout Sessions created by Arenile carry `establishment_id`, `booking_id` and `booking_code` in their metadata and

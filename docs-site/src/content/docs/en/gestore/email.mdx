@@ -55,12 +55,13 @@ deliverability set up **SPF, DKIM and DMARC** on the sender's domain.
     | **Approval request** | A booking awaits your approval (for example a gazebo) |
     | **Payment failed** | An online payment did not go through |
     | **Cash closing with a difference** | *Not available yet* (planned by the specification) |
-    | **Webhook delivery error** | *Not available yet* (planned by the specification) |
+    | **Webhook disabled** | A webhook endpoint was disabled automatically after too many failed deliveries in a row: the email goes to the address of every owner (not to the manager email) |
     | **Delivery error** | An email was not delivered after all retries |
   </TabItem>
 </Tabs>
 
-Each notification can be switched on or off individually.
+Each notification can be switched on or off individually, except **Delivery error** and **Webhook disabled**,
+which both depend on the **Payment webhook error** option.
 
 ## Test email
 
