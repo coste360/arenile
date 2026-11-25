@@ -103,10 +103,10 @@ binary, with no shell or unnecessary packages.
 
 </Steps>
 
-<Aside type="note" title="Before the first release">
-  If the image is not yet published on the registry, the official compose file builds it from source (`build`
-  section): in that case clone the repository and run
-  `docker compose -f deploy/docker-compose.yml --env-file .env up -d` from its root.
+<Aside type="note" title="Image from source">
+  The `ghcr.io/coste360/arenile` image is published at every release. If you prefer to build it yourself, the
+  official compose file also has a `build` section: clone the repository and run
+  `docker compose -f deploy/docker-compose.yml --env-file .env up -d --build` from its root.
 </Aside>
 
 ## Creating the first user by hand

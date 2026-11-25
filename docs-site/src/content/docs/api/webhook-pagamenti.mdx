@@ -1,6 +1,6 @@
 ---
 title: Webhook dei pagamenti
-description: L'endpoint dei webhook dei provider di pagamento - firma obbligatoria, deduplica, aggiornamento atomico, eventi Stripe gestiti e riconciliazione.
+description: "L'endpoint dei webhook dei provider di pagamento: firma obbligatoria, deduplica, aggiornamento atomico, eventi Stripe gestiti e riconciliazione."
 sidebar:
   order: 6
 ---
@@ -45,10 +45,14 @@ La firma è nell'header `Stripe-Signature` (`t=…,v1=…`): HMAC-SHA256 di `"<t
 
 | Evento Stripe | Effetto in Arenile |
 |---|---|
-| `checkout.session.completed` | Pagamento riuscito → conferma |
+| `checkout.session.completed` | Pagamento riuscito → conferma; con un metodo differito (per esempio SEPA) il pagamento resta in sospeso |
+| `checkout.session.async_payment_succeeded` | Pagamento differito riuscito → conferma |
+| `checkout.session.async_payment_failed` | Pagamento differito fallito |
+| `checkout.session.expired` | Sessione di pagamento scaduta senza pagamento |
 | `payment_intent.succeeded` | Pagamento riuscito → conferma |
-| `payment_intent.payment_failed` | Pagamento fallito (motivo: solo il codice d'errore, mai il messaggio) |
-| `charge.refunded` | Rimborso (importo rimborsato con quell'evento) |
+| `payment_intent.payment_failed` | Tentativo fallito, il pagamento resta aperto (motivo: solo il codice d'errore, mai il messaggio) |
+| `charge.refunded` | Rimborso (totale rimborsato fino a quel momento sull'addebito) |
+| `refund.failed` | Rimborso non riuscito |
 | altri | Ignorati (`200`) |
 
 Le sessioni Checkout create da Arenile portano nei metadati `establishment_id`, `booking_id` e `booking_code`, e

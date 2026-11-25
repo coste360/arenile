@@ -103,10 +103,10 @@ Docker è il modo consigliato per far girare Arenile in produzione. L'immagine u
 
 </Steps>
 
-<Aside type="note" title="Prima del primo rilascio">
-  Se l'immagine non è ancora pubblicata sul registry, il compose ufficiale la compila dai sorgenti (sezione
-  `build`): in quel caso clona il repository e lancia `docker compose -f deploy/docker-compose.yml --env-file .env up -d`
-  dalla radice.
+<Aside type="note" title="Immagine dai sorgenti">
+  L'immagine `ghcr.io/coste360/arenile` è pubblicata a ogni rilascio. Se preferisci compilarla tu, il compose
+  ufficiale ha anche la sezione `build`: clona il repository e lancia
+  `docker compose -f deploy/docker-compose.yml --env-file .env up -d --build` dalla radice.
 </Aside>
 
 ## Creare il primo utente a mano

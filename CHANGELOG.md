@@ -31,6 +31,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   `ARENILE_PRINTERS_ALLOW_LOOPBACK`.
 
 ### Corretto
+- **Documentazione allineata al comportamento reale.** Pagine corrette dopo una verifica sul codice, in italiano e in
+  inglese: il telefono nella prenotazione online è sempre facoltativo anche nella pagina Privacy; l'email ai titolari
+  quando un webhook viene disattivato esiste (opzione "Errore del webhook di pagamento") e chi riceve le notifiche di
+  webhook e rimborsi è descritto in modo coerente; un credito riconosciuto a mano senza scadenza non scade; la modalità
+  remota dell'app desktop riceve i documenti fiscali ma l'inoltro al registratore telematico è pianificato; le etichette
+  della mappa sono quattro voci combinabili (Codice, Cliente, Fine, Allestimento); lo spostamento dalla mappa offre
+  "Da quando"; tabella completa degli eventi Stripe gestiti; modello "Lido con piscina", stagione del Lido Demo, nota
+  sull'immagine Docker, versione negli esempi di aggiornamento, backup automatici dell'app desktop e altre incongruenze
+  fra pagine. Le descrizioni delle pagine non usano più il trattino come pausa. Il programma Arenile non cambia.
 - **CI di `main` indipendente dalla data e dal carico.** Il test end-to-end della prenotazione da sola tastiera
   arriva al giorno scelto con le frecce invece che con PagGiù, che restava fermo quando lo stesso giorno del mese
   successivo era pieno o fuori stagione (dal 22 novembre: 22/12 pieno, 22/01 dopo la chiusura). I test del pannello

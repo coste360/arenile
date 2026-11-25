@@ -9,7 +9,8 @@ import { Aside } from '@astrojs/starlight/components';
 import { Screenshot } from '~/components';
 
 **Where:** the **bell** at the top right of every establishment page. **Who:** all staff see the establishment's
-notifications; those for the owner (webhooks, refunds) only users who manage users.
+notifications; those about webhooks only users who manage users (the owner), those about refunds only
+users who can refund (owner and manager).
 
 <Screenshot name="admin-notifications" alt="Notifications bell open" />
 
@@ -21,7 +22,7 @@ staff: if a colleague already saw the notice, it is read for you too.
 
 | Notification | When | Where it takes you |
 | --- | --- | --- |
-| **Webhook disabled** | A webhook endpoint was disabled automatically after too many failed deliveries in a row. An **email to the owners** is sent too (if manager emails for webhook errors are on in [Email and notifications](/en/gestore/email/)). | [API keys and webhooks](/en/gestore/chiavi-api-e-webhook/) |
+| **Webhook disabled** | A webhook endpoint was disabled automatically after too many failed deliveries in a row. An **email to the owners** is sent too (if the **Payment webhook error** option is on in [Email and notifications](/en/gestore/email/)). | [API keys and webhooks](/en/gestore/chiavi-api-e-webhook/) |
 | **Refund failed** | An [automatic refund](/en/gestore/prenotazioni/#automatic-refunds) ran out of attempts. Owner and manager (whoever can refund) see it. | The booking, where you can retry |
 
 The outcome of an [import](/en/gestore/importa-dati/) does not arrive as a notification: it is in the import

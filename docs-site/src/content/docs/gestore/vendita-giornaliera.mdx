@@ -78,15 +78,17 @@ In **Ticket del giorno** → **Impostazioni** (gestori e proprietari) scegli il 
 
 ## Ticket del giorno
 
-**Dove:** Operatività → **Ticket del giorno**. L'elenco dei biglietti emessi in un giorno con **Numero**, **Ora**,
+**Dove:** Operatività → **Ticket del giorno**. L'elenco dei biglietti validi in un giorno con **Numero**, **Ora**,
 **Postazione o zona**, **Formula**, **Nome**, **Stato** (*Assegnato*, *Da assegnare*, *Emesso*, *Entrato*,
 *Annullato*), **Importo** e **Metodo**.
 
 <Screenshot name="admin-tickets" alt="Ticket del giorno: riepilogo, elenco dei biglietti e corrispettivi per aliquota" />
 
 - Il **Riepilogo del giorno** conta emessi, incasso per metodo, biglietti da assegnare e annullati.
-- **Corrispettivi per aliquota**: gli stessi importi della sessione di cassa e dei
-  [corrispettivi](/gestore/corrispettivi/); gli annullati sono esclusi.
+- **Corrispettivi per aliquota**: i biglietti validi in quel giorno, annullati esclusi. Il riepilogo segue il
+  giorno di validità, mentre la cassa e i [corrispettivi](/gestore/corrispettivi/) seguono la data dell'incasso:
+  una vendita anticipata o un rimborso di un altro giorno stanno nella cassa e nei corrispettivi del giorno
+  dell'incasso.
 - **Esporta CSV** scarica l'elenco del giorno (separatore `;`, importi in euro con la virgola).
 - Per ogni biglietto: **Stampa**/**Ristampa**, **Assegna** o **Sposta** (vedi
   [Assegnazione ombrelloni](/gestore/assegnazione-ombrelloni/)) e **Annulla biglietto**.

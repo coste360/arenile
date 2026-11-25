@@ -1,14 +1,15 @@
 ---
 title: Invariants
-description: The domain properties that must always hold, whatever the sequence of operations - availability, prices, bookings, payments, security and events.
+description: "The domain properties that must always hold, whatever the sequence of operations: availability, prices, bookings, payments, security and events."
 sidebar:
   order: 3
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-**Invariants** are the properties that must hold **always**. Each has a stable number and the test that checks it; the
-full list, with status and test names, is in `docs/invariants.md`. A change touching availability, prices, bookings or
+**Invariants** are the properties that must hold **always**. Each has a stable number and the test that checks it. The
+first 48 (INV-01 to INV-48) are listed on this page; the full list, with the later ones, status and test names, is in
+[`docs/invariants.md`](https://github.com/coste360/arenile/blob/main/docs/invariants.md). A change touching availability, prices, bookings or
 payments must leave them all valid (in Claude Code the `invariants-guardian` subagent checks it).
 
 ## Availability

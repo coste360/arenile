@@ -9,7 +9,8 @@ import { Aside } from '@astrojs/starlight/components';
 import { Screenshot } from '~/components';
 
 **Dove:** la **campanella** in alto a destra, in ogni pagina dello stabilimento. **Chi:** tutto lo staff vede le
-notifiche dello stabilimento; quelle riservate al titolare (webhook, rimborsi) solo chi gestisce gli utenti.
+notifiche dello stabilimento; quelle sui webhook solo chi gestisce gli utenti (il titolare), quelle sui rimborsi solo chi può rimborsare
+(titolare e gestore).
 
 <Screenshot name="admin-notifications" alt="Campanella delle notifiche aperta" />
 
@@ -21,7 +22,7 @@ condiviso dallo staff: se un collega ha già visto l'avviso, risulta letto anche
 
 | Notifica | Quando | Dove porta |
 | --- | --- | --- |
-| **Webhook disattivato** | Un endpoint webhook è stato disattivato in automatico dopo troppe consegne fallite di fila. Arriva anche un'**email ai titolari** (se le email al gestore per gli errori dei webhook sono attive in [Email e notifiche](/gestore/email/)). | [Chiavi API e webhook](/gestore/chiavi-api-e-webhook/) |
+| **Webhook disattivato** | Un endpoint webhook è stato disattivato in automatico dopo troppe consegne fallite di fila. Arriva anche un'**email ai titolari** (se in [Email e notifiche](/gestore/email/) è attiva l'opzione **Errore del webhook di pagamento**). | [Chiavi API e webhook](/gestore/chiavi-api-e-webhook/) |
 | **Rimborso non riuscito** | Un [rimborso automatico](/gestore/prenotazioni/#rimborsi-automatici) ha esaurito i tentativi. La vedono titolare e gestore (chi può rimborsare). | La prenotazione, dove puoi riprovare |
 
 L'esito di un'[importazione](/gestore/importa-dati/) non arriva come notifica: lo trovi nello storico

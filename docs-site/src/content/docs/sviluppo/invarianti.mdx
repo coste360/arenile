@@ -1,6 +1,6 @@
 ---
 title: Invarianti
-description: Le proprietà di dominio che devono valere sempre, qualunque sia la sequenza di operazioni - disponibilità, prezzi, prenotazioni, pagamenti, sicurezza ed eventi.
+description: "Le proprietà di dominio che devono valere sempre, qualunque sia la sequenza di operazioni: disponibilità, prezzi, prenotazioni, pagamenti, sicurezza ed eventi."
 sidebar:
   order: 3
 ---
@@ -8,7 +8,8 @@ sidebar:
 import { Aside } from '@astrojs/starlight/components';
 
 Le **invarianti** sono le proprietà che devono valere **sempre**. Ognuna ha un numero stabile e il test che la
-verifica; l'elenco completo, con stato e nome dei test, è in `docs/invariants.md`. Un cambiamento che tocca
+verifica. Questa pagina riporta le prime 48 (da INV-01 a INV-48); l'elenco completo, con le successive, lo stato e
+il nome dei test, è in [`docs/invariants.md`](https://github.com/coste360/arenile/blob/main/docs/invariants.md). Un cambiamento che tocca
 disponibilità, prezzi, prenotazioni o pagamenti deve lasciarle tutte valide (in Claude Code lo controlla il
 subagent `invariants-guardian`).
 

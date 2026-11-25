@@ -1,6 +1,6 @@
 ---
 title: Mappa del giorno
-description: La vista operativa della spiaggia per qualsiasi data e fascia - stati e simboli, legenda, ricerca, scheda della postazione, check-in, spostamenti, rilasci e incassi.
+description: "La vista operativa della spiaggia per qualsiasi data e fascia: stati e simboli, legenda, ricerca, scheda della postazione, check-in, spostamenti, rilasci e incassi."
 sidebar:
   order: 21
 ---
@@ -10,8 +10,9 @@ import { Screenshot } from '~/components';
 import { LiveMap } from '~/components';
 import { StatusBadges } from '~/components';
 
-**Dove:** Operatività → **Mappa**. **Chi:** tutti i ruoli vedono; check-in e rilasci anche il personale di
-spiaggia; prenotazioni, spostamenti e incassi cassieri, gestori e proprietari.
+**Dove:** Operatività → **Mappa**. **Chi:** tutti i ruoli vedono; check-in, rilasci e blocchi anche il
+personale di spiaggia; prenotazioni, spostamenti e incassi cassieri, gestori e proprietari (vedi
+[Team e ruoli](/gestore/team-e-ruoli/)).
 
 La mappa operativa è la spiaggia di un giorno, postazione per postazione, con lo stato di ciascuna. È condivisa
 in tempo reale tra cassa, spiaggia e prenotazioni online.
@@ -53,17 +54,20 @@ Indicatori aggiuntivi segnalano **Extra**, **Nota** e cliente **VIP** (tag del c
 
 <LiveMap />
 
-## Etichette: codice, cliente o entrambi
+## Etichette: codice, cliente, fine, allestimento
 
 <Screenshot name="admin-map-labels" alt="Mappa operativa con il codice di ogni postazione e il cognome di chi la occupa" />
 
-Sopra la mappa, **Etichette** sceglie cosa scrivere sotto ogni postazione:
+Sopra la mappa, **Etichette** sceglie cosa scrivere sotto ogni postazione della mappa a schermo. Le voci si
+combinano (almeno una resta attiva; predefinite **Codice** e **Cliente**) e valgono anche per la
+[stampa della mappa](/gestore/stampa-mappa/), che riporta quello che vedi:
 
-| Scelta | Cosa mostra |
+| Voce | Cosa mostra |
 |---|---|
-| **Codice** | Solo il codice della postazione (A1, B7...) |
+| **Codice** | Il codice della postazione (A1, B7...) |
 | **Cliente** | Il cognome di chi occupa la postazione; le postazioni libere restano col codice |
-| **Entrambi** | Codice e, sotto, il cognome (predefinito) |
+| **Fine** | L'ultimo giorno del soggiorno sulla postazione (16/8) |
+| **Allestimento** | L'allestimento della prenotazione (per esempio *2L 1S*) |
 
 Il nome è il **cognome** del cliente della prenotazione (il nome se manca il cognome): per gli abbonamenti è
 il titolare, per i gruppi il cliente principale; un cliente anonimizzato compare come **Anonimo**. Mai email o
@@ -76,7 +80,7 @@ barra laterale aperta, molte postazioni vicine) restano i codici e l'avviso sugg
 **Cliente** al posto del codice c'è più spazio. Nell'**Elenco** il nome è sempre accanto alla postazione.
 
 <Aside type="note" title="Chi vede i nomi">
-  Tutti i ruoli che vedono la mappa e le prenotazioni (permesso *bookings.read*, anche **viewer**). Una chiave
+  Tutti i ruoli che vedono la mappa e le prenotazioni (permesso *bookings.read*, anche **Sola lettura**). Una chiave
   API senza quel permesso non vede né la mappa né i nomi. Gli aggiornamenti in tempo reale non trasportano nomi:
   la mappa li rilegge dal server.
 </Aside>
@@ -112,7 +116,9 @@ dura il blocco; se è bloccata, il motivo. Le azioni dipendono dallo stato e dal
 2. Tocca una postazione libera.
 3. Leggi l'anteprima: Arenile verifica disponibilità e prezzo (*Il prezzo non cambia*, *Differenza da
    incassare*, *Differenza da rimborsare*) ed elenca eventuali conflitti giorno per giorno.
-4. **Sposta**. Lo spostamento vale dal giorno visualizzato per il resto del soggiorno.
+4. In **Da quando** scegli da che giorno vale lo spostamento (**Tutto il soggiorno**, **Da oggi**, **Da domani**
+   o **Da una data**; di solito è già proposto il giorno visualizzato) e premi **Sposta**. Dettagli, scambi e
+   spostamento di un gruppo in [Spostamenti e scambi](/gestore/spostamenti-e-scambi/).
 
 </Steps>
 
